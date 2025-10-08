@@ -1,0 +1,80 @@
+cabal-version:      3.4
+
+name:               worms
+version:            0.0.0.0
+-- A short (one-line) description of the package.
+-- synopsis:
+-- A longer description of the package.
+-- description:
+
+license:            NONE
+
+-- The package author(s).
+author:             Dinis Silva <a116004@alunos.uminho.pt>
+                    Guilherme dos Santos Martins <a114978@alunos.uminho.pt>
+
+
+category:           Game
+build-type:         Simple
+
+extra-doc-files:    README.md
+
+common warnings
+    ghc-options: -Wall
+
+library
+    import:           warnings
+
+    -- Modules exported by the library.
+    exposed-modules:
+        Labs2025
+        Tarefa0_geral
+        Tarefa0_2025
+        Tarefa1
+        Tarefa2
+        Tarefa3
+
+    -- Modules included in this library but not exported.
+    -- other-modules:
+
+    -- LANGUAGE extensions used by modules in this package.
+    -- other-extensions:
+
+    build-depends:
+        base
+
+    hs-source-dirs:   lib
+    default-language: GHC2021
+
+executable t1-feedback
+    import:           warnings
+    other-modules:
+        Magic
+    other-extensions:
+    main-is: Tarefa1Test.hs
+    build-depends:
+        base, uri-encode, open-browser, bytestring, base64-bytestring, deepseq, bytes, bits, worms
+    hs-source-dirs:   test
+    default-language: GHC2021
+
+executable t2-feedback
+    import:           warnings
+    other-modules:
+        Magic
+    other-extensions:
+    main-is: Tarefa2Test.hs
+    build-depends:
+        base, uri-encode, open-browser, bytestring, base64-bytestring, deepseq, bytes, bits, worms
+    hs-source-dirs:   test
+    default-language: GHC2021
+
+executable t3-feedback
+    import:           warnings
+    other-modules:
+        Magic
+    other-extensions:
+    main-is: Tarefa3Test.hs
+    build-depends:
+        base, uri-encode, open-browser, bytestring, base64-bytestring, deepseq, bytes, bits, worms
+    hs-source-dirs:   test
+    default-language: GHC2021
