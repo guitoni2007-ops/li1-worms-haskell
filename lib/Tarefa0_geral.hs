@@ -39,7 +39,7 @@ eIndiceListaValido x l = x >= 0 && x < length l
 
 
 -- | Calcula a dimensão de uma matriz.
---
+--ePosicaoMatrizValida
 -- __NB:__ Note que não existem matrizes de dimensão /m * 0/ ou /0 * n/, e que qualquer matriz vazia deve ter dimensão /0 * 0/.
 dimensaoMatriz :: Matriz a -> Dimensao
 dimensaoMatriz [] = (0, 0)
@@ -157,7 +157,8 @@ moveDirecaoPosicoes d (h:t) = movePosicao d h : moveDirecaoPosicoes d t
 -- | Verifica se uma matriz é válida, no sentido em que modela um rectângulo.
 -- __NB:__ Todas as linhas devem ter o mesmo número de colunas.
 eMatrizValida :: Matriz a -> Bool
-eMatrizValida [] = True
+eMatrizValida [] = False
+eMatrizValida [[]] = False
 eMatrizValida [_] = True
 eMatrizValida (l1:l2:ls)
   | length l1 == length l2 = eMatrizValida (l2:ls)
