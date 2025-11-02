@@ -46,22 +46,22 @@ objetosTeste =
       { posicaoDisparo = (3,3)
       , direcaoDisparo = Norte
       , tipoDisparo = Dinamite
-      , tempoDisparo = Nothing
+      , tempoDisparo = Just 3
       , donoDisparo = 0
       }
   , Disparo
       { posicaoDisparo = (1,3)
       , direcaoDisparo = Sul
-      , tipoDisparo = Mina
+      , tipoDisparo = Jetpack
       , tempoDisparo = Nothing
       , donoDisparo = 1
       }
   , Disparo
       { posicaoDisparo = (4,4)
       , direcaoDisparo = Este
-      , tipoDisparo = Bazuca
-      , tempoDisparo = Just 3
-      , donoDisparo = 2
+      , tipoDisparo = Mina
+      , tempoDisparo = Just 1
+      , donoDisparo = 3
       }
   ]
 
@@ -199,7 +199,53 @@ objetosPosicao todos minhocas = verificar todos
           objetoPosicao obj (removerObjeto obj todos) minhocas && verificar (tail lista)
 
 
+ 
 
+
+-- Dado uma lista de disparos, verifica se algum elemento é do tipo de arma: Jetpack ou Escavadora
+
+dispJetEsc :: [Objeto] -> Bool
+dispJetEsc [] = True
+dispJetEsc ((Disparo _ _ tipo _ _):os) =
+  tipo /= Jetpack && tipo /= Escavadora && dispJetEsc os
+dispJetEsc (_:os) = dispJetEsc os
+
+
+
+
+-- Dado uma lista de disparos, verifica se o tempo do disparo é válido para o tipo de arma
+validatempoDisparo :: [Objeto] -> Bool
+validatempoDisparo [] = True
+validatempoDisparo ((Disparo _ _ tipo tempo _):os) =
+  case tempo of
+    Just t ->
+      case tipo of
+        Mina     -> (t >= 0 && t <= 2) && validatempoDisparo os
+        Dinamite -> (t >= 0 && t <= 4) && validatempoDisparo os
+        _        -> validatempoDisparo os
+    Nothing ->   
+      case tipo of
+        Bazuca -> validatempoDisparo os
+        Mina -> validatempoDisparo os
+        _ -> validatempoDisparo os
+validatempoDisparo (_:os) = validatempoDisparo os
+
+-- Verifica se o dono do disparo tem um índice válido na lista de minhocas 
+
+validaDonoDisparo :: [Objeto] -> [Minhoca] -> Bool
+validaDonoDisparo [] _ = True
+validaDonoDisparo ((Disparo _ _ _ _ dono):os) minhocas =
+  eIndiceListaValido dono minhocas && validaDonoDisparo os minhocas
+validaDonoDisparo (_:os) minhocas = validaDonoDisparo os minhocas
+
+                                                        
+                                                      
+                                                          
+                                                 
+
+
+
+ 
 
 
 
