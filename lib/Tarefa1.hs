@@ -47,34 +47,30 @@ objetosTeste =
       , direcaoDisparo = Norte
       , tipoDisparo = Dinamite
       , tempoDisparo = Just 3
-      , donoDisparo = 0
+      , donoDisparo = 2
       }
   , Disparo
       { posicaoDisparo = (1,3)
       , direcaoDisparo = Sul
-      , tipoDisparo = Jetpack
+      , tipoDisparo = Bazuca
       , tempoDisparo = Nothing
       , donoDisparo = 1
       }
   , Disparo
-      { posicaoDisparo = (4,4)
+      { posicaoDisparo = (3,2)
       , direcaoDisparo = Este
       , tipoDisparo = Mina
       , tempoDisparo = Just 1
-      , donoDisparo = 3
+      , donoDisparo = 0
       }
   ]
 
 
 minhocasTeste =
   [ Minhoca (Just (2,1)) (Viva 100) 1 1 1 1 1
-  , Minhoca (Just (5,5)) (Viva 100) 1 1 1 1 1
-  , Minhoca Nothing Morta 0 0 0 0 0
+  , Minhoca (Just (1,2)) (Viva 100) 1 1 1 1 1
+  , Minhoca (Just (3,0)) (Viva 100) 1 1 1 1 1
   ]
-
-
-
-
 
 
 
@@ -92,26 +88,16 @@ validaEstado estado =
 
 
 -- | 1 Função secundária da Tarefa 1. Recebe um mapa e retorna se este é válido ou não.
-    -- Mapa = Matriz Terreno
-
-    -- Matriz a = [[a]]
-
-    -- Terreno
-     -- Terreno vazio = Ar
-     -- Terreno que afoga minhocas = Agua
-     -- Terreno opaco e destrutivel = Terra 
-     -- Terreno opaco e indestrutivel = Pedra
-
 validaMapa :: Mapa -> Bool
 validaMapa mapa = eMatrizValida(mapa) && eTerrenosValido(mapa)
 
 
--- Aux a eTerrenoValido
+-- Aux a eTerrenoValido.
 eTerrenosValido :: Mapa -> Bool
 eTerrenosValido [] = True
 eTerrenosValido (t1:ts) = eTerrenoValido t1 && eTerrenosValido ts
 
--- Valida se o terreno é algum dos 4 possíveis
+-- Valida se o terreno é algum dos 4 possíveis.
 eTerrenoValido :: [Terreno] -> Bool
 eTerrenoValido [] = True
 eTerrenoValido (t1:ts) = if (t1 == Ar || t1 == Agua || t1 == Terra || t1 == Pedra) then eTerrenoValido(ts)
@@ -120,32 +106,30 @@ eTerrenoValido (t1:ts) = if (t1 == Ar || t1 == Agua || t1 == Terra || t1 == Pedr
 
 
 
--- | 2 Função secundária da Tarefa 1. Recebe um objeto e retorna se este é válido ou não.
+-- | 2 Função secundária da Tarefa 1. Verifica se uma lista de objetos é válida ou não.
+validaObj :: Posicao -> Mapa -> [Objeto] -> [Minhoca] -> Bool
+validaObj posicao mapa objetos minhocas = posicaovalidalivre posicao mapa && objetosPosicao objetos minhocas && objeto_disparo objetos minhocas
 
-{-
-validaObj :: [Objeto] -> [Minhoca] -> Bool
-validaobj objetos minhocas = posicaovalidalivre objetos && objetosPosicao objetos minhocas && objeto_disparo objetos
--} 
 -- Verifica se uma posição é válida e livre no mapa.
 posicaovalidalivre :: Posicao -> Mapa -> Bool
-posicaovalidalivre (l,c) mapa = ePosicaoMatrizValida (l,c) mapa && eTerrenoOpaco (mapa !! l !! c)
+posicaovalidalivre (l,c) mapa = ePosicaoMatrizValida (l,c) mapa && not (eTerrenoOpaco (mapa !! l !! c))
 
---Verifica se duas posições sao diferentes
+--Verifica se duas posições sao diferentes.
 posicoesDiferentes :: Posicao -> Posicao -> Bool
 posicoesDiferentes p1 p2 = p1 /= p2
 
---Verifica se duas posições sao diferentes para maybe posição
+--Verifica se duas posições sao diferentes para maybe posição.
 posicoesDiferentes2 :: Posicao -> Maybe Posicao -> Bool
 posicoesDiferentes2 p1 (Just p2) = p1 /= p2
 posicoesDiferentes2 _ Nothing    = True
 
 
---Verificar a posição do barril em relação a todas as minhocas
+--Verificar a posição do barril em relação a todas as minhocas.
 verificaPosBarrilMinhoca :: Posicao -> [Minhoca] -> Bool
 verificaPosBarrilMinhoca pos1 [] = True
 verificaPosBarrilMinhoca pos1 ((Minhoca pos vida jet escava bazuca mina dina):ms) = posicoesDiferentes2 pos1 pos && verificaPosBarrilMinhoca pos1 ms
 
---Verifica se as posições do barris e das minhocas não são iguais
+--Verifica se as posições do barris e das minhocas não são iguais.
 verificaPosBarril :: Objeto -> [Objeto] -> [Minhoca] -> Bool
 verificaPosBarril (Barril pos1 explode1) [] m = verificaPosBarrilMinhoca pos1 m
 verificaPosBarril (Barril pos1 explode1) ((Barril pos2 explode2):os) minhocas = posicoesDiferentes pos1 pos2 && verificaPosBarrilMinhoca pos1 minhocas && verificaPosBarril (Barril pos1 explode1) os minhocas
@@ -155,7 +139,7 @@ verificaPosMinaDina :: Objeto -> [Objeto] -> Bool
 verificaPosMinaDina o [] = True
 verificaPosMinaDina (Disparo pos1 dir1 tipo1 tempo1 dono1) ((Barril pos2 explode2):os) = posicoesDiferentes pos1 pos2 && verificaPosMinaDina (Disparo pos1 dir1 tipo1 tempo1 dono1) os
 
--- Filtra uma lista de objetos retornando uma lista só de barris
+-- Filtra uma lista de objetos retornando uma lista só de barris.
 filtraBarris :: [Objeto] -> [Objeto]
 filtraBarris = filter isBarril
   where
@@ -163,7 +147,7 @@ filtraBarris = filter isBarril
     isBarril _            = False
 
 
---Verifica a posição de objetos especificos (Barril, Dinamite ou Mina)
+--Verifica a posição de objetos especificos (Barril, Dinamite ou Mina).
 objetoPosicao :: Objeto -> [Objeto] -> [Minhoca] -> Bool
 objetoPosicao objeto listaObjetos minhocas =
                                     case objeto of
@@ -177,7 +161,7 @@ objetoPosicao objeto listaObjetos minhocas =
 
 
 
---AuxobjetosPosicao 
+--AuxobjetosPosicao. 
 proximoObjeto :: [Objeto] -> Maybe (Objeto, [Objeto])
 proximoObjeto []     = Nothing
 proximoObjeto (o:os) = Just (o, os)
@@ -187,7 +171,7 @@ removerObjeto :: Objeto -> [Objeto] -> [Objeto]
 removerObjeto obj = filter (/= obj)
 
 
---Recebe uma lista de objetos e passa a "objetoPosicao" um objeto de cada vez
+--Recebe uma lista de objetos e passa a "objetoPosicao" um objeto de cada vez.
 objetosPosicao :: [Objeto] -> [Minhoca] -> Bool
 objetosPosicao todos minhocas = verificar todos
   where
@@ -202,8 +186,7 @@ objetosPosicao todos minhocas = verificar todos
  
 
 
--- Dado uma lista de disparos, verifica se algum elemento é do tipo de arma: Jetpack ou Escavadora
-
+-- Dado uma lista de disparos, verifica se algum elemento é do tipo de arma: Jetpack ou Escavadora.
 dispJetEsc :: [Objeto] -> Bool
 dispJetEsc [] = True
 dispJetEsc ((Disparo _ _ tipo _ _):os) =
@@ -213,7 +196,7 @@ dispJetEsc (_:os) = dispJetEsc os
 
 
 
--- Dado uma lista de disparos, verifica se o tempo do disparo é válido para o tipo de arma
+-- Dado uma lista de disparos, verifica se o tempo do disparo é válido para o tipo de arma.
 validatempoDisparo :: [Objeto] -> Bool
 validatempoDisparo [] = True
 validatempoDisparo ((Disparo _ _ tipo tempo _):os) =
@@ -230,13 +213,41 @@ validatempoDisparo ((Disparo _ _ tipo tempo _):os) =
         _ -> validatempoDisparo os
 validatempoDisparo (_:os) = validatempoDisparo os
 
--- Verifica se o dono do disparo tem um índice válido na lista de minhocas 
-
+-- Verifica se o dono do disparo tem um índice válido na lista de minhocas.
 validaDonoDisparo :: [Objeto] -> [Minhoca] -> Bool
 validaDonoDisparo [] _ = True
 validaDonoDisparo ((Disparo _ _ _ _ dono):os) minhocas =
   eIndiceListaValido dono minhocas && validaDonoDisparo os minhocas
 validaDonoDisparo (_:os) minhocas = validaDonoDisparo os minhocas
+
+-- Verifica se o mesmo dono nao tem simultaneamente mais do que um disparo de cada tipo.
+maisQueUmDisparo :: [Objeto] -> Bool
+maisQueUmDisparo objetos = verifica [] objetos
+ 
+ -- Função auxiiar de maisQueUmDisparo.
+verifica :: [(NumMinhoca, TipoArma)] -> [Objeto] -> Bool
+verifica _ [] = True
+verifica vistos (Disparo _ _ tipo _ dono : os)
+    | (dono, tipo) `elem` vistos = False
+    | otherwise = verifica ((dono, tipo) : vistos) os
+verifica vistos (_ : os) = verifica vistos os
+
+
+
+-- Recebe uma lista de objetos e verifica se os disparos são válidos.
+objeto_disparo :: [Objeto] -> [Minhoca] -> Bool
+objeto_disparo objetos minhocas = dispJetEsc objetos && validatempoDisparo objetos && validaDonoDisparo objetos minhocas && maisQueUmDisparo objetos
+
+-- | 3 Função secundária da Tarefa 1. Recebe uma lista de minhocas e retorna se este é válido ou não.
+{-
+validaWorms : [Minhocas] -> Bool
+-}
+
+
+
+
+
+
 
                                                         
                                                       
