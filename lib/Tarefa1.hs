@@ -9,9 +9,6 @@ module Tarefa1 where
 import Labs2025 
 import Tarefa0_2025
 
-
-
-
 mapaTesteValido =
     [ [Ar, Ar, Terra, Pedra]
     , [Agua, Terra, Terra, Pedra]
@@ -35,7 +32,7 @@ mapaTesteInvalido3 = [[]]
 
 objetosTeste =
   [ Barril
-      { posicaoBarril = (1,1)
+      { posicaoBarril = (1,3)
       , explodeBarril = False
       }
   , Barril
@@ -67,15 +64,22 @@ objetosTeste =
 
 
 minhocasTeste =
-  [ Minhoca (Just (2,1)) (Viva 100) 1 1 1 1 1
-  , Minhoca (Just (1,2)) (Viva 100) 1 1 1 1 1
-  , Minhoca (Just (3,0)) (Viva 100) 1 1 1 1 1
+  [ Minhoca (Just (0,1)) (Viva 100) 1 1 1 1 1
+  , Minhoca (Just (0,0)) (Viva 100) 1 1 1 1 1
+  , Minhoca (Just (3,2)) (Viva 100) 1 1 1 1 1
   ]
 
+minhocaTeste :: Minhoca
+minhocaTeste = Minhoca (Just (2,3)) (Viva 100) 1 1 1 1 1
 
 
 
-{-
+
+
+
+
+
+
 
 -- | Função principal da Tarefa 1. Recebe um estado e retorna se este é válido ou não.
 validaEstado :: Estado -> Bool
@@ -83,8 +87,7 @@ validaEstado estado =
   let mapa     = mapaEstado estado
       objetos  = objetosEstado estado
       minhocas = minhocasEstado estado
-  in validaMapa mapa && validaObj objetos minhocas && validaWorms minhocas
--}
+  in validaMapa mapa && validaObj (0,0) [] objetos minhocas && validaWorms minhocas
 
 
 -- | 1 Função secundária da Tarefa 1. Recebe um mapa e retorna se este é válido ou não.
@@ -149,8 +152,7 @@ filtraBarris = filter isBarril
 
 --Verifica a posição de objetos especificos (Barril, Dinamite ou Mina).
 objetoPosicao :: Objeto -> [Objeto] -> [Minhoca] -> Bool
-objetoPosicao objeto listaObjetos minhocas =
-                                    case objeto of
+objetoPosicao objeto listaObjetos minhocas = case objeto of
                                         Barril pos explode -> verificaPosBarril objeto (filtraBarris listaObjetos) minhocas
 
                                         Disparo pos dir tipo tempo dono ->
@@ -179,8 +181,7 @@ objetosPosicao todos minhocas = verificar todos
     verificar lista =
       case proximoObjeto lista of
         Nothing -> True
-        Just (obj, _) ->
-          objetoPosicao obj (removerObjeto obj todos) minhocas && verificar (tail lista)
+        Just (obj, _) -> objetoPosicao obj (removerObjeto obj todos) minhocas && verificar (tail lista)
 
 
  
@@ -239,9 +240,67 @@ objeto_disparo :: [Objeto] -> [Minhoca] -> Bool
 objeto_disparo objetos minhocas = dispJetEsc objetos && validatempoDisparo objetos && validaDonoDisparo objetos minhocas && maisQueUmDisparo objetos
 
 -- | 3 Função secundária da Tarefa 1. Recebe uma lista de minhocas e retorna se este é válido ou não.
-{-
-validaWorms : [Minhocas] -> Bool
--}
+
+validaWorms :: [Minhoca] -> Bool
+validaWorms = undefined
+
+
+-- Valida se uma lista de minhocas tem uma posição válida e livre no mapa ou nenhuma posição
+posicaovalidaminhoca :: [Minhoca] -> Mapa -> Bool
+posicaovalidaminhoca [] _ = True
+posicaovalidaminhoca (m:ms) mapa =
+  case posicaoMinhoca m of
+    Just pos -> posicaovalidalivre pos mapa && posicaovalidaminhoca ms mapa
+    Nothing  -> False
+
+-- Verifica se a posição da minhoca não coincide com outras minhocas
+verificaPosMinhocaMinhocas :: Minhoca -> [Minhoca] -> Bool
+verificaPosMinhocaMinhocas minhoca outras =
+  case posicaoMinhoca minhoca of
+    Nothing   -> True
+    Just pos1 -> all (\m -> posicoesDiferentes2 pos1 (posicaoMinhoca m)) outras
+
+-- Verifica se a posição da minhoca não coincide com nenhum barril
+verificaPosMinhocaBarris :: Minhoca -> [Objeto] -> Bool
+verificaPosMinhocaBarris minhoca objetos =
+  case posicaoMinhoca minhoca of
+    Nothing   -> True
+    Just pos1 -> all (posicoesDiferentes pos1) (posicoesDosBarris objetos)
+
+--Função auxiliar a verificaPosMinhocaBarris
+posicoesDosBarris :: [Objeto] -> [Posicao]
+posicoesDosBarris [] = []
+posicoesDosBarris ((Barril p _):os) = p : posicoesDosBarris os
+posicoesDosBarris (_:os) = posicoesDosBarris os
+
+-- Junta todas as verificações para uma minhoca
+minhocaValida :: Minhoca -> [Minhoca] -> [Objeto] -> Mapa -> Bool
+minhocaValida m outras objetos mapa =
+  verificaPosMinhocaBarris m objetos &&
+  verificaPosMinhocaMinhocas m outras &&
+  case posicaoMinhoca m of
+    Nothing  -> True
+    Just pos -> posicaovalidalivre pos mapa
+
+-- Aplica a verificação a todas as minhocas
+minhocasValidas :: [Minhoca] -> [Objeto] -> Mapa -> Bool
+minhocasValidas [] _ _ = True
+minhocasValidas (m:ms) objetos mapa =
+  minhocaValida m ms objetos mapa && minhocasValidas ms objetos mapa
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
