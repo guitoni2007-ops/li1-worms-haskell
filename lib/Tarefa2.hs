@@ -20,17 +20,56 @@ validaminhocaviva = all estaViva
       Viva n -> n > 0
       Morta  -> False
 
-jogadaMoveLivre :: Jogada -> Posicao -> Estado -> Bool
-jogadaMoveLivre (Move dir) pos estado =
+jogadaMoveLivre :: Estado -> Posicao -> Jogada -> Bool
+jogadaMoveLivre estado pos (Move dir) =
   let destino = movePosicao dir pos
   in ePosicaoEstadoLivre destino estado
 
-------------------------------------------------
+estaNoChao :: Estado -> Minhoca -> Bool
+estaNoChao estado minhoca =
+  case posicaoMinhoca minhoca of
+    Nothing -> False
+    Just (x, y) ->
+      let posAbaixo = (x, y + 1)
+      in not (ePosicaoEstadoLivre posAbaixo estado)
 
-validaminhocaAr :: Minhoca -> Bool
-validaminhocaAr  = estanoAr
-    where 
-        estanoAr minhoca = case posicaoMinhoca
+podeEfetuarJogada :: Estado -> Minhoca -> Jogada -> Bool
+podeEfetuarJogada estado minhoca (Move dir)
+  | dir `elem` [Norte, Nordeste, Noroeste] = estaNoChao estado minhoca
+  | otherwise = True  -- ainda não verificamos as outras direções
+podeEfetuarJogada _ _ _ = True
+
+podeMoverMinhoca :: Estado -> Minhoca -> Jogada -> Bool
+podeMoverMinhoca estado minhoca (Move _) = estaNoChao estado minhoca
+
+mortePorForaMapa :: Estado -> Minhoca -> Jogada -> Minhoca
+mortePorForaMapa estado minhoca (Move dir) =
+  case posicaoMinhoca minhoca of
+    Nothing -> minhoca  -- já está sem posição
+    Just pos ->
+      let destino = movePosicao dir pos
+          mapa = mapaEstado estado
+      in if ePosicaoMatrizValida destino mapa
+         then minhoca  -- posição válida, continua viva
+         else minhoca { posicaoMinhoca = Nothing, vidaMinhoca = Morta }
+mortePorForaMapa _ minhoca _ = minhoca  -- só interessa a jogada Move
+
+
+
+
+
+
+
+
+
+
+
+
+------------------------------------------------
+--------validaminhocaAr :: Minhoca -> Bool
+------------validaminhocaAr  = estanoAr
+    -----where 
+        -------estanoAr minhoca = case posicaoMinhoca
 
 
 
