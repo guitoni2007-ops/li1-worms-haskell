@@ -11,7 +11,7 @@ cabal run --enable-coverage t1-feedback
 
 -- | Definir aqui os testes do grupo para a Tarefa 1
 testesTarefa1 :: [Estado]
-testesTarefa1 = [e17]
+testesTarefa1 = [e16]
 
 dataTarefa1 :: IO TaskData
 dataTarefa1 = do

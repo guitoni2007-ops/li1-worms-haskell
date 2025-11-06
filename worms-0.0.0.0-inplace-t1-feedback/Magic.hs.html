@@ -99,8 +99,8 @@ span.spaces    { background: white }
 <span class="lineno">   80 </span><span class="spaces">    </span><span class="istickedoff">writeFile feedbackfile base64</span>
 <span class="lineno">   81 </span><span class="spaces">    </span><span class="istickedoff">let uri = feedbackpage ++ &quot;?flags=&quot; ++ URI.encode base64</span>
 <span class="lineno">   82 </span><span class="spaces">    </span><span class="istickedoff">_ &lt;- Browser.openBrowser uri</span>
-<span class="lineno">   83 </span><span class="spaces">    </span><span class="istickedoff">putStrLn $ &quot;* Página de feedback aberta no browser.&quot;</span>
-<span class="lineno">   84 </span><span class="spaces">    </span><span class="istickedoff">putStrLn $ &quot;* Se não conseguir visualizar faça upload do ficheiro &quot; ++ show feedbackfile ++ &quot; em &quot; ++ show feedbackpage ++ &quot;.&quot;</span></span>
+<span class="lineno">   83 </span><span class="spaces">    </span><span class="istickedoff">putStrLn $ &quot;\x1b[33m*\x1b[0m Página de feedback aberta no browser.&quot;</span>
+<span class="lineno">   84 </span><span class="spaces">    </span><span class="istickedoff">putStrLn $ &quot;\x1b[33m*\x1b[0m Se não conseguir visualizar faça upload do ficheiro &quot; ++ show feedbackfile ++ &quot; em &quot; ++ &quot;\x1b[36m&quot;  ++ feedbackpage ++ &quot;\x1b[0m&quot;</span></span>
 <span class="lineno">   85 </span>
 <span class="lineno">   86 </span>-- * bit stuff
 <span class="lineno">   87 </span>
