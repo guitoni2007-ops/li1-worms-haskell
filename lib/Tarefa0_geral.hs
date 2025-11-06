@@ -109,10 +109,10 @@ rodaPosicaoDirecao ((l,c),d) | d==Norte = ((l,c), Nordeste)
 --
 -- __NB:__ Retorna @Nothing@ se o índice não existir.
 encontraIndiceLista :: Int -> [a] -> Maybe a
-encontraIndiceLista _ [] = Nothing
-encontraIndiceLista i (h:t) | i<0 = Nothing
-                            | i==0 = Just h
-                            | otherwise = encontraIndiceLista (i-1) t
+encontraIndiceLista i l
+  | i < 0 || i >= length l = Nothing
+  | otherwise = Just (l !! i)
+
 
 -- | Modifica um elemento num dado índice.
 --
@@ -129,9 +129,11 @@ atualizaIndiceLista i x l@(h:t)
 --
 -- __NB:__ Retorna @Nothing@ se a posição não existir.
 encontraPosicaoMatriz :: Posicao -> Matriz a -> Maybe a
-encontraPosicaoMatriz _ [] = Nothing                                  
-encontraPosicaoMatriz (0, c) (linha : _) = encontraIndiceLista c linha  
-encontraPosicaoMatriz (l, c) (_ : resto) = encontraPosicaoMatriz (l - 1, c) resto
+encontraPosicaoMatriz (l, c) m
+  | l < 0 || l >= length m = Nothing
+  | c < 0 || c >= length (m !! l) = Nothing
+  | otherwise = Just ((m !! l) !! c)
+
 
 -- | Modifica um elemento numa dada posição de uma matriz.
 --

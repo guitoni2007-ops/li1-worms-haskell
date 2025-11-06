@@ -70,12 +70,16 @@ ePosicaoMapaLivre (x, y) mapa =
 -- __NB:__ Uma posição está livre se o mapa estiver livre e se não estiver já uma minhoca ou um barril nessa posição.
 ePosicaoEstadoLivre :: Posicao -> Estado -> Bool
 ePosicaoEstadoLivre pos estado =
-    let mapaLivre = ePosicaoMapaLivre pos (mapaEstado estado)
-        minhocaLivre = all (\m -> posicaoMinhoca m /= Just pos) (minhocasEstado estado)
-        barrilLivre  = all (\o -> case o of
-                                    Barril {posicaoBarril = p} -> p /= pos
-                                    _ -> True) (objetosEstado estado)
-    in mapaLivre && minhocaLivre && barrilLivre
+    let mapa = mapaEstado estado
+    in if not (ePosicaoMatrizValida pos mapa)
+       then False  -- fora do mapa → não está livre
+       else
+         let mapaLivre = ePosicaoMapaLivre pos mapa
+             minhocaLivre = all (\m -> posicaoMinhoca m /= Just pos) (minhocasEstado estado)
+             barrilLivre  = all (\o -> case o of
+                                         Barril {posicaoBarril = p} -> p /= pos
+                                         _ -> True) (objetosEstado estado)
+         in mapaLivre && minhocaLivre && barrilLivre
 
 -- | Verifica se numa lista de objetos já existe um disparo feito para uma dada arma por uma dada minhoca.
 minhocaTemDisparo :: TipoArma -> NumMinhoca -> [Objeto] -> Bool

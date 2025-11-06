@@ -80,8 +80,8 @@ runFeedback dta = do
     writeFile feedbackfile base64
     let uri = feedbackpage ++ "?flags=" ++ URI.encode base64
     _ <- Browser.openBrowser uri
-    putStrLn $ "* Página de feedback aberta no browser."
-    putStrLn $ "* Se não conseguir visualizar faça upload do ficheiro " ++ show feedbackfile ++ " em " ++ show feedbackpage ++ "."
+    putStrLn $ "\x1b[33m*\x1b[0m Página de feedback aberta no browser."
+    putStrLn $ "\x1b[33m*\x1b[0m Se não conseguir visualizar faça upload do ficheiro " ++ show feedbackfile ++ " em " ++ "\x1b[36m"  ++ feedbackpage ++ "\x1b[0m"
 
 -- * bit stuff
 

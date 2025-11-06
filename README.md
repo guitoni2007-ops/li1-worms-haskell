@@ -30,6 +30,12 @@ cabal run --enable-coverage t1-feedback
 ./runhpc.sh t1-feedback
 ```
 
+Alternativamente, pode utilizar o comando seguinte script (usando a Tarefa 1 como exemplo):
+
+```bash
+./runcoverage.sh t1
+```
+
 ## Qualidade do Código
 
 Um dos eixos que devem ter em consideração no desenvolvimento do vosso projeto é a qualidade do código, que se prende com questões como a estrutura, modularidade, tamanho e documentação das funções, etc. Uma ferramenta que apoia na análise da qualidade do vosso código é o homplexity, que podem instalar com o seguinte comando:
