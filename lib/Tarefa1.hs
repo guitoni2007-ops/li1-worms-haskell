@@ -9,85 +9,13 @@ module Tarefa1 where
 import Labs2025 
 import Tarefa0_2025
 
-mapaTesteValido =
-    [ [Ar, Ar, Terra, Pedra]
-    , [Agua, Terra, Terra, Pedra]
-    , [Ar, Ar, Ar, Ar]
-    , [Pedra, Pedra, Terra, Agua]]
-
-mapaTesteInvalido1 =
-    [ [Ar, Ar, Terra, Pedra]
-    , [Agua, Terra, Terra, Pedra]
-    , [Ar, Ar, Lava, Ar]
-    , [Pedra, Pedra, Terra, Agua]]
-
-mapaTesteInvalido2 =
-    [ [Ar, Ar, Terra, Pedra]
-    , [Agua, Terra, Terra, Pedra]
-    , [Ar, Ar, Ar, Ar, Ar]
-    , [Pedra, Pedra, Terra, Agua]]
-
-mapaTesteInvalido3 = [[]]
-
-
-objetosTeste =
-  [ Barril
-      { posicaoBarril = (1,3)
-      , explodeBarril = False
-      }
-  , Barril
-      { posicaoBarril = (2,2)
-      , explodeBarril = True
-      }
-  , Disparo
-      { posicaoDisparo = (3,3)
-      , direcaoDisparo = Norte
-      , tipoDisparo = Dinamite
-      , tempoDisparo = Just 3
-      , donoDisparo = 2
-      }
-  , Disparo
-      { posicaoDisparo = (1,3)
-      , direcaoDisparo = Sul
-      , tipoDisparo = Bazuca
-      , tempoDisparo = Nothing
-      , donoDisparo = 1
-      }
-  , Disparo
-      { posicaoDisparo = (3,2)
-      , direcaoDisparo = Este
-      , tipoDisparo = Mina
-      , tempoDisparo = Just 1
-      , donoDisparo = 0
-      }
-  ]
-
-
-minhocasTeste =
-  [ Minhoca (Just (0,1)) (Viva 100) 1 1 1 1 1
-  , Minhoca (Just (0,0)) (Viva 100) 1 1 1 1 1
-  , Minhoca (Just (3,2)) (Viva 100) 1 1 1 1 1
-  ]
-
-minhocaTeste :: Minhoca
-minhocaTeste = Minhoca (Just (2,3)) (Viva 100) 1 1 1 1 1
-
-
-
-
-
-
-
-
-
-
 -- | Função principal da Tarefa 1. Recebe um estado e retorna se este é válido ou não.
 validaEstado :: Estado -> Bool
 validaEstado estado =
   let mapa     = mapaEstado estado
       objetos  = objetosEstado estado
       minhocas = minhocasEstado estado
-  in validaMapa mapa && validaObj (0,0) [] objetos minhocas && validaWorms minhocas
+  in validaMapa mapa && validaObj (1,1) mapa objetos minhocas && validaWorms (0,0) mapa objetos minhocas
 
 
 -- | 1 Função secundária da Tarefa 1. Recebe um mapa e retorna se este é válido ou não.
@@ -237,12 +165,16 @@ verifica vistos (_ : os) = verifica vistos os
 
 -- Recebe uma lista de objetos e verifica se os disparos são válidos.
 objeto_disparo :: [Objeto] -> [Minhoca] -> Bool
-objeto_disparo objetos minhocas = dispJetEsc objetos && validatempoDisparo objetos && validaDonoDisparo objetos minhocas && maisQueUmDisparo objetos
+objeto_disparo objetos minhocas = dispJetEsc objetos && validatempoDisparo objetos && validaDonoDisparo objetos minhocas && maisQueUmDisparo objetos 
 
 -- | 3 Função secundária da Tarefa 1. Recebe uma lista de minhocas e retorna se este é válido ou não.
-
-validaWorms :: [Minhoca] -> Bool
-validaWorms = undefined
+validaWorms :: Posicao -> Mapa -> [Objeto] -> [Minhoca] -> Bool
+validaWorms posicao mapa objetos minhocas =
+  posicaovalidaminhoca minhocas mapa &&
+  minhocasValidas minhocas objetos mapa &&
+  minhocamorta mapa minhocas &&
+  verificavidaminhocas minhocas &&
+  validaMinhocasMunicao minhocas
 
 
 -- Valida se uma lista de minhocas tem uma posição válida e livre no mapa ou nenhuma posição
@@ -288,82 +220,54 @@ minhocasValidas [] _ _ = True
 minhocasValidas (m:ms) objetos mapa =
   minhocaValida m ms objetos mapa && minhocasValidas ms objetos mapa
 
+-- | Verifica se a vida da minhoca está como Morta
+estaMorta :: Minhoca -> Bool
+estaMorta minhoca = vidaMinhoca minhoca == Morta
+
+-- | Verifica se a minhoca está viva em água 
+casoTerreno :: Posicao -> Mapa -> VidaMinhoca -> Bool
+casoTerreno pos mapa vida =
+  case encontraPosicaoMatriz pos mapa of
+    Just Agua -> vida == Morta
+    _         -> True
+
+-- | Verifica se uma minhoca está morta se estiver fora do mapa ou em água
+minhocaEstaCorretamenteMorta :: Mapa -> Minhoca -> Bool
+minhocaEstaCorretamenteMorta mapa minhoca =
+  case posicaoMinhoca minhoca of
+    Nothing  -> estaMorta minhoca
+    Just pos -> if not (ePosicaoMatrizValida pos mapa)
+                then estaMorta minhoca
+                else casoTerreno pos mapa (vidaMinhoca minhoca)
+
+-- | Verifica se todas as minhocas estão corretamente mortas quando fora do mapa ou em água
+minhocamorta :: Mapa -> [Minhoca] -> Bool
+minhocamorta mapa = all (minhocaEstaCorretamenteMorta mapa)
+
+-- | Verifica se a vida de uma minhoca é válida
+verificavidaminhoca :: VidaMinhoca -> Bool
+verificavidaminhoca (Viva n) = n >= 0 && n <= 100
+verificavidaminhoca Morta    = True
+
+
+-- Verifica se a vida de uma lista de minhocas é válida
+verificavidaminhocas :: [Minhoca] -> Bool
+verificavidaminhocas [] = True
+verificavidaminhocas (m:ms) =
+  verificavidaminhoca (vidaMinhoca m) && verificavidaminhocas ms
+
+--Valida a quantidade de munições das diversas armas para uma minhoca
+validaMinhocaMunicao :: Minhoca -> Bool
+validaMinhocaMunicao m =
+  jetpackMinhoca m    >= 0 &&
+  escavadoraMinhoca m >= 0 &&
+  bazucaMinhoca m     >= 0 &&
+  minaMinhoca m       >= 0 &&
+  dinamiteMinhoca m   >= 0
+
+
+--Valida a quantidade de munições das diversas armas para uma lista de minhocas
+validaMinhocasMunicao :: [Minhoca] -> Bool
+validaMinhocasMunicao [] = True
+validaMinhocasMunicao (m:ms) = validaMinhocaMunicao m && validaMinhocasMunicao ms
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                                                        
-                                                      
-                                                          
-                                                 
-
-
-
- 
-
-
-
-
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-{-
--- | 3 Função secundária da Tarefa 1. Recebe uma lista de minhocas e retorna se este é válida ou não.
-validaWorms :: [Minhoca] -> Bool
-
-  in validaMapa mapa && validaObj objetos && validaWorms minhocas
--}
