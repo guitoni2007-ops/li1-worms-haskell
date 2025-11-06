@@ -94,6 +94,87 @@ verificaJogadaDisparo minhoca arma
   | encontraQuantidadeArmaMinhoca arma minhoca <= 0 = Nothing  -- sem munição
   | otherwise = Just (disparaArma arma minhoca)  -- decrementa a munição
 
+-- | Verifica se a minhoca pode disparar a arma, ou seja,
+-- não existe um disparo ativo da mesma arma pertencente a ela.
+podeDispararMesmoTipo :: TipoArma -> NumMinhoca -> Estado -> Bool
+podeDispararMesmoTipo arma numMinhoca estado =
+  not (minhocaTemDisparo arma numMinhoca (objetosEstado estado))
+
+-- | Verifica se a minhoca pode usar um disparo do tipo Jetpack para se mover numa direção
+podeDisparoJetpack :: Estado -> Minhoca -> Jogada -> Bool
+podeDisparoJetpack estado minhoca (Dispara Jetpack dir) =
+  case posicaoMinhoca minhoca of
+    Just pos -> ePosicaoEstadoLivre (movePosicao dir pos) estado
+    Nothing  -> False
+podeDisparoJetpack _ _ _ = False
+
+-- | Aplica o efeito da Escavadora: destrói Terra e retorna a nova minhoca e o mapa atualizado
+disparoEscavadoraMinhoca :: Estado -> Minhoca -> Jogada -> (Mapa, Minhoca)
+disparoEscavadoraMinhoca estado minhoca jogada@(Dispara Escavadora dir) =
+  case posicaoMinhoca minhoca of
+    Just pos ->
+      let destino = movePosicao dir pos
+          mapaAtual = mapaEstado estado
+      in case encontraPosicaoMatriz destino mapaAtual of
+           Just Terra ->
+             let mapaNovo = destroiPosicao destino mapaAtual
+                 minhocaNova = minhoca { posicaoMinhoca = Just destino }
+             in (mapaNovo, minhocaNova)
+           _ ->
+             -- se não houver Terra, minhoca não se move
+             (mapaAtual, minhoca)
+    Nothing -> (mapaEstado estado, minhoca)  -- minhoca sem posição permanece igual
+disparoEscavadoraMinhoca estado minhoca _ = (mapaEstado estado, minhoca)
+
+-- | Retorna o índice de uma minhoca no estado, se existir.
+indiceMinhoca :: Estado -> Minhoca -> Maybe NumMinhoca
+indiceMinhoca estado minhoca = aux 0 (minhocasEstado estado)
+  where
+    aux _ [] = Nothing
+    aux i (m:ms)
+      | m == minhoca = Just i
+      | otherwise    = aux (i+1) ms
+
+-- | Cria um disparo de Bazuca na posição de destino da jogada, se a minhoca existir no estado.
+disparoBazuca :: Estado -> Minhoca -> Jogada -> Maybe Objeto
+disparoBazuca estado minhoca (Dispara Bazuca dir) =
+  case posicaoMinhoca minhoca of
+    Just pos ->
+      case indiceMinhoca estado minhoca of
+        Just dono ->
+          let destino = movePosicao dir pos
+          in Just Disparo { posicaoDisparo = destino
+                          , direcaoDisparo = dir
+                          , tipoDisparo = Bazuca
+                          , tempoDisparo = Nothing
+                          , donoDisparo = dono }
+        Nothing -> Nothing
+    Nothing -> Nothing
+disparoBazuca _ _ _ = Nothing
+
+-- | Coloca um disparo do tipo Mina na posição de destino se estiver livre,
+-- caso contrário na posição atual da minhoca, sem tempo e na direção do disparo.
+disparoMina :: Estado -> Minhoca -> Jogada -> Objeto
+disparoMina estado minhoca (Dispara Mina dir) =
+  case posicaoMinhoca minhoca of
+    Just pos ->
+      let destino = movePosicao dir pos
+          posFinal = if ePosicaoEstadoLivre destino estado then destino else pos
+          dono = indiceMinhoca estado minhoca
+      in Disparo { posicaoDisparo = posFinal
+                 , direcaoDisparo = dir
+                 , tipoDisparo = Mina
+                 , tempoDisparo = Nothing
+                 , donoDisparo = dono }
+    Nothing -> Nothing
+disparoMina _ _ _ = Nothing
+
+
+
+
+
+
+
 
 
   
