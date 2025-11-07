@@ -32,22 +32,22 @@ span.spaces    { background: white }
 <span class="lineno">   13 </span>
 <span class="lineno">   14 </span>-- | Retorna a quantidade de munições disponíveis de uma minhoca para uma dada arma.
 <span class="lineno">   15 </span>encontraQuantidadeArmaMinhoca :: TipoArma -&gt; Minhoca -&gt; Int
-<span class="lineno">   16 </span><span class="decl"><span class="nottickedoff">encontraQuantidadeArmaMinhoca arma minhoca =</span>
-<span class="lineno">   17 </span><span class="spaces">                    </span><span class="nottickedoff">case arma of</span>
-<span class="lineno">   18 </span><span class="spaces">                        </span><span class="nottickedoff">Jetpack -&gt; jetpackMinhoca minhoca</span>
-<span class="lineno">   19 </span><span class="spaces">                        </span><span class="nottickedoff">Escavadora -&gt; escavadoraMinhoca minhoca</span>
-<span class="lineno">   20 </span><span class="spaces">                        </span><span class="nottickedoff">Bazuca -&gt; bazucaMinhoca minhoca</span>
-<span class="lineno">   21 </span><span class="spaces">                        </span><span class="nottickedoff">Mina -&gt; minaMinhoca minhoca</span>
-<span class="lineno">   22 </span><span class="spaces">                        </span><span class="nottickedoff">Dinamite -&gt; dinamiteMinhoca minhoca</span></span>
+<span class="lineno">   16 </span><span class="decl"><span class="istickedoff">encontraQuantidadeArmaMinhoca arma minhoca =</span>
+<span class="lineno">   17 </span><span class="spaces">                    </span><span class="istickedoff">case arma of</span>
+<span class="lineno">   18 </span><span class="spaces">                        </span><span class="istickedoff">Jetpack -&gt; jetpackMinhoca minhoca</span>
+<span class="lineno">   19 </span><span class="spaces">                        </span><span class="istickedoff">Escavadora -&gt; escavadoraMinhoca minhoca</span>
+<span class="lineno">   20 </span><span class="spaces">                        </span><span class="istickedoff">Bazuca -&gt; bazucaMinhoca minhoca</span>
+<span class="lineno">   21 </span><span class="spaces">                        </span><span class="istickedoff">Mina -&gt; minaMinhoca minhoca</span>
+<span class="lineno">   22 </span><span class="spaces">                        </span><span class="istickedoff">Dinamite -&gt; dinamiteMinhoca minhoca</span></span>
 <span class="lineno">   23 </span>-- | Atualiza a quantidade de munições disponíveis de uma minhoca para uma dada arma.
 <span class="lineno">   24 </span>atualizaQuantidadeArmaMinhoca :: TipoArma -&gt; Minhoca -&gt; Int -&gt; Minhoca
-<span class="lineno">   25 </span><span class="decl"><span class="nottickedoff">atualizaQuantidadeArmaMinhoca arma minhoca novaQuantidade =</span>
-<span class="lineno">   26 </span><span class="spaces">                 </span><span class="nottickedoff">case arma of</span>
-<span class="lineno">   27 </span><span class="spaces">                    </span><span class="nottickedoff">Jetpack -&gt; minhoca { jetpackMinhoca    = novaQuantidade }</span>
-<span class="lineno">   28 </span><span class="spaces">                    </span><span class="nottickedoff">Escavadora -&gt; minhoca { escavadoraMinhoca = novaQuantidade }</span>
-<span class="lineno">   29 </span><span class="spaces">                    </span><span class="nottickedoff">Bazuca     -&gt; minhoca { bazucaMinhoca     = novaQuantidade }</span>
-<span class="lineno">   30 </span><span class="spaces">                    </span><span class="nottickedoff">Mina       -&gt; minhoca { minaMinhoca       = novaQuantidade }</span>
-<span class="lineno">   31 </span><span class="spaces">                    </span><span class="nottickedoff">Dinamite   -&gt; minhoca { dinamiteMinhoca   = novaQuantidade }</span></span>
+<span class="lineno">   25 </span><span class="decl"><span class="istickedoff">atualizaQuantidadeArmaMinhoca arma minhoca novaQuantidade =</span>
+<span class="lineno">   26 </span><span class="spaces">                 </span><span class="istickedoff">case arma of</span>
+<span class="lineno">   27 </span><span class="spaces">                    </span><span class="istickedoff">Jetpack -&gt; minhoca { jetpackMinhoca    = novaQuantidade }</span>
+<span class="lineno">   28 </span><span class="spaces">                    </span><span class="istickedoff">Escavadora -&gt; <span class="nottickedoff">minhoca { escavadoraMinhoca = novaQuantidade }</span></span>
+<span class="lineno">   29 </span><span class="spaces">                    </span><span class="istickedoff">Bazuca     -&gt; minhoca { bazucaMinhoca     = novaQuantidade }</span>
+<span class="lineno">   30 </span><span class="spaces">                    </span><span class="istickedoff">Mina       -&gt; minhoca { minaMinhoca       = novaQuantidade }</span>
+<span class="lineno">   31 </span><span class="spaces">                    </span><span class="istickedoff">Dinamite   -&gt; minhoca { dinamiteMinhoca   = novaQuantidade }</span></span>
 <span class="lineno">   32 </span>-- | Incrementa ou decrementa a quantidade de munições de uma arma numa minhoca.
 <span class="lineno">   33 </span>alteraQuantidadeArmaMinhoca :: TipoArma -&gt; Int -&gt; Minhoca -&gt; Minhoca
 <span class="lineno">   34 </span><span class="decl"><span class="nottickedoff">alteraQuantidadeArmaMinhoca arma delta minhoca =</span>
@@ -56,77 +56,86 @@ span.spaces    { background: white }
 <span class="lineno">   37 </span><span class="spaces">    </span><span class="nottickedoff">in atualizaQuantidadeArmaMinhoca arma minhoca novaQuantidade</span></span>
 <span class="lineno">   38 </span>-- | Dispara uma arma, reduzindo automaticamente a munição em 1.
 <span class="lineno">   39 </span>disparaArma :: TipoArma -&gt; Minhoca -&gt; Minhoca
-<span class="lineno">   40 </span><span class="decl"><span class="nottickedoff">disparaArma arma minhoca =</span>
-<span class="lineno">   41 </span><span class="spaces">    </span><span class="nottickedoff">let qtdAtual = encontraQuantidadeArmaMinhoca arma minhoca</span>
-<span class="lineno">   42 </span><span class="spaces">        </span><span class="nottickedoff">novaQtd = max 0 (qtdAtual - 1)  -- garante que não fica negativa</span>
-<span class="lineno">   43 </span><span class="spaces">    </span><span class="nottickedoff">in atualizaQuantidadeArmaMinhoca arma minhoca novaQtd</span></span>
+<span class="lineno">   40 </span><span class="decl"><span class="istickedoff">disparaArma arma minhoca =</span>
+<span class="lineno">   41 </span><span class="spaces">    </span><span class="istickedoff">let qtdAtual = encontraQuantidadeArmaMinhoca arma minhoca</span>
+<span class="lineno">   42 </span><span class="spaces">        </span><span class="istickedoff">novaQtd = max 0 (qtdAtual - 1)  -- garante que não fica negativa</span>
+<span class="lineno">   43 </span><span class="spaces">    </span><span class="istickedoff">in atualizaQuantidadeArmaMinhoca arma minhoca novaQtd</span></span>
 <span class="lineno">   44 </span>
 <span class="lineno">   45 </span>-- | Verifica se um tipo de terreno é destrutível, i.e., pode ser destruído por explosões.
 <span class="lineno">   46 </span>--
 <span class="lineno">   47 </span>-- __NB:__ Apenas @Terra@ é destrutível.
 <span class="lineno">   48 </span>eTerrenoDestrutivel :: Terreno -&gt; Bool
 <span class="lineno">   49 </span><span class="decl"><span class="nottickedoff">eTerrenoDestrutivel Terra = True</span>
-<span class="lineno">   50 </span><span class="spaces"></span><span class="nottickedoff">eTerrenoDestrutivel _     = False</span></span>   
+<span class="lineno">   50 </span><span class="spaces"></span><span class="nottickedoff">eTerrenoDestrutivel _     = False</span></span>
 <span class="lineno">   51 </span>
 <span class="lineno">   52 </span>-- | Verifica se um tipo de terreno é opaco, i.e., não permite que objetos ou minhocas se encontrem por cima dele.
 <span class="lineno">   53 </span>--
 <span class="lineno">   54 </span>-- __NB:__ Apenas @Terra@ ou @Pedra@ são opacos.
 <span class="lineno">   55 </span>eTerrenoOpaco :: Terreno -&gt; Bool
 <span class="lineno">   56 </span><span class="decl"><span class="istickedoff">eTerrenoOpaco Terra = <span class="nottickedoff">True</span></span>
-<span class="lineno">   57 </span><span class="spaces"></span><span class="istickedoff">eTerrenoOpaco Pedra = True</span>
-<span class="lineno">   58 </span><span class="spaces"></span><span class="istickedoff">eTerrenoOpaco _     = <span class="nottickedoff">False</span></span></span>
+<span class="lineno">   57 </span><span class="spaces"></span><span class="istickedoff">eTerrenoOpaco Pedra = <span class="nottickedoff">True</span></span>
+<span class="lineno">   58 </span><span class="spaces"></span><span class="istickedoff">eTerrenoOpaco _     = False</span></span>
 <span class="lineno">   59 </span>
 <span class="lineno">   60 </span>-- | Verifica se uma posição do mapa está livre, i.e., pode ser ocupada por um objeto ou minhoca.
 <span class="lineno">   61 </span>--
 <span class="lineno">   62 </span>-- __NB:__ Uma posição está livre se não contiver um terreno opaco.
-<span class="lineno">   63 </span>ePosicaoMapaLivre :: Posicao -&gt; Mapa -&gt; Bool
-<span class="lineno">   64 </span><span class="decl"><span class="nottickedoff">ePosicaoMapaLivre (x, y) mapa =</span>
-<span class="lineno">   65 </span><span class="spaces">    </span><span class="nottickedoff">let terreno = mapa !! y !! x  -- acede à posição (x,y) na matriz</span>
-<span class="lineno">   66 </span><span class="spaces">    </span><span class="nottickedoff">in not (eTerrenoOpaco terreno)</span></span>
-<span class="lineno">   67 </span>
-<span class="lineno">   68 </span>-- | Verifica se uma posição do estado está livre, i.e., pode ser ocupada por um objeto ou minhoca.
-<span class="lineno">   69 </span>--
-<span class="lineno">   70 </span>-- __NB:__ Uma posição está livre se o mapa estiver livre e se não estiver já uma minhoca ou um barril nessa posição.
-<span class="lineno">   71 </span>ePosicaoEstadoLivre :: Posicao -&gt; Estado -&gt; Bool
-<span class="lineno">   72 </span><span class="decl"><span class="nottickedoff">ePosicaoEstadoLivre pos estado =</span>
-<span class="lineno">   73 </span><span class="spaces">    </span><span class="nottickedoff">let mapa = mapaEstado estado</span>
-<span class="lineno">   74 </span><span class="spaces">    </span><span class="nottickedoff">in if not (ePosicaoMatrizValida pos mapa)</span>
-<span class="lineno">   75 </span><span class="spaces">       </span><span class="nottickedoff">then False  -- fora do mapa → não está livre</span>
-<span class="lineno">   76 </span><span class="spaces">       </span><span class="nottickedoff">else</span>
-<span class="lineno">   77 </span><span class="spaces">         </span><span class="nottickedoff">let mapaLivre = ePosicaoMapaLivre pos mapa</span>
-<span class="lineno">   78 </span><span class="spaces">             </span><span class="nottickedoff">minhocaLivre = all (\m -&gt; posicaoMinhoca m /= Just pos) (minhocasEstado estado)</span>
-<span class="lineno">   79 </span><span class="spaces">             </span><span class="nottickedoff">barrilLivre  = all (\o -&gt; case o of</span>
-<span class="lineno">   80 </span><span class="spaces">                                         </span><span class="nottickedoff">Barril {posicaoBarril = p} -&gt; p /= pos</span>
-<span class="lineno">   81 </span><span class="spaces">                                         </span><span class="nottickedoff">_ -&gt; True) (objetosEstado estado)</span>
-<span class="lineno">   82 </span><span class="spaces">         </span><span class="nottickedoff">in mapaLivre &amp;&amp; minhocaLivre &amp;&amp; barrilLivre</span></span>
-<span class="lineno">   83 </span>
-<span class="lineno">   84 </span>-- | Verifica se numa lista de objetos já existe um disparo feito para uma dada arma por uma dada minhoca.
-<span class="lineno">   85 </span>minhocaTemDisparo :: TipoArma -&gt; NumMinhoca -&gt; [Objeto] -&gt; Bool
-<span class="lineno">   86 </span><span class="decl"><span class="nottickedoff">minhocaTemDisparo arma numMinhoca objetos =</span>
-<span class="lineno">   87 </span><span class="spaces">    </span><span class="nottickedoff">any (\o -&gt; case o of</span>
-<span class="lineno">   88 </span><span class="spaces">                 </span><span class="nottickedoff">Disparo { tipoDisparo = t, donoDisparo = d } -&gt; t == arma &amp;&amp; d == numMinhoca</span>
-<span class="lineno">   89 </span><span class="spaces">                 </span><span class="nottickedoff">_ -&gt; False)</span>
-<span class="lineno">   90 </span><span class="spaces">        </span><span class="nottickedoff">objetos</span></span>
-<span class="lineno">   91 </span>
-<span class="lineno">   92 </span>-- | Destrói uma dada posição no mapa (tipicamente como consequência de uma explosão).
-<span class="lineno">   93 </span>--
-<span class="lineno">   94 </span>-- __NB__: Só terrenos @Terra@ pode ser destruídos.
-<span class="lineno">   95 </span>destroiPosicao :: Posicao -&gt; Mapa -&gt; Mapa
-<span class="lineno">   96 </span><span class="decl"><span class="nottickedoff">destroiPosicao (x, y) mapa =</span>
-<span class="lineno">   97 </span><span class="spaces">    </span><span class="nottickedoff">[ if yi == y</span>
-<span class="lineno">   98 </span><span class="spaces">        </span><span class="nottickedoff">then [ if xi == x &amp;&amp; t == Terra then Ar else t | (xi, t) &lt;- zip [0..] linha ]</span>
-<span class="lineno">   99 </span><span class="spaces">        </span><span class="nottickedoff">else linha</span>
-<span class="lineno">  100 </span><span class="spaces">    </span><span class="nottickedoff">| (yi, linha) &lt;- zip [0..] mapa ]</span></span>
-<span class="lineno">  101 </span>
-<span class="lineno">  102 </span>-- Adiciona um novo objeto a um estado.
-<span class="lineno">  103 </span>--
-<span class="lineno">  104 </span>-- __NB__: A posição onde é inserido não é relevante.
-<span class="lineno">  105 </span>adicionaObjeto :: Objeto -&gt; Estado -&gt; Estado
-<span class="lineno">  106 </span><span class="decl"><span class="nottickedoff">adicionaObjeto obj (Estado mapa objs minhocas) =</span>
-<span class="lineno">  107 </span><span class="spaces">    </span><span class="nottickedoff">Estado mapa (obj : objs) minhocas</span></span>
-<span class="lineno">  108 </span>
-<span class="lineno">  109 </span>
+<span class="lineno">   63 </span>-- | Verifica se uma posição do mapa está livre, i.e., pode ser ocupada por um objeto ou minhoca.
+<span class="lineno">   64 </span>--
+<span class="lineno">   65 </span>-- __NB:__ Uma posição está livre se não contiver um terreno opaco.
+<span class="lineno">   66 </span>-- Esta versão é segura: retorna False para posições fora do mapa.
+<span class="lineno">   67 </span>ePosicaoMapaLivre :: Posicao -&gt; Mapa -&gt; Bool
+<span class="lineno">   68 </span><span class="decl"><span class="istickedoff">ePosicaoMapaLivre pos mapa =</span>
+<span class="lineno">   69 </span><span class="spaces">  </span><span class="istickedoff">if <span class="tickonlyfalse">not (ePosicaoMatrizValida pos mapa)</span></span>
+<span class="lineno">   70 </span><span class="spaces">    </span><span class="istickedoff">then <span class="nottickedoff">False</span></span>
+<span class="lineno">   71 </span><span class="spaces">    </span><span class="istickedoff">else</span>
+<span class="lineno">   72 </span><span class="spaces">      </span><span class="istickedoff">let (l, c) = pos</span>
+<span class="lineno">   73 </span><span class="spaces">          </span><span class="istickedoff">terreno = (mapa !! l) !! c</span>
+<span class="lineno">   74 </span><span class="spaces">      </span><span class="istickedoff">in not (eTerrenoOpaco terreno)</span></span>
+<span class="lineno">   75 </span>
+<span class="lineno">   76 </span>
+<span class="lineno">   77 </span>-- | Verifica se uma posição do estado está livre, i.e., pode ser ocupada por um objeto ou minhoca.
+<span class="lineno">   78 </span>--
+<span class="lineno">   79 </span>-- __NB:__ Uma posição está livre se o mapa estiver livre e se não estiver já uma minhoca ou um barril nessa posição.
+<span class="lineno">   80 </span>ePosicaoEstadoLivre :: Posicao -&gt; Estado -&gt; Bool
+<span class="lineno">   81 </span><span class="decl"><span class="istickedoff">ePosicaoEstadoLivre pos estado =</span>
+<span class="lineno">   82 </span><span class="spaces">    </span><span class="istickedoff">let mapa = mapaEstado estado</span>
+<span class="lineno">   83 </span><span class="spaces">    </span><span class="istickedoff">in if not (ePosicaoMatrizValida pos mapa)</span>
+<span class="lineno">   84 </span><span class="spaces">       </span><span class="istickedoff">then False  -- fora do mapa → não está livre</span>
+<span class="lineno">   85 </span><span class="spaces">       </span><span class="istickedoff">else</span>
+<span class="lineno">   86 </span><span class="spaces">         </span><span class="istickedoff">let mapaLivre = ePosicaoMapaLivre pos mapa</span>
+<span class="lineno">   87 </span><span class="spaces">             </span><span class="istickedoff">minhocaLivre = all (\m -&gt; posicaoMinhoca m /= Just pos) (minhocasEstado estado)</span>
+<span class="lineno">   88 </span><span class="spaces">             </span><span class="istickedoff">barrilLivre  = all (\o -&gt; case o of</span>
+<span class="lineno">   89 </span><span class="spaces">                                         </span><span class="istickedoff">Barril {posicaoBarril = p} -&gt; p /= pos</span>
+<span class="lineno">   90 </span><span class="spaces">                                         </span><span class="istickedoff">_ -&gt; True) (objetosEstado estado)</span>
+<span class="lineno">   91 </span><span class="spaces">         </span><span class="istickedoff">in mapaLivre &amp;&amp; minhocaLivre &amp;&amp; barrilLivre</span></span>
+<span class="lineno">   92 </span>
+<span class="lineno">   93 </span>-- | Verifica se numa lista de objetos já existe um disparo feito para uma dada arma por uma dada minhoca.
+<span class="lineno">   94 </span>minhocaTemDisparo :: TipoArma -&gt; NumMinhoca -&gt; [Objeto] -&gt; Bool
+<span class="lineno">   95 </span><span class="decl"><span class="istickedoff">minhocaTemDisparo arma numMinhoca objetos =</span>
+<span class="lineno">   96 </span><span class="spaces">    </span><span class="istickedoff">any <span class="nottickedoff">(\o -&gt; case o of</span></span>
+<span class="lineno">   97 </span><span class="spaces">                 </span><span class="istickedoff"><span class="nottickedoff">Disparo { tipoDisparo = t, donoDisparo = d } -&gt; t == arma &amp;&amp; d == numMinhoca</span></span>
+<span class="lineno">   98 </span><span class="spaces">                 </span><span class="istickedoff"><span class="nottickedoff">_ -&gt; False)</span></span>
+<span class="lineno">   99 </span><span class="spaces">        </span><span class="istickedoff">objetos</span></span>
+<span class="lineno">  100 </span>
+<span class="lineno">  101 </span>-- | Destrói uma dada posição no mapa (tipicamente como consequência de uma explosão).
+<span class="lineno">  102 </span>--
+<span class="lineno">  103 </span>-- __NB__: Só terrenos @Terra@ pode ser destruídos.
+<span class="lineno">  104 </span>destroiPosicao :: Posicao -&gt; Mapa -&gt; Mapa
+<span class="lineno">  105 </span><span class="decl"><span class="nottickedoff">destroiPosicao (x, y) mapa =</span>
+<span class="lineno">  106 </span><span class="spaces">    </span><span class="nottickedoff">[ if yi == y</span>
+<span class="lineno">  107 </span><span class="spaces">        </span><span class="nottickedoff">then [ if xi == x &amp;&amp; t == Terra then Ar else t | (xi, t) &lt;- zip [0..] linha ]</span>
+<span class="lineno">  108 </span><span class="spaces">        </span><span class="nottickedoff">else linha</span>
+<span class="lineno">  109 </span><span class="spaces">    </span><span class="nottickedoff">| (yi, linha) &lt;- zip [0..] mapa ]</span></span>
 <span class="lineno">  110 </span>
+<span class="lineno">  111 </span>-- Adiciona um novo objeto a um estado.
+<span class="lineno">  112 </span>--
+<span class="lineno">  113 </span>-- __NB__: A posição onde é inserido não é relevante.
+<span class="lineno">  114 </span>adicionaObjeto :: Objeto -&gt; Estado -&gt; Estado
+<span class="lineno">  115 </span><span class="decl"><span class="nottickedoff">adicionaObjeto obj (Estado mapa objs minhocas) =</span>
+<span class="lineno">  116 </span><span class="spaces">    </span><span class="nottickedoff">Estado mapa (obj : objs) minhocas</span></span>
+<span class="lineno">  117 </span>
+<span class="lineno">  118 </span>
+<span class="lineno">  119 </span>
 
 </pre>
 </body>
