@@ -11,7 +11,7 @@ cabal run --enable-coverage t1-feedback
 
 -- | Definir aqui os testes do grupo para a Tarefa 1
 testesTarefa1 :: [Estado]
-testesTarefa1 = [e1,e2,e3,e4,e5,e6,e7,e8,e9,e10,e11,e12,e13,e14,e15,e16,e17,e18,e19,e20,e21,e22,e23,e24,e25,e26,e27,e28]
+testesTarefa1 = [e1,e2,e3,e4,e5,e6,e7,e8,e9,e10,e11,e12,e13,e14,e15,e16,e17,e18,e19,e20,e21,e22,e23,e24,e25,e26,e27,e28,e29,e30,e31,e32,e33,e34]
 
 dataTarefa1 :: IO TaskData
 dataTarefa1 = do
@@ -51,6 +51,15 @@ e25 = Estado mapaTesteValido8 objetosTeste1 minhocasTeste9
 e26 = Estado mapaTesteValido8 objetosTeste1 minhocasTeste10
 e27 = Estado mapaTesteValido9 objetosTeste10 minhocasTeste12
 e28 = Estado mapaTesteInvalido3 objetosTeste11 minhocasTeste11
+e29 = Estado mapaTesteValido10 objetosTeste12 minhocasTeste13
+e30 = Estado mapaTesteValido8 objetosTeste13 minhocasTeste14
+e31 = Estado mapaTesteValido8 objetosTeste14 minhocasTeste15
+e32 = Estado mapaTesteValido8 objetosTeste15 minhocasTeste15
+e33 = Estado mapaTesteValido11 objetosTeste16 minhocasTeste15
+e34 = Estado mapaTesteValido5 [] minhocasTeste16
+
+
+
 -- Mapas válido
 mapaTesteValido1 =
   [ [Ar, Ar, Terra, Pedra]
@@ -112,6 +121,18 @@ mapaTesteValido8 =
 
 mapaTesteValido9 =
   [ [Pedra, Pedra, Ar], [Ar, Ar, Ar], [Ar, Ar, Ar]]
+
+mapaTesteValido10 =
+  [ [Pedra, Pedra, Pedra]
+  , [Ar, Ar, Ar]
+  , [Ar, Ar, Ar]
+  ]
+
+mapaTesteValido11 =
+  [ [Pedra, Ar, Ar]
+  , [Ar, Ar, Ar]
+  , [Ar, Ar, Ar]
+  ]
 
 
 
@@ -254,6 +275,28 @@ objetosTeste10 =
 
 objetosTeste11 = []
 
+objetosTeste12 =
+  [ Disparo (0,1) Oeste Bazuca Nothing 0 ]
+
+objetosTeste13 =
+  [ Disparo (1,1) Norte Bazuca Nothing 3
+  , Disparo (2,2) Sul Mina Nothing 0
+  , Disparo (2,3) Sul Mina (Just 5) 1
+  , Disparo (3,3) Norte Dinamite (Just 5) 2
+  ]
+
+objetosTeste14 =
+  [ Disparo (1,1) Norte Bazuca Nothing 99 ]
+
+objetosTeste15 =
+  [ Disparo (1,1) Norte Bazuca Nothing 0
+  , Disparo (2,2) Sul Bazuca Nothing 0
+  ]
+
+objetosTeste16 =
+  [ Barril (2,2) False
+  , Disparo (1,1) Norte Bazuca Nothing 0
+  ]
 
 
 
@@ -327,6 +370,24 @@ minhocasTeste11 = []
 
 minhocasTeste12 =
   [ Minhoca (Just (2,0)) (Viva 100) 1 1 1 1 1 ]
+
+minhocasTeste13 =
+  [ Minhoca (Just (2,0)) (Viva 100) 1 1 1 1 1 ]
+
+minhocasTeste14 =
+  [ Minhoca (Just (1,0)) (Viva 90) 1 1 1 1 1
+  , Minhoca (Just (2,0)) (Viva 80) 1 1 1 1 1
+  , Minhoca (Just (3,0)) (Viva 70) 1 1 1 1 1
+  ]
+
+minhocasTeste15 =
+  [ Minhoca (Just (0,0)) (Viva 100) 1 1 1 1 1 ]
+
+minhocasTeste16 =
+  [ Minhoca (Just (1,1)) Morta 1 1 1 1 1
+  , Minhoca Nothing Morta 1 1 1 1 1
+  ]
+
 
 
 

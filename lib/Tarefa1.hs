@@ -228,7 +228,8 @@ posicaovalidaminhoca [] _ = True
 posicaovalidaminhoca (m:ms) mapa =
   case posicaoMinhoca m of
     Just pos -> posicaovalidalivre pos mapa && posicaovalidaminhoca ms mapa
-    Nothing  -> False
+    Nothing  -> estaMorta m && posicaovalidaminhoca ms mapa
+
 
 -- Verifica se a posição da minhoca não coincide com outras minhocas
 verificaPosMinhocaMinhocas :: Minhoca -> [Minhoca] -> Bool
@@ -280,10 +281,11 @@ casoTerreno pos mapa vida =
 minhocaEstaCorretamenteMorta :: Mapa -> Minhoca -> Bool
 minhocaEstaCorretamenteMorta mapa minhoca =
   case posicaoMinhoca minhoca of
-    Nothing  -> estaMorta minhoca
-    Just pos -> if not (ePosicaoMatrizValida pos mapa)
-                then estaMorta minhoca
-                else casoTerreno pos mapa (vidaMinhoca minhoca)
+    Nothing -> estaMorta minhoca
+    Just pos ->
+      case encontraPosicaoMatriz pos mapa of
+        Just Agua -> estaMorta minhoca
+        _         -> True
 
 -- | Verifica se todas as minhocas estão corretamente mortas quando fora do mapa ou em água
 minhocamorta :: Mapa -> [Minhoca] -> Bool
