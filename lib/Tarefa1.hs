@@ -23,12 +23,12 @@ validaMapa :: Mapa -> Bool
 validaMapa mapa = eMatrizValida(mapa) && eTerrenosValido(mapa)
 
 
--- Aux a eTerrenoValido.
+--Aux a eTerrenoValido.
 eTerrenosValido :: Mapa -> Bool
 eTerrenosValido [] = True
 eTerrenosValido (t1:ts) = eTerrenoValido t1 && eTerrenosValido ts
 
--- Valida se o terreno é algum dos 4 possíveis.
+--Valida se o terreno é algum dos 4 possíveis.
 eTerrenoValido :: [Terreno] -> Bool
 eTerrenoValido [] = True
 eTerrenoValido (t1:ts) = if (t1 == Ar || t1 == Agua || t1 == Terra || t1 == Pedra) then eTerrenoValido(ts)
@@ -39,11 +39,56 @@ eTerrenoValido (t1:ts) = if (t1 == Ar || t1 == Agua || t1 == Terra || t1 == Pedr
 
 -- | 2 Função secundária da Tarefa 1. Verifica se uma lista de objetos é válida ou não.
 validaObj :: Posicao -> Mapa -> [Objeto] -> [Minhoca] -> Bool
-validaObj posicao mapa objetos minhocas = posicaovalidalivre posicao mapa && objetosPosicao objetos minhocas && objeto_disparo objetos minhocas
+validaObj posicao mapa objetos minhocas = objetosValidosComExcecaoBazuca mapa objetos && objetosPosicao objetos minhocas && objeto_disparo objetos minhocas
 
--- Verifica se uma posição é válida e livre no mapa.
+-- | Verifica se todas as posicoes dos objetos são válidas, incluindo a exceção da bazuca.
+objetosValidosComExcecaoBazuca :: Mapa -> [Objeto] -> Bool
+objetosValidosComExcecaoBazuca mapa =
+  all (objetoValidoComExcecao mapa)
+
+
+--Verifica se uma posição é válida e livre no mapa.
 posicaovalidalivre :: Posicao -> Mapa -> Bool
 posicaovalidalivre (l,c) mapa = ePosicaoMatrizValida (l,c) mapa && not (eTerrenoOpaco (mapa !! l !! c))
+
+--Devolve a direção oposta à dada.
+direcaoContraria :: Direcao -> Direcao
+direcaoContraria Norte     = Sul
+direcaoContraria Sul       = Norte
+direcaoContraria Este      = Oeste
+direcaoContraria Oeste     = Este
+direcaoContraria Nordeste  = Sudoeste
+direcaoContraria Sudoeste  = Nordeste
+direcaoContraria Noroeste  = Sudeste
+direcaoContraria Sudeste   = Noroeste
+
+--Devolve o terreno numa posição da matriz, ou Ar se a posição for inválida.
+terrenoEm :: Posicao -> Matriz Terreno -> Terreno
+terrenoEm pos mapa =
+  case encontraPosicaoMatriz pos mapa of
+    Just t  -> t
+    Nothing -> Ar
+
+--Permite disparo de bazuca sobre terreno opaco se a posição anterior não for opaca.
+bazucaPodeEstarSobreOpaco :: Mapa -> Posicao -> Direcao -> Bool
+bazucaPodeEstarSobreOpaco mapa pos dir =
+  eTerrenoOpaco (terrenoEm pos mapa) &&
+  not (eTerrenoOpaco (terrenoEm (movePosicao (direcaoContraria dir) pos) mapa))
+ 
+-- | Verifica se uma posição é válida e livre no mapa,
+-- ou se pode conter um disparo de bazuca sobre terreno opaco.
+posicaoValidaOuBazuca :: Mapa -> Posicao -> Direcao -> Bool
+posicaoValidaOuBazuca mapa pos dir =
+  posicaovalidalivre pos mapa || bazucaPodeEstarSobreOpaco mapa pos dir
+
+-- | Verifica se um objeto é válido, considerando a exceção da bazuca.
+objetoValidoComExcecao :: Mapa -> Objeto -> Bool
+objetoValidoComExcecao mapa (Disparo pos dir Bazuca _ _) =
+  posicaoValidaOuBazuca mapa pos dir
+objetoValidoComExcecao mapa (Disparo pos _ _ _ _) =
+  posicaovalidalivre pos mapa
+objetoValidoComExcecao _ _ = True
+
 
 --Verifica se duas posições sao diferentes.
 posicoesDiferentes :: Posicao -> Posicao -> Bool
