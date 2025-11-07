@@ -33,9 +33,10 @@ estaNoChao :: Estado -> Minhoca -> Bool
 estaNoChao estado minhoca =
   case posicaoMinhoca minhoca of
     Nothing -> False
-    Just (x, y) ->
-      let posAbaixo = (x, y + 1)
+    Just (l, c) ->
+      let posAbaixo = (l + 1, c)
       in not (ePosicaoEstadoLivre posAbaixo estado)
+
 
 podeEfetuarJogada :: Estado -> Minhoca -> Jogada -> Bool
 podeEfetuarJogada estado minhoca (Move dir)
