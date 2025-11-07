@@ -152,22 +152,26 @@ disparoBazuca estado minhoca (Dispara Bazuca dir) =
     Nothing -> Nothing
 disparoBazuca _ _ _ = Nothing
 
--- | Coloca um disparo do tipo Mina na posição de destino se estiver livre,
+-- | Cria um disparo do tipo Mina na posição de destino se estiver livre,
 -- caso contrário na posição atual da minhoca, sem tempo e na direção do disparo.
-disparoMina :: Estado -> Minhoca -> Jogada -> Objeto
+disparoMina :: Estado -> Minhoca -> Jogada -> Maybe Objeto
 disparoMina estado minhoca (Dispara Mina dir) =
   case posicaoMinhoca minhoca of
     Just pos ->
-      let destino = movePosicao dir pos
-          posFinal = if ePosicaoEstadoLivre destino estado then destino else pos
-          dono = indiceMinhoca estado minhoca
-      in Disparo { posicaoDisparo = posFinal
-                 , direcaoDisparo = dir
-                 , tipoDisparo = Mina
-                 , tempoDisparo = Nothing
-                 , donoDisparo = dono }
+      case indiceMinhoca estado minhoca of
+        Just dono ->
+          let destino = movePosicao dir pos
+              posFinal = if ePosicaoEstadoLivre destino estado then destino else pos
+          in Just Disparo { posicaoDisparo = posFinal
+                          , direcaoDisparo = dir
+                          , tipoDisparo = Mina
+                          , tempoDisparo = Nothing
+                          , donoDisparo = dono }
+        Nothing -> Nothing
     Nothing -> Nothing
 disparoMina _ _ _ = Nothing
+
+
 
 
 
