@@ -171,6 +171,40 @@ disparoMina estado minhoca (Dispara Mina dir) =
     Nothing -> Nothing
 disparoMina _ _ _ = Nothing
 
+-- | Cria um disparo do tipo Dinamite na posição de destino se estiver livre,
+-- caso contrário na posição atual da minhoca, com tempo 4 e na direção do disparo.
+disparoDinamite :: Estado -> Minhoca -> Jogada -> Maybe Objeto
+disparoDinamite estado minhoca (Dispara Dinamite dir) =
+  case posicaoMinhoca minhoca of
+    Just pos ->
+      case indiceMinhoca estado minhoca of
+        Just dono ->
+          let destino = movePosicao dir pos
+              posFinal = if ePosicaoEstadoLivre destino estado then destino else pos
+          in Just Disparo { posicaoDisparo = posFinal
+                          , direcaoDisparo = dir
+                          , tipoDisparo = Dinamite
+                          , tempoDisparo = Just 4
+                          , donoDisparo = dono }
+        Nothing -> Nothing
+    Nothing -> Nothing
+disparoDinamite _ _ _ = Nothing
+
+adicionaObjetoSeDentroMapa :: Estado -> Objeto -> Estado
+adicionaObjetoSeDentroMapa estado obj =
+    let mapa = mapaEstado estado
+        pos = case obj of
+                Disparo { posicaoDisparo = p } -> p
+                Barril { posicaoBarril = p }   -> p
+    in if ePosicaoMatrizValida pos mapa
+       then estado { objetosEstado = objetosEstado estado ++ [obj] }
+       else estado  -- fora do mapa → objeto eliminado
+
+adicionaDisparoAoEstado :: Estado -> Maybe Objeto -> Estado
+adicionaDisparoAoEstado estado (Just disparo) = adicionaObjetoSeDentroMapa estado disparo
+adicionaDisparoAoEstado estado Nothing = estado
+
+
 
 
 
