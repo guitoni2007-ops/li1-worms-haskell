@@ -179,12 +179,12 @@ validatempoDisparo ((Disparo _ _ tipo tempo _):os) =
       case tipo of
         Mina     -> (t >= 0 && t <= 2) && validatempoDisparo os
         Dinamite -> (t >= 0 && t <= 4) && validatempoDisparo os
-        _        -> validatempoDisparo os
+        
     Nothing ->   
       case tipo of
         Bazuca -> validatempoDisparo os
         Mina -> validatempoDisparo os
-        _ -> validatempoDisparo os
+        
 validatempoDisparo (_:os) = validatempoDisparo os
 
 -- Verifica se o dono do disparo tem um índice válido na lista de minhocas.
@@ -269,13 +269,6 @@ minhocasValidas (m:ms) objetos mapa =
 -- | Verifica se a vida da minhoca está como Morta
 estaMorta :: Minhoca -> Bool
 estaMorta minhoca = vidaMinhoca minhoca == Morta
-
--- | Verifica se a minhoca está viva em água 
-casoTerreno :: Posicao -> Mapa -> VidaMinhoca -> Bool
-casoTerreno pos mapa vida =
-  case encontraPosicaoMatriz pos mapa of
-    Just Agua -> vida == Morta
-    _         -> True
 
 -- | Verifica se uma minhoca está morta se estiver fora do mapa ou em água
 minhocaEstaCorretamenteMorta :: Mapa -> Minhoca -> Bool

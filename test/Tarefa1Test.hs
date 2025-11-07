@@ -11,7 +11,7 @@ cabal run --enable-coverage t1-feedback
 
 -- | Definir aqui os testes do grupo para a Tarefa 1
 testesTarefa1 :: [Estado]
-testesTarefa1 = [e1,e2,e3,e4,e5,e6,e7,e8,e9,e10,e11,e12,e13,e14,e15,e16,e17,e18,e19,e20,e21,e22,e23,e24,e25,e26,e27,e28,e29,e30,e31,e32,e33,e34]
+testesTarefa1 = [e1,e2,e3,e4,e5,e6,e7,e8,e9,e10,e11,e12,e13,e14,e15,e16,e17,e18,e19,e20,e21,e22,e23,e24,e25,e26,e27,e28,e29,e30,e31,e32,e33,e34,e35,e36,e37]
 
 dataTarefa1 :: IO TaskData
 dataTarefa1 = do
@@ -47,7 +47,7 @@ e21 = Estado mapaTesteValido5 objetosTeste3 minhocasTeste6
 e22 = Estado mapaTesteValido7 objetosTeste1 minhocasTeste6
 e23 = Estado mapaTesteValido8 objetosTeste1 minhocasTeste7
 e24 = Estado mapaTesteValido8 objetosTeste1 minhocasTeste8
-e25 = Estado mapaTesteValido8 objetosTeste1 minhocasTeste9
+e25 = Estado mapaTesteValido8 [] minhocasTeste9
 e26 = Estado mapaTesteValido8 objetosTeste1 minhocasTeste10
 e27 = Estado mapaTesteValido9 objetosTeste10 minhocasTeste12
 e28 = Estado mapaTesteInvalido3 objetosTeste11 minhocasTeste11
@@ -57,6 +57,9 @@ e31 = Estado mapaTesteValido8 objetosTeste14 minhocasTeste15
 e32 = Estado mapaTesteValido8 objetosTeste15 minhocasTeste15
 e33 = Estado mapaTesteValido11 objetosTeste16 minhocasTeste15
 e34 = Estado mapaTesteValido5 [] minhocasTeste16
+e35 = Estado mapaTesteValido5 objetosTeste17 minhocasTeste14
+e36 = Estado mapaTesteValido12 objetosTeste18 []
+e37 = Estado mapaTesteValido5 objetosTeste17 minhocasTeste17
 
 
 
@@ -133,6 +136,17 @@ mapaTesteValido11 =
   , [Ar, Ar, Ar]
   , [Ar, Ar, Ar]
   ]
+
+mapaTesteValido12 =
+  [ [Ar, Ar, Ar, Ar, Ar]
+  , [Ar, Ar, Ar, Ar, Ar]
+  , [Ar, Ar, Terra, Ar, Ar]
+  , [Ar, Ar, Ar, Ar, Ar]
+  , [Ar, Ar, Ar, Ar, Ar]
+  ]
+
+
+
 
 
 
@@ -298,6 +312,25 @@ objetosTeste16 =
   , Disparo (1,1) Norte Bazuca Nothing 0
   ]
 
+objetosTeste17 =
+  [ Disparo (3,2) Sudoeste Escavadora Nothing 1
+  ,  Disparo (1,2) Norte Escavadora (Just 2) 1
+  ,  Disparo (1,1) Nordeste Bazuca Nothing 0
+  , Disparo (2,2) Noroeste Mina (Just 3) 1
+  , Disparo (3,3) Sudoeste Dinamite (Just 5) 2
+  , Disparo (0,0) Sudeste Jetpack (Just 1) 0
+  ]
+
+objetosTeste18 =
+  [ Disparo (2,2) Norte Bazuca Nothing 0
+  , Disparo (2,2) Nordeste Bazuca Nothing 0
+  , Disparo (2,2) Sudoeste Bazuca Nothing 0
+  , Disparo (2,2) Noroeste Bazuca Nothing 0
+  , Disparo (2,2) Sudeste Bazuca Nothing 0
+  , Disparo (2,2) Sul Bazuca Nothing 0
+  ]
+
+
 
 
 
@@ -356,7 +389,7 @@ minhocasTeste8 =
 
 minhocasTeste9 =
  [ Minhoca (Just (0,4)) (Morta) 1 1 1 1 1
-  , Minhoca (Just (1,3)) (Morta) 1 1 1 1 1
+  , Minhoca (Just (1,3)) (Viva (-10)) 1 1 1 1 1
   , Minhoca (Just (4,5)) (Viva 120) 1 1 1 1 1
   ]
 
@@ -386,6 +419,12 @@ minhocasTeste15 =
 minhocasTeste16 =
   [ Minhoca (Just (1,1)) Morta 1 1 1 1 1
   , Minhoca Nothing Morta 1 1 1 1 1
+  ]
+
+minhocasTeste17 =
+  [ Minhoca Nothing (Morta) 1 1 1 1 1
+  , Minhoca Nothing (Morta) 1 1 1 1 1
+  , Minhoca (Just (4,5)) (Viva 100) (-1) 1 1 1 1
   ]
 
 
