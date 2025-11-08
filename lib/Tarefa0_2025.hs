@@ -47,7 +47,7 @@ disparaArma arma minhoca =
 -- __NB:__ Apenas @Terra@ é destrutível.
 eTerrenoDestrutivel :: Terreno -> Bool
 eTerrenoDestrutivel Terra = True
-eTerrenoDestrutivel _     = False   
+eTerrenoDestrutivel _     = False
 
 -- | Verifica se um tipo de terreno é opaco, i.e., não permite que objetos ou minhocas se encontrem por cima dele.
 --
@@ -60,9 +60,13 @@ eTerrenoOpaco _     = False
 -- | Verifica se uma posição do mapa está livre, i.e., pode ser ocupada por um objeto ou minhoca.
 --
 -- __NB:__ Uma posição está livre se não contiver um terreno opaco.
+-- | Verifica se uma posição do mapa está livre, i.e., pode ser ocupada por um objeto ou minhoca.
+--
+-- __NB:__ Uma posição está livre se não contiver um terreno opaco.
+-- Esta versão é segura: retorna False para posições fora do mapa.
 ePosicaoMapaLivre :: Posicao -> Mapa -> Bool
 ePosicaoMapaLivre (x, y) mapa =
-    let terreno = mapa !! x !! y  -- acede à posição (x,y) na matriz
+    let terreno = mapa !! y !! x  -- acede à posição (x,y) na matriz
     in not (eTerrenoOpaco terreno)
 
 -- | Verifica se uma posição do estado está livre, i.e., pode ser ocupada por um objeto ou minhoca.

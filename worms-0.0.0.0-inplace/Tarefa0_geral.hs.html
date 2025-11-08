@@ -48,7 +48,7 @@ span.spaces    { background: white }
 <span class="lineno">   29 </span>--
 <span class="lineno">   30 </span>-- &lt;&lt;https://haslab.github.io/Teaching/LI1/2526/img/rosadosventos.jpg&gt;&gt;
 <span class="lineno">   31 </span>data Direcao = Norte | Nordeste | Este | Sudeste | Sul | Sudoeste | Oeste | Noroeste
-<span class="lineno">   32 </span>    deriving (<span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Eq</span></span></span></span>,<span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Ord</span></span></span></span></span></span></span></span></span></span></span></span></span></span>,<span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Show</span></span></span></span></span></span>,<span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Read</span></span></span></span></span></span></span></span>,<span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Enum</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span>)
+<span class="lineno">   32 </span>    deriving (<span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff">Eq</span></span></span></span>,<span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Ord</span></span></span></span></span></span></span></span></span></span></span></span></span></span>,<span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Show</span></span></span></span></span></span>,<span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Read</span></span></span></span></span></span></span></span>,<span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Enum</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span>)
 <span class="lineno">   33 </span>
 <span class="lineno">   34 </span>-- * Funções não-recursivas.
 <span class="lineno">   35 </span>
@@ -71,14 +71,14 @@ span.spaces    { background: white }
 <span class="lineno">   52 </span>
 <span class="lineno">   53 </span>-- | Move uma posição uma unidade no sentido de uma direção.
 <span class="lineno">   54 </span>movePosicao :: Direcao -&gt; Posicao -&gt; Posicao
-<span class="lineno">   55 </span><span class="decl"><span class="nottickedoff">movePosicao d (l,c)   | d==Norte = (l-1,c)</span>
-<span class="lineno">   56 </span><span class="spaces">                      </span><span class="nottickedoff">| d==Sul = (l+1,c)</span>
-<span class="lineno">   57 </span><span class="spaces">                      </span><span class="nottickedoff">| d==Oeste = (l,c-1)</span>
-<span class="lineno">   58 </span><span class="spaces">                      </span><span class="nottickedoff">| d==Este = (l,c+1)</span>
-<span class="lineno">   59 </span><span class="spaces">                      </span><span class="nottickedoff">| d==Nordeste = (l-1,c+1)</span>
-<span class="lineno">   60 </span><span class="spaces">                      </span><span class="nottickedoff">| d==Noroeste = (l-1,c-1)</span>
-<span class="lineno">   61 </span><span class="spaces">                      </span><span class="nottickedoff">| d==Sudeste = (l+1,c+1)</span>
-<span class="lineno">   62 </span><span class="spaces">                      </span><span class="nottickedoff">| d==Sudoeste = (l+1,c-1)</span></span>
+<span class="lineno">   55 </span><span class="decl"><span class="istickedoff">movePosicao d (l,c)   | d==Norte = (l-1,<span class="nottickedoff">c</span>)</span>
+<span class="lineno">   56 </span><span class="spaces">                      </span><span class="istickedoff">| <span class="tickonlyfalse">d==Sul</span> = <span class="nottickedoff">(l+1,c)</span></span>
+<span class="lineno">   57 </span><span class="spaces">                      </span><span class="istickedoff">| <span class="tickonlyfalse">d==Oeste</span> = <span class="nottickedoff">(l,c-1)</span></span>
+<span class="lineno">   58 </span><span class="spaces">                      </span><span class="istickedoff">| <span class="tickonlyfalse">d==Este</span> = <span class="nottickedoff">(l,c+1)</span></span>
+<span class="lineno">   59 </span><span class="spaces">                      </span><span class="istickedoff">| d==Nordeste = (l-1,c+1)</span>
+<span class="lineno">   60 </span><span class="spaces">                      </span><span class="istickedoff">| <span class="tickonlytrue">d==Noroeste</span> = (l-1,<span class="nottickedoff">c-1</span>)</span>
+<span class="lineno">   61 </span><span class="spaces">                      </span><span class="istickedoff">| <span class="nottickedoff">d==Sudeste</span> = <span class="nottickedoff">(l+1,c+1)</span></span>
+<span class="lineno">   62 </span><span class="spaces">                      </span><span class="istickedoff">| <span class="nottickedoff">d==Sudoeste</span> = <span class="nottickedoff">(l+1,c-1)</span></span></span>
 <span class="lineno">   63 </span>             
 <span class="lineno">   64 </span>
 <span class="lineno">   65 </span>-- | Versão da função 'movePosicao' que garante que o movimento não se desloca para fora de uma janela.
@@ -128,9 +128,9 @@ span.spaces    { background: white }
 <span class="lineno">  109 </span>--
 <span class="lineno">  110 </span>-- __NB:__ Retorna @Nothing@ se o índice não existir.
 <span class="lineno">  111 </span>encontraIndiceLista :: Int -&gt; [a] -&gt; Maybe a
-<span class="lineno">  112 </span><span class="decl"><span class="nottickedoff">encontraIndiceLista i l</span>
-<span class="lineno">  113 </span><span class="spaces">  </span><span class="nottickedoff">| i &lt; 0 || i &gt;= length l = Nothing</span>
-<span class="lineno">  114 </span><span class="spaces">  </span><span class="nottickedoff">| otherwise = Just (l !! i)</span></span>
+<span class="lineno">  112 </span><span class="decl"><span class="istickedoff">encontraIndiceLista i l</span>
+<span class="lineno">  113 </span><span class="spaces">  </span><span class="istickedoff">| <span class="tickonlyfalse">i &lt; 0 || i &gt;= length l</span> = <span class="nottickedoff">Nothing</span></span>
+<span class="lineno">  114 </span><span class="spaces">  </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = Just (l !! i)</span></span>
 <span class="lineno">  115 </span>
 <span class="lineno">  116 </span>
 <span class="lineno">  117 </span>-- | Modifica um elemento num dado índice.
@@ -148,10 +148,10 @@ span.spaces    { background: white }
 <span class="lineno">  129 </span>--
 <span class="lineno">  130 </span>-- __NB:__ Retorna @Nothing@ se a posição não existir.
 <span class="lineno">  131 </span>encontraPosicaoMatriz :: Posicao -&gt; Matriz a -&gt; Maybe a
-<span class="lineno">  132 </span><span class="decl"><span class="nottickedoff">encontraPosicaoMatriz (l, c) m</span>
-<span class="lineno">  133 </span><span class="spaces">  </span><span class="nottickedoff">| l &lt; 0 || l &gt;= length m = Nothing</span>
-<span class="lineno">  134 </span><span class="spaces">  </span><span class="nottickedoff">| c &lt; 0 || c &gt;= length (m !! l) = Nothing</span>
-<span class="lineno">  135 </span><span class="spaces">  </span><span class="nottickedoff">| otherwise = Just ((m !! l) !! c)</span></span>
+<span class="lineno">  132 </span><span class="decl"><span class="istickedoff">encontraPosicaoMatriz (l, c) m</span>
+<span class="lineno">  133 </span><span class="spaces">  </span><span class="istickedoff">| <span class="tickonlytrue">l &lt; 0 || <span class="nottickedoff">l &gt;= length m</span></span> = Nothing</span>
+<span class="lineno">  134 </span><span class="spaces">  </span><span class="istickedoff">| <span class="nottickedoff">c &lt; 0 || c &gt;= length (m !! l)</span> = <span class="nottickedoff">Nothing</span></span>
+<span class="lineno">  135 </span><span class="spaces">  </span><span class="istickedoff">| <span class="nottickedoff">otherwise</span> = <span class="nottickedoff">Just ((m !! l) !! c)</span></span></span>
 <span class="lineno">  136 </span>
 <span class="lineno">  137 </span>
 <span class="lineno">  138 </span>-- | Modifica um elemento numa dada posição de uma matriz.
@@ -178,12 +178,12 @@ span.spaces    { background: white }
 <span class="lineno">  159 </span>-- | Verifica se uma matriz é válida, no sentido em que modela um rectângulo.
 <span class="lineno">  160 </span>-- __NB:__ Todas as linhas devem ter o mesmo número de colunas.
 <span class="lineno">  161 </span>eMatrizValida :: Matriz a -&gt; Bool
-<span class="lineno">  162 </span><span class="decl"><span class="istickedoff">eMatrizValida [] = <span class="nottickedoff">False</span></span>
-<span class="lineno">  163 </span><span class="spaces"></span><span class="istickedoff">eMatrizValida [[]] = <span class="nottickedoff">False</span></span>
-<span class="lineno">  164 </span><span class="spaces"></span><span class="istickedoff">eMatrizValida [_] = True</span>
-<span class="lineno">  165 </span><span class="spaces"></span><span class="istickedoff">eMatrizValida (l1:l2:ls)</span>
-<span class="lineno">  166 </span><span class="spaces">  </span><span class="istickedoff">| <span class="tickonlytrue">length l1 == length l2</span> = eMatrizValida (l2:ls)</span>
-<span class="lineno">  167 </span><span class="spaces">  </span><span class="istickedoff">| <span class="nottickedoff">otherwise</span> = <span class="nottickedoff">False</span></span></span>
+<span class="lineno">  162 </span><span class="decl"><span class="nottickedoff">eMatrizValida [] = False</span>
+<span class="lineno">  163 </span><span class="spaces"></span><span class="nottickedoff">eMatrizValida [[]] = False</span>
+<span class="lineno">  164 </span><span class="spaces"></span><span class="nottickedoff">eMatrizValida [_] = True</span>
+<span class="lineno">  165 </span><span class="spaces"></span><span class="nottickedoff">eMatrizValida (l1:l2:ls)</span>
+<span class="lineno">  166 </span><span class="spaces">  </span><span class="nottickedoff">| length l1 == length l2 = eMatrizValida (l2:ls)</span>
+<span class="lineno">  167 </span><span class="spaces">  </span><span class="nottickedoff">| otherwise = False</span></span>
 
 </pre>
 </body>

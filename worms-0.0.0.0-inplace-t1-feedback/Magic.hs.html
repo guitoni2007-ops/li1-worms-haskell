@@ -192,7 +192,7 @@ span.spaces    { background: white }
 <span class="lineno">  173 </span>    <span class="decl"><span class="nottickedoff">decode = decode &gt;&gt;= \pos -&gt; decode &gt;&gt;= \vida -&gt; decode &gt;&gt;= \jet -&gt; decode &gt;&gt;= \esc -&gt; decode &gt;&gt;= \baz -&gt; decode &gt;&gt;= \min -&gt; decode &gt;&gt;= \din -&gt; return (Minhoca pos vida jet esc baz min din)</span></span>
 <span class="lineno">  174 </span>
 <span class="lineno">  175 </span>instance <span class="decl"><span class="nottickedoff">Coded VidaMinhoca</span></span> where
-<span class="lineno">  176 </span>    <span class="decl"><span class="istickedoff">encode Morta = <span class="nottickedoff">encode False</span></span>
+<span class="lineno">  176 </span>    <span class="decl"><span class="istickedoff">encode Morta = encode False</span>
 <span class="lineno">  177 </span><span class="spaces">    </span><span class="istickedoff">encode (Viva i) = encode True &lt;&gt; encode i</span></span>
 <span class="lineno">  178 </span>    <span class="decl"><span class="nottickedoff">decode = decode &gt;&gt;= \b -&gt; case b of</span>
 <span class="lineno">  179 </span><span class="spaces">        </span><span class="nottickedoff">False -&gt; return Morta</span>
