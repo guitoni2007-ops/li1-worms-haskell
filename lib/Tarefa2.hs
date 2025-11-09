@@ -10,25 +10,21 @@ module Tarefa2 where
 import Labs2025
 import Tarefa0_2025
 import Data.Maybe (fromMaybe)
-
--- | Função principal da Tarefa 2. Recebe o índice de uma minhoca na lista de minhocas, uma jogada, um estado e retorna um novo estado em que essa minhoca efetuou essa jogada.
-
-
-
+---verifica se a minhoca esta viva
 validaminhocaviva :: [Minhoca] -> Bool
 validaminhocaviva = all estaViva
   where
     estaViva minhoca = case vidaMinhoca minhoca of
       Viva n -> n > 0
       Morta  -> False
-
+-- | verifica se o destino da jogada esta livre
 jogadaMoveLivre :: Estado -> Posicao -> Jogada -> Bool
 jogadaMoveLivre estado pos (Move dir) =
   let destino = movePosicao dir pos
       mapa = mapaEstado estado
   in ePosicaoMatrizValida destino mapa && ePosicaoEstadoLivre destino estado
 
-
+-- | verifica se a minhoca esta no chao
 estaNoChao :: Estado -> Minhoca -> Bool
 estaNoChao estado minhoca =
   case posicaoMinhoca minhoca of
@@ -37,19 +33,22 @@ estaNoChao estado minhoca =
       let posAbaixo = (l + 1, c)
       in not (ePosicaoEstadoLivre posAbaixo estado)
 
-
+-- | verifica se a minhoca pode saltar (estando no chao)
 podeEfetuarJogada :: Estado -> Minhoca -> Jogada -> Bool
 podeEfetuarJogada estado minhoca (Move dir)
   | dir `elem` [Norte, Nordeste, Noroeste] = estaNoChao estado minhoca
   | otherwise = True  -- ainda não verificamos as outras direções
 podeEfetuarJogada _ _ _ = True
 
+-- | verifica se uma minhoca se pode movimentar
 podeMoverMinhoca :: Estado -> Minhoca -> Jogada -> Bool
 podeMoverMinhoca estado minhoca (Move _) = estaNoChao estado minhoca
 
+-- | mata uma minhoca dando lhe a posição nothing
 matarMinhoca :: Minhoca -> Minhoca
 matarMinhoca m = m { posicaoMinhoca = Nothing, vidaMinhoca = Morta }
 
+-- | mata uma minhoca por sair fora do mapa
 mortePorForaMapa :: Estado -> Minhoca -> Jogada -> Minhoca
 mortePorForaMapa estado minhoca (Move dir) =
   case posicaoMinhoca minhoca of
@@ -62,6 +61,7 @@ mortePorForaMapa estado minhoca (Move dir) =
     Nothing -> minhoca
 mortePorForaMapa _ minhoca _ = minhoca
 
+-- | mata uma minhoca por ir para a água
 mortePorAgua :: Estado -> Minhoca -> Jogada -> Minhoca
 mortePorAgua estado minhoca (Move dir) =
   case posicaoMinhoca minhoca of
@@ -74,6 +74,7 @@ mortePorAgua estado minhoca (Move dir) =
          else minhoca  -- posição fora do mapa → não faz nada ou já morre noutro lugar
     Nothing -> minhoca
 
+-- | verifica se a jogada move é valida compilando as verificações
 verificaJogadaMov :: Estado -> Minhoca -> Jogada -> Minhoca
 verificaJogadaMov estado minhoca jogada@(Move dir)
   -- Minhoca morta não se mexe
@@ -121,31 +122,25 @@ podeDispararMesmoTipo :: TipoArma -> NumMinhoca -> Estado -> Bool
 podeDispararMesmoTipo arma numMinhoca estado =
   not (minhocaTemDisparo arma numMinhoca (objetosEstado estado))
 
--- | Verifica se a minhoca pode usar um disparo do tipo Jetpack para se mover numa direção
+-- | verifica se a posição encontra se ocupada por entidades ou se é do tipo Terra ou Pedra
+ePosicaoBloqueada :: Posicao -> Estado -> Bool
+ePosicaoBloqueada pos estado =
+  let mapa = mapaEstado estado
+      terreno = encontraPosicaoMatriz pos mapa
+  in case terreno of
+       Just Terra -> True
+       Just Pedra -> True
+       _          -> ePosicaoOcupadaPorEntidade pos estado -- Verifica outras entidades
+
+-- | verifica se a minhoca pode disparar o jetpack
 podeDisparoJetpack :: Estado -> Minhoca -> Jogada -> Bool
 podeDisparoJetpack estado minhoca (Dispara Jetpack dir) =
   case posicaoMinhoca minhoca of
-    Just pos -> ePosicaoEstadoLivre (movePosicao dir pos) estado
-    Nothing  -> False
-podeDisparoJetpack _ _ _ = False
-
--- | Aplica o efeito da Escavadora: destrói Terra e retorna a nova minhoca e o mapa atualizado
-disparoEscavadoraMinhoca :: Estado -> Minhoca -> Jogada -> (Mapa, Minhoca)
-disparoEscavadoraMinhoca estado minhoca jogada@(Dispara Escavadora dir) =
-  case posicaoMinhoca minhoca of
     Just pos ->
       let destino = movePosicao dir pos
-          mapaAtual = mapaEstado estado
-      in case encontraPosicaoMatriz destino mapaAtual of
-           Just Terra ->
-             let mapaNovo = destroiPosicao destino mapaAtual
-                 minhocaNova = minhoca { posicaoMinhoca = Just destino }
-             in (mapaNovo, minhocaNova)
-           _ ->
-             -- se não houver Terra, minhoca não se move
-             (mapaAtual, minhoca)
-    Nothing -> (mapaEstado estado, minhoca)  -- minhoca sem posição permanece igual
-disparoEscavadoraMinhoca estado minhoca _ = (mapaEstado estado, minhoca)
+      in not (ePosicaoBloqueada destino estado) 
+    Nothing -> False
+podeDisparoJetpack _ _ _ = False
 
 -- | Retorna o índice de uma minhoca no estado, se existir.
 indiceMinhoca :: Estado -> Minhoca -> Maybe NumMinhoca
@@ -191,8 +186,10 @@ disparoMina estado minhoca (Dispara Mina dir) =
       case indiceMinhoca estado minhoca of
         Just dono ->
           let destino = movePosicao dir pos
-              ocupada = ePosicaoOcupadaPorEntidade destino estado
-              posFinal = if ocupada then pos else destino
+              -- posiçao bloqueada Terra Pedra ou Entidade
+              bloqueada = ePosicaoBloqueada destino estado
+              -- Se bloqueada, fica na posição atual (pos), senão vai para o destino
+              posFinal = if bloqueada then pos else destino
           in Just Disparo
               { posicaoDisparo = posFinal
               , direcaoDisparo = dir
@@ -204,6 +201,7 @@ disparoMina estado minhoca (Dispara Mina dir) =
     Nothing -> Nothing
 disparoMina _ _ _ = Nothing
 
+
 -- | Cria um disparo do tipo Dinamite na posição de destino se estiver livre,
 -- caso contrário na posição atual da minhoca, com tempo 4 e na direção do disparo.
 -- Disparo de Dinamite
@@ -214,19 +212,22 @@ disparoDinamite estado minhoca (Dispara Dinamite dir) =
       case indiceMinhoca estado minhoca of
         Just dono ->
           let destino = movePosicao dir pos
-              ocupada = ePosicaoOcupadaPorEntidade destino estado
-              posFinal = if ocupada then pos else destino
+              -- Posição Bloqueada (Terra, Pedra, Entidade)
+              bloqueada = ePosicaoBloqueada destino estado
+              -- Se bloqueada, fica na posição atual (pos), senão vai para o destino
+              posFinal = if bloqueada then pos else destino
           in Just Disparo
               { posicaoDisparo = posFinal
               , direcaoDisparo = dir
               , tipoDisparo = Dinamite
-              , tempoDisparo = Just 4
+              , tempoDisparo = Just 4 
               , donoDisparo = dono
               }
         Nothing -> Nothing
     Nothing -> Nothing
 disparoDinamite _ _ _ = Nothing
 
+-- | Adiciona barris ou disparos dentro do mapa
 adicionaObjetoSeDentroMapa :: Estado -> Objeto -> Estado
 adicionaObjetoSeDentroMapa estado obj =
     let mapa = mapaEstado estado
@@ -237,6 +238,7 @@ adicionaObjetoSeDentroMapa estado obj =
        then estado { objetosEstado = objetosEstado estado ++ [obj] }
        else estado  -- fora do mapa → objeto eliminado
 
+-- | Adiciona um disparo ao estado
 adicionaDisparoAoEstado :: Estado -> Maybe Objeto -> Estado
 adicionaDisparoAoEstado estado (Just disparo) = adicionaObjetoSeDentroMapa estado disparo
 adicionaDisparoAoEstado estado Nothing = estado
@@ -246,48 +248,128 @@ atualizaMinhocaNoEstado :: Estado -> Minhoca -> Minhoca -> [Minhoca]
 atualizaMinhocaNoEstado estado minhocaAntiga minhocaNova =
   map (\m -> if m == minhocaAntiga then minhocaNova else m) (minhocasEstado estado)
 
+-- | Verifica se a minhoca pode disparar a arma (agrupa todas as validações iniciais)
+podeDispararArma :: Estado -> Minhoca -> TipoArma -> Bool
+podeDispararArma estado minhoca arma =
+  vidaMinhoca minhoca /= Morta &&
+  encontraQuantidadeArmaMinhoca arma minhoca > 0 &&
+  podeDispararMesmoTipo arma (fromMaybe (-1) (indiceMinhoca estado minhoca)) estado
+
+
+-- | Processa o disparo de acordo com o tipo de arma
+processaDisparoPorTipoArma :: Estado -> Minhoca -> Minhoca -> Jogada -> TipoArma -> Estado
+processaDisparoPorTipoArma estado minhoca minhocaComMenosMunicao jogada arma =
+  case arma of
+    Jetpack    -> processaJetpack estado minhoca minhocaComMenosMunicao jogada
+    Escavadora -> processaEscavadora estado minhoca minhocaComMenosMunicao jogada
+    Bazuca     -> processaArmaExplosiva estado minhoca minhocaComMenosMunicao jogada disparoBazuca
+    Mina       -> processaArmaExplosiva estado minhoca minhocaComMenosMunicao jogada disparoMina
+    Dinamite   -> processaArmaExplosiva estado minhoca minhocaComMenosMunicao jogada disparoDinamite
+
+-- | Gasta munição ao disparar
+gastaMunicaoJetpack :: Estado -> Minhoca -> Minhoca -> Estado
+gastaMunicaoJetpack estado minhoca minhocaComMenosMunicao =
+  let minhocasNovas = atualizaMinhocaNoEstado estado minhoca minhocaComMenosMunicao
+  in estado { minhocasEstado = minhocasNovas }
+
+-- | Processa o disparo de Jetpack
+processaJetpack :: Estado -> Minhoca -> Minhoca -> Jogada -> Estado
+processaJetpack estado minhoca minhocaComMenosMunicao jogada@(Dispara Jetpack dir) =
+  let Just pos = posicaoMinhoca minhoca
+      destino = movePosicao dir pos
+      mapa = mapaEstado estado
+      destinoValido = ePosicaoMatrizValida destino mapa && not (ePosicaoBloqueada destino estado) -- Verifica se é válido E não bloqueado
+  in if destinoValido
+     then moveComJetpack estado minhoca minhocaComMenosMunicao destino -- Move normalmente
+     else if ePosicaoMatrizValida destino mapa -- Se for inválido, mas dentro do mapa (bloqueado por Terra/Entidade)
+          then gastaMunicaoJetpack estado minhoca minhocaComMenosMunicao -- Apenas gasta munição
+          else mataComJetpack estado minhoca minhocaComMenosMunicao -- Fora do mapa (morre)
+
+
+
+-- | Move a minhoca com Jetpack para um destino válido
+moveComJetpack :: Estado -> Minhoca -> Minhoca -> Posicao -> Estado
+moveComJetpack estado minhoca minhocaComMenosMunicao destino =
+  let minhocaNova = minhocaComMenosMunicao { posicaoMinhoca = Just destino }
+      minhocasNovas = atualizaMinhocaNoEstado estado minhoca minhocaNova
+  in estado { minhocasEstado = minhocasNovas }
+
+
+-- | Mata a minhoca quando o Jetpack a leva para fora do mapa
+mataComJetpack :: Estado -> Minhoca -> Minhoca -> Estado
+mataComJetpack estado minhoca minhocaComMenosMunicao =
+  let minhocaMorta = minhocaComMenosMunicao
+                       { vidaMinhoca = Morta
+                       , posicaoMinhoca = Nothing }
+      minhocasNovas = atualizaMinhocaNoEstado estado minhoca minhocaMorta
+  in estado { minhocasEstado = minhocasNovas }
+
+-- | Processa o disparo de Escavadora
+processaEscavadora :: Estado -> Minhoca -> Minhoca -> Jogada -> Estado
+processaEscavadora estado minhoca minhocaComMenosMunicao jogada@(Dispara Escavadora dir) =
+  let Just pos = posicaoMinhoca minhoca
+      destino = movePosicao dir pos
+      mapaAtual = mapaEstado estado
+      terrenoDestino = encontraPosicaoMatriz destino mapaAtual
+  in if not (ePosicaoMatrizValida destino mapaAtual)
+     then gastaMunicaoEscavadora estado minhoca minhocaComMenosMunicao -- Fora do mapa: gasta munição, não move
+     else if ePosicaoOcupadaPorEntidade destino estado -- Destino ocupado por outra entidade: gasta munição, não move
+          then gastaMunicaoEscavadora estado minhoca minhocaComMenosMunicao
+          else  if not (estaNoChao estado minhoca)
+                  then gastaMunicaoEscavadora estado minhoca minhocaComMenosMunicao
+                  else case terrenoDestino of
+         Just Terra -> escavaEMove estado minhoca minhocaComMenosMunicao destino dir
+         Just Pedra -> gastaMunicaoEscavadora estado minhoca minhocaComMenosMunicao
+         Just Agua  -> gastaMunicaoEscavadora estado minhoca minhocaComMenosMunicao
+         Just Ar    -> moveEscavadora estado minhoca minhocaComMenosMunicao destino
+         _          -> gastaMunicaoEscavadora estado minhoca minhocaComMenosMunicao
+
+processaEscavadora estado _ _ _ = estado
+
+-- | Minhoca move-se com a escavadora
+moveEscavadora :: Estado -> Minhoca -> Minhoca -> Posicao -> Estado
+moveEscavadora estado minhoca minhocaComMenosMunicao destino =
+  let minhocaNova = minhocaComMenosMunicao { posicaoMinhoca = Just destino }
+      minhocasNovas = atualizaMinhocaNoEstado estado minhoca minhocaNova
+  in estado { minhocasEstado = minhocasNovas }
+
+-- | Gasta muniçao ao disparar 
+gastaMunicaoEscavadora :: Estado -> Minhoca -> Minhoca -> Estado
+gastaMunicaoEscavadora estado minhoca minhocaComMenosMunicao =
+  let minhocasNovas = atualizaMinhocaNoEstado estado minhoca minhocaComMenosMunicao
+  in estado { minhocasEstado = minhocasNovas }
+
+-- | Minhoca transforma a terra em ar e move se 
+escavaEMove :: Estado -> Minhoca -> Minhoca -> Posicao -> Direcao -> Estado
+escavaEMove estado minhoca minhocaComMenosMunicao destino dir =
+  let mapaAtual = mapaEstado estado
+      mapaNovo = destroiPosicao destino mapaAtual
+      minhocaNova = minhocaComMenosMunicao { posicaoMinhoca = Just destino }
+      minhocasNovas = atualizaMinhocaNoEstado estado minhoca minhocaNova
+  in estado { mapaEstado = mapaNovo, minhocasEstado = minhocasNovas }
+
+-- | Processa armas explosivas (Bazuca, Mina, Dinamite)
+processaArmaExplosiva :: Estado -> Minhoca -> Minhoca -> Jogada 
+                      -> (Estado -> Minhoca -> Jogada -> Maybe Objeto) 
+                      -> Estado
+processaArmaExplosiva estado minhoca minhocaComMenosMunicao jogada criaDisparo =
+  let disparo = criaDisparo estado minhoca jogada
+      estComDisparo = adicionaDisparoAoEstado estado disparo
+      minhocasNovas = atualizaMinhocaNoEstado estComDisparo minhoca minhocaComMenosMunicao
+  in estComDisparo { minhocasEstado = minhocasNovas }
+
+-- | Verifica se a jogada do tipo disparo é válida compilando todas as verificações anteriores
 verificaJogadaDisparoCompleta :: Estado -> Minhoca -> Jogada -> Estado
 verificaJogadaDisparoCompleta estado minhoca jogada@(Dispara arma dir)
-  | vidaMinhoca minhoca == Morta = estado
-  | encontraQuantidadeArmaMinhoca arma minhoca <= 0 = estado
-  | not (podeDispararMesmoTipo arma (fromMaybe (-1) (indiceMinhoca estado minhoca)) estado) = estado
+  | not (podeDispararArma estado minhoca arma) = estado
   | otherwise =
       case verificaJogadaDisparo minhoca arma of
         Nothing -> estado
         Just minhocaComMenosMunicao ->
-          case arma of
-
-            -- Jetpack: movimenta-se se o destino estiver livre
-            Jetpack ->
-              if podeDisparoJetpack estado minhoca jogada
-                then
-                  let Just pos = posicaoMinhoca minhoca
-                      destino = movePosicao dir pos
-                      minhocaNova = minhocaComMenosMunicao { posicaoMinhoca = Just destino }
-                      minhocasNovas = atualizaMinhocaNoEstado estado minhoca minhocaNova
-                  in estado { minhocasEstado = minhocasNovas }
-                else estado
-
-            -- Escavadora: destrói Terra e move
-            Escavadora ->
-              let (mapaNovo, minhocaNova) = disparoEscavadoraMinhoca estado minhoca jogada
-                  minhocasNovas = atualizaMinhocaNoEstado estado minhoca minhocaNova
-              in estado { mapaEstado = mapaNovo, minhocasEstado = minhocasNovas }
-
-            -- Bazuca, Mina, Dinamite criam disparos
-            Bazuca   -> adicionaDisparo estado minhoca minhocaComMenosMunicao jogada disparoBazuca
-            Mina     -> adicionaDisparo estado minhoca minhocaComMenosMunicao jogada disparoMina
-            Dinamite -> adicionaDisparo estado minhoca minhocaComMenosMunicao jogada disparoDinamite
-  where
-    adicionaDisparo est mAnt mNova jog f =
-      let disparo = f est mAnt jog
-          estComDisparo = adicionaDisparoAoEstado est disparo
-          minhocasNovas = atualizaMinhocaNoEstado estComDisparo mAnt mNova
-      in estComDisparo { minhocasEstado = minhocasNovas }
-
+          processaDisparoPorTipoArma estado minhoca minhocaComMenosMunicao jogada arma
 verificaJogadaDisparoCompleta estado _ _ = estado
 
-
+-- | Efetua a jogada escolhida se for válida
 efetuaJogada :: NumMinhoca -> Jogada -> Estado -> Estado
 efetuaJogada numMinhoca jogada estado =
   case encontraIndiceLista numMinhoca (minhocasEstado estado) of

@@ -8,282 +8,453 @@ import Magic
 ---cabal run --enable-coverage t2-feedback
 --- ./runhpc.sh t2-feedback
 
--- MINHOCAS VÁLIDAS
-minhocaValida1 = Minhoca{posicaoMinhoca=Just (3,0), vidaMinhoca=Morta, jetpackMinhoca=100, escavadoraMinhoca=200, bazucaMinhoca=150, minaMinhoca=3, dinamiteMinhoca=1} -- posição válida, morta, munições >= 0
-minhocaValida2 = Minhoca{posicaoMinhoca=Just (1,1), vidaMinhoca=Viva 50, jetpackMinhoca=0, escavadoraMinhoca=0, bazucaMinhoca=0, minaMinhoca=0, dinamiteMinhoca=0} -- viva, vida entre 0-100, posição livre
-minhocaValida3 = Minhoca{posicaoMinhoca=Nothing, vidaMinhoca=Morta, jetpackMinhoca=10, escavadoraMinhoca=5, bazucaMinhoca=2, minaMinhoca=0, dinamiteMinhoca=0} -- sem posição, obrigatoriamente morta
-minhocaValida4 = Minhoca{posicaoMinhoca=Just (2,2), vidaMinhoca=Viva 0, jetpackMinhoca=0, escavadoraMinhoca=0, bazucaMinhoca=0, minaMinhoca=0, dinamiteMinhoca=0} -- viva com vida 0 (permitido), posição válida
-minhocaValida5 = Minhoca{posicaoMinhoca=Just (0,0), vidaMinhoca=Viva 100, jetpackMinhoca=50, escavadoraMinhoca=50, bazucaMinhoca=50, minaMinhoca=5, dinamiteMinhoca=2} -- posição válida, vida máxima
+minhocaFullMuni :: Posicao -> VidaMinhoca -> Minhoca
+minhocaFullMuni pos vida = Minhoca
+    { posicaoMinhoca = Just pos
+    , vidaMinhoca = vida
+    , jetpackMinhoca = 10
+    , escavadoraMinhoca = 10
+    , bazucaMinhoca = 10
+    , minaMinhoca = 10
+    , dinamiteMinhoca = 10
+    }
 
--- DISPAROS VÁLIDOS
-disparoValido1 = Disparo{posicaoDisparo=(1,4), direcaoDisparo=Norte, tipoDisparo=Mina, tempoDisparo=Just 2, donoDisparo=0}
-disparoValido2 = Disparo{posicaoDisparo=(3,2), direcaoDisparo=Sul, tipoDisparo=Dinamite, tempoDisparo=Just 4, donoDisparo=1}
-disparoValido3 = Disparo{posicaoDisparo=(5,5), direcaoDisparo=Este, tipoDisparo=Bazuca, tempoDisparo=Nothing, donoDisparo=2}
-disparoValido4 = Disparo{posicaoDisparo=(2,3), direcaoDisparo=Norte, tipoDisparo=Bazuca, tempoDisparo=Nothing, donoDisparo=1} -- perfura terreno opaco se posição anterior não for opaca
-disparoValido5 = Disparo{posicaoDisparo=(0,0), direcaoDisparo=Sul, tipoDisparo=Mina, tempoDisparo=Just 0, donoDisparo=3}
-disparoValido6 = Disparo{posicaoDisparo=(4,1), direcaoDisparo=Oeste, tipoDisparo=Dinamite, tempoDisparo=Just 2, donoDisparo=0}
+minhocaNoMuni :: Posicao -> VidaMinhoca -> Minhoca
+minhocaNoMuni pos vida = (minhocaFullMuni pos vida)
+    { jetpackMinhoca = 0
+    , escavadoraMinhoca = 0
+    , bazucaMinhoca = 0
+    , minaMinhoca = 0
+    , dinamiteMinhoca = 0
+    }
 
--- BARRIS VÁLIDOS
-barrilValido1 = Barril{posicaoBarril=(4,6),explodeBarril = False }
-barrilValido2 = Barril{posicaoBarril=(0,5),explodeBarril = False }
-barrilValido3 = Barril{posicaoBarril=(2,0),explodeBarril = False }
-
--- MAPA BASE
-
-mapaOk = [[Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar]
-    ,[Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar]
-    ,[Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar]
-    ,[Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar]
-    ,[Terra,Terra,Terra,Terra,Terra,Ar,Ar,Ar,Ar,Ar]
-    ,[Terra,Terra,Terra,Terra,Terra,Pedra,Pedra,Agua,Agua,Agua]
+-- Mapa 6x6 Final: 3 Ar, 1 Terra/Agua, 2 Pedra
+mapaFinal =
+    [ [Ar, Ar, Ar, Ar, Ar, Ar] -- Linha 0
+    , [Ar, Ar, Ar, Ar, Ar, Ar] -- Linha 1
+    , [Ar, Ar, Ar, Ar, Ar, Ar] -- Linha 2
+    , [Terra, Terra, Terra, Terra, Agua, Agua] -- Linha 3
+    , [Pedra, Pedra, Pedra, Pedra, Pedra, Pedra] -- Linha 4
+    , [Pedra, Pedra, Pedra, Pedra, Pedra, Pedra] -- Linha 5
     ]
 
-
-
-estado1valido = Estado
-  { mapaEstado = mapaOk
-  , objetosEstado = [disparoValido1, disparoValido2, barrilValido1]
-  , minhocasEstado = [minhocaValida1, minhocaValida2]
-  }
-
-estado2valido = Estado
-  { mapaEstado = mapaOk
-  , objetosEstado = [disparoValido1, disparoValido2, barrilValido1]
-  , minhocasEstado = [minhocaValida1, minhocaValida3]
-  }
-
--- Estado base (válido)
-estadoBase = estado1valido
-
--- Minhoca no ar
-estadoNoAr = Estado
-    { mapaEstado = mapaOk
+-- ESTADOS BASE FINAIS
+-- M0 em (1,1) (No Ar)
+-- M1 em (2,1) (No Chão, pois (3,1) é Terra)
+estadoBaseFinal = Estado
+    { mapaEstado = mapaFinal
     , objetosEstado = []
     , minhocasEstado =
-        [Minhoca { posicaoMinhoca = Just (3,0)
-                 , vidaMinhoca = Viva 100
-                 , jetpackMinhoca = 1
-                 , escavadoraMinhoca = 1
-                 , bazucaMinhoca = 1
-                 , minaMinhoca = 1
-                 , dinamiteMinhoca = 1
-                 },Minhoca { posicaoMinhoca = Just (3,3)
-                 , vidaMinhoca = Viva 100
-                 , jetpackMinhoca = 1
-                 , escavadoraMinhoca = 1
-                 , bazucaMinhoca = 1
-                 , minaMinhoca = 1
-                 , dinamiteMinhoca = 1
-                 }]
-    }
-
--- Minhoca morta
-estadoMorta = Estado
-    { mapaEstado = mapaOk
-    , objetosEstado = []
-    , minhocasEstado =
-        [Minhoca { posicaoMinhoca = Just (2,2)
-                 , vidaMinhoca = Morta
-                 , jetpackMinhoca = 1
-                 , escavadoraMinhoca = 1
-                 , bazucaMinhoca = 1
-                 , minaMinhoca = 1
-                 , dinamiteMinhoca = 1
-                 }, minhocaValida2]
-    }
-
--- Minhoca na borda norte (fora do mapa)
-estadoBordaNorte = Estado
-    { mapaEstado = mapaOk
-    , objetosEstado = []
-    , minhocasEstado =
-        [Minhoca { posicaoMinhoca = Just (0,5)
-                 , vidaMinhoca = Viva 100
-                 , jetpackMinhoca = 1
-                 , escavadoraMinhoca = 1
-                 , bazucaMinhoca = 1
-                 , minaMinhoca = 1
-                 , dinamiteMinhoca = 1
-                 }, minhocaValida4]
-    }
-
--- Minhoca próxima da água
-estadoProxAgua = Estado
-    { mapaEstado = mapaOk
-    , objetosEstado = []
-    , minhocasEstado =
-        [Minhoca { posicaoMinhoca = Just (4,8)
-                 , vidaMinhoca = Viva 100
-                 , jetpackMinhoca = 1
-                 , escavadoraMinhoca = 1
-                 , bazucaMinhoca = 1
-                 , minaMinhoca = 1
-                 , dinamiteMinhoca = 1
-                 }, minhocaValida1]
-    }
-
--- Minhoca sem munições
-estadoSemMuni = Estado
-    { mapaEstado = mapaOk
-    , objetosEstado = []
-    , minhocasEstado =
-        [Minhoca { posicaoMinhoca = Just (3,3)
-                 , vidaMinhoca = Viva 100
-                 , jetpackMinhoca = 0
-                 , escavadoraMinhoca = 0
-                 , bazucaMinhoca = 0
-                 , minaMinhoca = 0
-                 , dinamiteMinhoca = 0
-                 }, minhocaValida2]
-    }
-
-
-estadoComDisparoRepetido = Estado
-    { mapaEstado = mapaOk
-    , objetosEstado = [Disparo { posicaoDisparo = (3,3)
-                               , direcaoDisparo = Sul
-                               ,tempoDisparo = Nothing
-                               , tipoDisparo = Bazuca
-                               , donoDisparo = 0 }]
-    , minhocasEstado =
-        [Minhoca { posicaoMinhoca = Just (3,3)
-                 , vidaMinhoca = Viva 100
-                 , jetpackMinhoca = 1
-                 , escavadoraMinhoca = 1
-                 , bazucaMinhoca = 1
-                 , minaMinhoca = 1
-                 , dinamiteMinhoca = 1
-                 },minhocaValida5]
-    }
-
-estadoPedra = Estado
-    { mapaEstado = [[Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar]
-        ,[Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar]
-        ,[Pedra,Pedra,Ar,Pedra,Pedra,Ar,Ar,Ar,Ar,Ar]
-        ,[Pedra,Pedra,Pedra,Pedra,Pedra,Ar,Ar,Ar,Ar,Ar]
-        ,[Terra,Terra,Terra,Terra,Terra,Ar,Ar,Ar,Ar,Ar]
-        ,[Terra,Terra,Terra,Terra,Terra,Pedra,Pedra,Agua,Agua,Agua]
+        [ minhocaFullMuni (1,1) (Viva 100) -- M0
+        , minhocaFullMuni (2,1) (Viva 100) -- M1
         ]
-    , objetosEstado = []
-    , minhocasEstado =
-        [Minhoca { posicaoMinhoca = Just (2,2)
-                 , vidaMinhoca = Viva 100
-                 , jetpackMinhoca = 1
-                 , escavadoraMinhoca = 1
-                 , bazucaMinhoca = 1
-                 , minaMinhoca = 1
-                 , dinamiteMinhoca = 1
-                 }, minhocaValida4]
     }
 
+-- Estado para Teste de Colisão da Escavadora/Mina/Dinamite
+estadoColisao = estadoBaseFinal
+    { minhocasEstado =
+        [ minhocaFullMuni (2,1) (Viva 100) -- M0 (Minhoca de baixo)
+        , minhocaFullMuni (1,1) (Viva 100) -- M1 (Minhoca de cima, bloqueia o Norte de M0)
+        ]
+    }
 
+-- Estado para Teste de Movimento (M1 no chão, M0 no ar)
+estadoMove = estadoBaseFinal
+    { mapaEstado =
+        [ [Ar, Ar, Ar, Ar, Ar, Ar]
+        , [Ar, Ar, Ar, Ar, Ar, Ar]
+        , [Ar, Ar, Ar, Ar, Ar, Ar]
+        , [Terra, Terra, Terra, Terra, Agua, Agua]
+        , [Pedra, Pedra, Pedra, Pedra, Pedra, Pedra]
+        , [Pedra, Pedra, Pedra, Pedra, Pedra, Pedra]
+        ]
+    , minhocasEstado =
+        [ minhocaFullMuni (2,1) (Viva 100) -- M0 (No Ar, vai cair)
+        , minhocaFullMuni (3,1) (Viva 100) -- M1 (No Chão, em cima da Terra)
+        ]
+    }
 
-movimentosTeste =
-    [ (1 :: Int, Move Norte, estadoBase)
-    , (0 :: Int, Move Sul, estadoBase)
-    , (0 :: Int, Move Este, estadoBase)
-    , (0 :: Int, Move Oeste, estadoBase)
-    , (1 :: Int, Move Nordeste, estadoBase)
-    , (0 :: Int, Move Noroeste, estadoBase)
-    , (1 :: Int, Move Sudeste, estadoBase)
-    , (0 :: Int, Move Sudoeste, estadoBase)
-    , (0 :: Int, Move Norte, estadoNoAr)
-    , (0 :: Int, Move Norte, estadoBordaNorte)
-    , (0 :: Int, Move Este, estadoProxAgua)
-    , (1 :: Int, Move Norte, estadoBase)
-    , (0 :: Int, Move Oeste, estadoBase)
-    , (1 :: Int, Move Sul, estadoBase)
-    , (0 :: Int, Move Nordeste, estadoBase)
-    , (1 :: Int, Move Noroeste, estadoBase)
-    , (0 :: Int, Move Sudeste, estadoBase)
-    , (1 :: Int, Move Sudoeste, estadoBase)
-    , (0 :: Int, Move Norte, estadoBase)
-    , (1 :: Int, Move Sul, estadoBase)
-    , (0 :: Int, Move Este, estadoBase)
-    , (1 :: Int, Move Oeste, estadoBase)
-    , (0 :: Int, Move Nordeste, estadoBase)
-    , (1 :: Int, Move Noroeste, estadoBase)
-    , (0 :: Int, Move Sudeste, estadoBase)
-    , (1 :: Int, Move Sudoeste, estadoBase)
-    , (0 :: Int, Move Norte, estadoNoAr)
-    , (1 :: Int, Move Sul, estadoNoAr)
-    , (0 :: Int, Move Este, estadoNoAr)
-    , (1 :: Int, Move Oeste, estadoNoAr)
-    , (0 :: Int, Move Nordeste, estadoBordaNorte)
-    , (1 :: Int, Move Noroeste, estadoBordaNorte)
-    , (0 :: Int, Move Sudeste, estadoBordaNorte)
-    , (1 :: Int, Move Sudoeste, estadoBordaNorte)
-    , (0 :: Int, Move Norte, estadoProxAgua)
-    , (1 :: Int, Move Sul, estadoProxAgua)
-    , (0 :: Int, Move Este, estadoProxAgua)
-    , (1 :: Int, Move Oeste, estadoProxAgua)
-    , (0 :: Int, Move Nordeste, estadoProxAgua)
-    , (1 :: Int, Move Noroeste, estadoProxAgua)
-    , (0 :: Int, Move Sudeste, estadoProxAgua)
-    , (1 :: Int, Move Sudoeste, estadoProxAgua)
+-- NOVO ESTADO INTEGRADO: Morte por Água
+mapaAgua =
+    [ [Ar, Ar, Ar, Ar, Ar, Ar] -- Linha 0
+    , [Ar, Ar, Ar, Ar, Ar, Ar] -- Linha 1
+    , [Ar, Ar, Ar, Ar, Ar, Ar] -- Linha 2
+    , [Terra, Terra, Terra, Agua, Agua, Agua] -- Linha 3
+    , [Pedra, Pedra, Pedra, Pedra, Pedra, Pedra] -- Linha 4
+    , [Pedra, Pedra, Pedra, Pedra, Pedra, Pedra] -- Linha 5
     ]
 
+estadoMorteAgua = Estado
+    { mapaEstado = mapaAgua
+    , objetosEstado = []
+    , minhocasEstado =
+        [ minhocaFullMuni (2,3) (Viva 100) -- M0 (Posição de partida)
+        ]
+    }
 
+-- NOVO ESTADO PARA O TESTE (2,2) -> SUDESTE
+estadoMorteAgua2 = estadoMorteAgua
+    { minhocasEstado =
+        [ minhocaFullMuni (2,2) (Viva 100) -- M0 (Posição de partida)
+        ]
+    }
 
-disparosTeste =
-    [ (1 :: Int, Dispara Jetpack Norte, estadoBase)
-    , (0 :: Int, Dispara Jetpack Nordeste, estadoNoAr)
-    , (0 :: Int, Dispara Jetpack Noroeste, estadoBordaNorte)
-    , (1 :: Int, Dispara Escavadora Sul, estadoBase)
-    , (0 :: Int, Dispara Escavadora Oeste, estadoBase)
-    , (0 :: Int, Dispara Escavadora Norte, estadoBordaNorte)
-    , (1 :: Int, Dispara Bazuca Sul, estadoBase)
-    , (0 :: Int, Dispara Bazuca Noroeste, estadoBordaNorte)
-    , (1 :: Int, Dispara Mina Sul, estadoBase)
-    , (0 :: Int, Dispara Mina Oeste, estadoBase)
-    , (0 :: Int, Dispara Mina Noroeste, estadoBordaNorte)
-    , (0 :: Int, Dispara Dinamite Sul, estadoBase)
-    , (1 :: Int, Dispara Dinamite Oeste, estadoBase)
-    , (0 :: Int, Dispara Dinamite Noroeste, estadoBordaNorte)
-    , (1 :: Int, Dispara Jetpack Norte, estadoBase)
-    , (1 :: Int, Dispara Jetpack Sul, estadoBase)
-    , (1 :: Int, Dispara Jetpack Este, estadoBase)
-    , (1 :: Int, Dispara Jetpack Oeste, estadoBase)
-    , (1 :: Int, Dispara Jetpack Nordeste, estadoBase)
-    , (1 :: Int, Dispara Jetpack Noroeste, estadoBase)
-    , (1 :: Int, Dispara Jetpack Sudeste, estadoBase)
-    , (1 :: Int, Dispara Jetpack Sudoeste, estadoBase)
-    , (1 :: Int, Dispara Escavadora Norte, estadoBase)
-    , (1 :: Int, Dispara Escavadora Sul, estadoBase)
-    , (1 :: Int, Dispara Escavadora Este, estadoBase)
-    , (1 :: Int, Dispara Escavadora Oeste, estadoBase)
-    , (1 :: Int, Dispara Bazuca Norte, estadoBase)
-    , (1 :: Int, Dispara Bazuca Sul, estadoBase)
-    , (1 :: Int, Dispara Bazuca Este, estadoBase)
-    , (1 :: Int, Dispara Bazuca Oeste, estadoBase)
-    , (1 :: Int, Dispara Bazuca Nordeste, estadoBase)
-    , (1 :: Int, Dispara Bazuca Noroeste, estadoBase)
-    , (1 :: Int, Dispara Bazuca Sudeste, estadoBase)
-    , (1 :: Int, Dispara Bazuca Sudoeste, estadoBase)
-    , (1 :: Int, Dispara Mina Norte, estadoBase)
-    , (1 :: Int, Dispara Mina Sul, estadoBase)
-    , (1 :: Int, Dispara Mina Este, estadoBase)
-    , (1 :: Int, Dispara Mina Oeste, estadoBase)
-    , (1 :: Int, Dispara Dinamite Norte, estadoBase)
-    , (1 :: Int, Dispara Dinamite Sul, estadoBase)
-    , (1 :: Int, Dispara Dinamite Este, estadoBase)
-    , (1 :: Int, Dispara Dinamite Oeste, estadoBase)
-    , (1 :: Int, Dispara Dinamite Nordeste, estadoBase)
-    , (1 :: Int, Dispara Dinamite Noroeste, estadoBase)
-    , (1 :: Int, Dispara Dinamite Sudeste, estadoBase)
-    , (1 :: Int, Dispara Dinamite Sudoeste, estadoBase)
+-- ============================================================================
+-- TESTES DE DISPARO (JÁ EXISTENTES)
+-- ============================================================================
+
+testesDisparo :: [(Int, Jogada, Estado)]
+testesDisparo =
+    [ -- COBERTURA DE CONDIÇÃO (Linhas 114 e 115)
+      (0, Dispara Bazuca Sul, estadoBaseFinal { minhocasEstado = [minhocaNoMuni (1,1) (Viva 100), minhocaFullMuni (2,1) (Viva 100)] }) -- Sem Munição (Bazuca)
+    , (0, Dispara Bazuca Sul, estadoBaseFinal { minhocasEstado = [minhocaFullMuni (1,1) Morta, minhocaFullMuni (2,1) (Viva 100)] }) -- Minhoca Morta
+
+      -- BAZUCA (Teste básico)
+    , (0, Dispara Bazuca Sul, estadoBaseFinal) -- M0 dispara para (2,1)
+
+      -- JETPACK (Lógica: Bloqueado -> Gasta munição, não move; Livre -> Move)
+      -- 1. Bloqueado por Terra (Gasta munição, não move)
+    , (1, Dispara Jetpack Sul, estadoBaseFinal) -- M1 em (2,1) tenta ir para (3,1) (Terra) -> Bloqueado
+      -- 2. Bloqueado por Entidade (Gasta munição, não move)
+    , (0, Dispara Jetpack Norte, estadoColisao) -- M0 em (2,1) tenta ir para (1,1) (ocupado por M1) -> Bloqueado
+      -- 3. Livre (Move)
+    , (0, Dispara Jetpack Este, estadoBaseFinal) -- M0 em (1,1) move para (1,2)
+
+      -- ESCAVADORA (Lógica: Colisão/Pedra/Fora -> Gasta munição; Terra -> Move e destrói)
+      -- 1. Colisão (Gasta munição, não move)
+    , (0, Dispara Escavadora Norte, estadoColisao) -- M0 em (2,1) tenta ir para (1,1) (ocupado por M1)
+      -- 2. Pedra (Gasta munição, não move)
+    , (1, Dispara Escavadora Sul, estadoBaseFinal) -- M1 em (2,1) tenta ir para (3,1) (Terra), depois (4,1) (Pedra) -> Bloqueado
+      -- 3. Terra (Move e destrói)
+    , (1, Dispara Escavadora Sul, estadoBaseFinal) -- M1 em (2,1) move para (3,1) (Terra) -> Move e destrói
+
+      -- MINA (Lógica: Bloqueado -> Posição atual; Livre -> Destino)
+      -- 1. Bloqueado por Terra (Posição atual)
+    , (1, Dispara Mina Sul, estadoBaseFinal) -- M1 em (2,1) tenta ir para (3,1) (Terra) -> Bloqueado (Fica em (2,1))
+      -- 2. Livre (Destino)
+    , (0, Dispara Mina Este, estadoBaseFinal) -- M0 em (1,1) move para (1,2) (Ar) -> Livre (Vai para (1,2))
+
+      -- DINAMITE (Lógica: Bloqueado -> Posição atual; Livre -> Destino)
+      -- 1. Bloqueado por Terra (Posição atual)
+    , (1, Dispara Dinamite Sul, estadoBaseFinal) -- M1 em (2,1) tenta ir para (3,1) (Terra) -> Bloqueado (Fica em (2,1))
+      -- 2. Livre (Destino)
+    , (0, Dispara Dinamite Este, estadoBaseFinal) -- M0 em (1,1) move para (1,2) (Ar) -> Livre (Vai para (1,2))
     ]
 
+-- ============================================================================
+-- NOVOS TESTES 
+-- ============================================================================
+
+testesMove :: [(Int, Jogada, Estado)]
+testesMove =
+    [ -- MOVIMENTO BÁSICO (Move para Ar)
+      (1, Move Norte, estadoMove) -- M1 em (3,1) move para (2,1) (Ar)
+
+      -- MOVIMENTO BLOQUEADO (Move para Terra/Pedra)
+    , (1, Move Sul, estadoMove) -- M1 em (3,1) tenta ir para (4,1) (Pedra) -> Bloqueado (Fica em (3,1))
+
+      -- MOVIMENTO BLOQUEADO (Move para Entidade)
+    , (0, Move Sul, estadoColisao) -- M0 em (2,1) tenta ir para (3,1) (ocupado por M1) -> Bloqueado (Fica em (2,1))
+
+      -- QUEDA (Morte por Queda)
+    , (0, Move Norte, estadoMove) -- M0 em (2,1) move para (1,1) (Ar), depois cai para (3,1) (Terra)
+
+      -- QUEDA (Morte por Água (Teste 1: (2,3) -> Sudeste))
+    , (0, Move Sudeste, estadoMorteAgua) -- M0 em (2,3) move para (3,4) (Água) -> Morte por Água
+
+      -- QUEDA (Morte por Água (Teste 2: (2,2) -> Sudeste))
+    , (0, Move Sudeste, estadoMorteAgua2) -- M0 em (2,2) move para (3,3) (Água) -> Morte por Água
+    
+    -- Movimento ignorado por minhoca morta
+    , (0, Move Norte, estadoBaseFinal { minhocasEstado = [minhocaFullMuni (1,1) Morta, minhocaFullMuni (2,1) (Viva 100)] })
+
+    -- Disparo para fora do mapa (Norte de linha 0)
+    ,  (0, Dispara Bazuca Norte, estadoBaseFinal)
+
+    -- Movimento para fora do mapa (Norte de linha 0)
+    ,  (0, Move Norte, estadoBaseFinal { minhocasEstado = [minhocaFullMuni (0,1) (Viva 100), minhocaFullMuni (2,1) (Viva 100)] })
+
+     -- Jetpack sem munição
+    ,  (0, Dispara Jetpack Este, estadoBaseFinal { minhocasEstado = [minhocaNoMuni (1,1) (Viva 100), minhocaFullMuni (2,1) (Viva 100)] })
+
+    -- Sudeste bloqueado por Pedra
+    ,  (0, Move Sudeste, estadoBaseFinal { minhocasEstado = [minhocaFullMuni (3,4) (Viva 100), minhocaFullMuni (2,1) (Viva 100)] })
+
+    -- Mina bloqueada por outra minhoca
+    ,  (0, Dispara Mina Sul, estadoColisao)
+
+    -- Mina bloqueada por outra minhoca
+    ,  (0, Dispara Mina Sul, estadoColisao)
+
+    -- Queda segura em Pedra
+    ,  (0, Move Norte, estadoBaseFinal { minhocasEstado = [minhocaFullMuni (2,1) (Viva 100), minhocaFullMuni (3,1) (Viva 100)] })
+
+    -- Minhoca com vida 0 (deve ser considerada morta)
+    ,  (0, Move Este, estadoBaseFinal { minhocasEstado = [minhocaFullMuni (1,1) (Viva 0), minhocaFullMuni (2,1) (Viva 100)] })
+
+    -- Minhoca explicitamente Morta
+    ,  (0, Move Este, estadoBaseFinal { minhocasEstado = [minhocaFullMuni (1,1) Morta, minhocaFullMuni (2,1) (Viva 100)] })
+
+    -- Todas mortas
+    ,  (0, Move Este, estadoBaseFinal { minhocasEstado = [minhocaFullMuni (1,1) Morta, minhocaFullMuni (2,1) Morta] })
+
+    -- Movimento para posição fora da matriz (linha negativa)
+    ,  (0, Move Norte, estadoBaseFinal { minhocasEstado = [minhocaFullMuni (0,1) (Viva 100), minhocaFullMuni (2,1) (Viva 100)] })
+
+    -- Movimento para posição fora da matriz (coluna negativa)
+    ,  (0, Move Oeste, estadoBaseFinal { minhocasEstado = [minhocaFullMuni (1,0) (Viva 100), minhocaFullMuni (2,1) (Viva 100)] })
+
+    -- Movimento para posição ocupada por outra minhoca
+    ,  (0, Move Sul, estadoColisao) -- M0 tenta ir para (3,1), onde está M1
+
+    -- Movimento para posição válida e livre
+    ,  (0, Move Este, estadoBaseFinal) -- M0 em (1,1) move para (1,2)
+
+        -- Morte por água (movimento para célula de Água)
+    , (0, Move Sudeste, estadoMorteAgua) -- M0 em (2,3) move para (3,4) (Água) → morte
+
+    -- Morte por água (posição diferente)
+    , (0, Move Sudeste, estadoMorteAgua2) -- M0 em (2,2) move para (3,3) (Água) → morte
+
+    -- Queda longa que termina em Água (morte)
+    , (0, Move Norte, estadoBaseFinal { minhocasEstado = [minhocaFullMuni (1,4) (Viva 100), minhocaFullMuni (2,1) (Viva 100)] })
+
+    -- Queda em Água a partir do topo
+    , (0, Move Sul, estadoBaseFinal { minhocasEstado = [minhocaFullMuni (0,3) (Viva 100), minhocaFullMuni (2,1) (Viva 100)] })
+
+    -- Queda em Água por movimento diagonal
+    , (0, Move Sudeste, estadoBaseFinal { minhocasEstado = [minhocaFullMuni (2,2) (Viva 100), minhocaFullMuni (3,1) (Viva 100)] })
+
+    -- Queda em Água por movimento vertical
+    , (0, Move Sul, estadoBaseFinal { minhocasEstado = [minhocaFullMuni (2,4) (Viva 100), minhocaFullMuni (3,1) (Viva 100)] })
+    
+    -- Minhoca morta tenta disparar bazuca
+    ,  (0, Dispara Bazuca Sul, estadoBaseFinal { minhocasEstado = [minhocaFullMuni (1,1) Morta, minhocaFullMuni (2,1) (Viva 100)] })
+
+    -- Minhoca viva sem munição de bazuca
+    ,  (0, Dispara Bazuca Sul, estadoBaseFinal { minhocasEstado = [minhocaNoMuni (1,1) (Viva 100), minhocaFullMuni (2,1) (Viva 100)] })
+
+    ,(0, Dispara Bazuca Sul, estadoBaseFinal
+  { minhocasEstado =
+      [ minhocaFullMuni (1,1) Morta  -- morta mas com munição
+      , minhocaFullMuni (2,1) (Viva 100)
+      ]
+  })
+
+    ,(0, Dispara Bazuca Sul, estadoBaseFinal
+  { minhocasEstado =
+      [ minhocaNoMuni (1,1) (Viva 100)  -- sem munição
+      , minhocaFullMuni (2,1) (Viva 100)
+      ]
+  })
+     -- M1 em (2,1) move para (3,1) (Terra) → escava com sucesso
+    ,(1, Dispara Escavadora Sul, estadoBaseFinal)
+    
+         -- Escavadora move para Ar (usa moveEscavadora)
+    , (0, Dispara Escavadora Este, estadoBaseFinal { minhocasEstado = [minhocaFullMuni (1,1) (Viva 100), minhocaFullMuni (2,1) (Viva 100)] })
+
+    -- Escavadora move para Água (usa moveEscavadora)
+    , (0, Dispara Escavadora Sul, estadoBaseFinal { minhocasEstado = [minhocaFullMuni (2,4) (Viva 100), minhocaFullMuni (3,1) (Viva 100)] })
+
+    -- Escavadora tenta mover para Pedra (usa gastaMunicaoEscavadora)
+    , (0, Dispara Escavadora Sul, estadoBaseFinal { minhocasEstado = [minhocaFullMuni (3,1) (Viva 100), minhocaFullMuni (2,1) (Viva 100)] })
+
+    -- Escavadora tenta mover para fora do mapa (linha inválida)
+    , (0, Dispara Escavadora Norte, estadoBaseFinal { minhocasEstado = [minhocaFullMuni (0,1) (Viva 100), minhocaFullMuni (2,1) (Viva 100)] })
+    
+    -- Jetpack bloqueado por entidade
+    , (0, Dispara Jetpack Sul, estadoColisao)
+
+    -- Jetpack bloqueado por Terra
+    , (1, Dispara Jetpack Sul, estadoBaseFinal)
+
+    -- Jetpack livre para mover
+    , (0, Dispara Jetpack Este, estadoBaseFinal)
+
+        -- Bazuca com minhoca válida
+    , (0, Dispara Bazuca Este, estadoBaseFinal)
+
+    ,(0, Dispara Bazuca Este, estadoBaseFinal
+  { minhocasEstado =
+      [ (minhocaFullMuni (1,1) (Viva 100)) { posicaoMinhoca = Nothing }
+      , minhocaFullMuni (2,1) (Viva 100)
+      ]
+  })
+
+    -- Bazuca com minhoca não encontrada (índice inválido)
+    , (3, Dispara Bazuca Este, estadoBaseFinal)
+    
+        -- Mina bloqueada por entidade (fica na posição atual)
+    , (0, Dispara Mina Sul, estadoColisao)
+
+    -- Mina livre (vai para destino)
+    , (0, Dispara Mina Este, estadoBaseFinal)
+
+    -- Mina com barril na posição destino
+    , (0, Dispara Mina Este, estadoBaseFinal { objetosEstado = [Barril (1,2) False ], minhocasEstado = [minhocaFullMuni (1,1) (Viva 100), minhocaFullMuni (2,1) (Viva 100)] })
+    
+    -- Jetpack leva minhoca para fora do mapa (morte)
+    , (0, Dispara Jetpack Norte, estadoBaseFinal { minhocasEstado = [minhocaFullMuni (0,0) (Viva 100), minhocaFullMuni (2,1) (Viva 100)] })
+
+        -- Escavadora para fora do mapa (linha negativa)
+    , (0, Dispara Escavadora Norte, estadoBaseFinal
+        { minhocasEstado =
+            [ minhocaFullMuni (0,1) (Viva 100)
+            , minhocaFullMuni (2,1) (Viva 100)
+            ]
+        })
+
+    -- Escavadora para fora do mapa (coluna negativa)
+    , (0, Dispara Escavadora Oeste, estadoBaseFinal
+        { minhocasEstado =
+            [ minhocaFullMuni (1,0) (Viva 100)
+            , minhocaFullMuni (2,1) (Viva 100)
+            ]
+        })
+
+    -- Escavadora para fora do mapa (linha além do limite)
+    , (0, Dispara Escavadora Sul, estadoBaseFinal
+        { minhocasEstado =
+            [ minhocaFullMuni (4,1) (Viva 100)  -- supondo mapa 5x5
+            , minhocaFullMuni (2,1) (Viva 100)
+            ]
+        })
+
+    -- Escavadora para fora do mapa (coluna além do limite)
+    , (0, Dispara Escavadora Este, estadoBaseFinal
+        { minhocasEstado =
+            [ minhocaFullMuni (1,4) (Viva 100)  -- supondo mapa 5x5
+            , minhocaFullMuni (2,1) (Viva 100)
+            ]
+        })
+
+        -- Escavadora para célula ocupada por outra minhoca
+    , (0, Dispara Escavadora Sul, estadoColisao) -- M0 tenta ir para (3,1), onde está M1
+
+    -- Escavadora para célula de Pedra
+    , (0, Dispara Escavadora Sul, estadoBaseFinal
+        { minhocasEstado =
+            [ minhocaFullMuni (3,1) (Viva 100)
+            , minhocaFullMuni (2,1) (Viva 100)
+            ]
+        })
+
+    -- Escavadora para célula de Terra (deve escavar e mover)
+    , (0, Dispara Escavadora Sul, estadoBaseFinal
+        { minhocasEstado =
+            [ minhocaFullMuni (2,1) (Viva 100)
+            , minhocaFullMuni (3,1) (Viva 100)
+            ]
+        })
+
+    -- Escavadora para célula de Ar (deve mover sem escavar)
+    , (0, Dispara Escavadora Este, estadoBaseFinal
+        { minhocasEstado =
+            [ minhocaFullMuni (1,1) (Viva 100)
+            , minhocaFullMuni (2,1) (Viva 100)
+            ]
+        })
+    -- Escavadora para célula de Ar (deve mover sem escavar)
+    , (0, Dispara Escavadora Nordeste, estadoBaseFinal
+        { minhocasEstado =
+            [ minhocaFullMuni (1,1) (Viva 100)
+            , minhocaFullMuni (2,1) (Viva 100)
+            ]
+        })
+    -- Escavadora para célula de Água (não deve mover)
+    , (0, Dispara Escavadora Sul, estadoBaseFinal
+        { minhocasEstado =
+            [ minhocaFullMuni (2,4) (Viva 100)
+            , minhocaFullMuni (3,1) (Viva 100)
+            ]
+        })
+
+    -- M0 em (1,1), tenta Jetpack Sul para (2,1), que está ocupado por M1
+    , (0, Dispara Jetpack Sul, estadoBaseFinal
+        { minhocasEstado =
+            [ minhocaFullMuni (1,1) (Viva 100)
+      , minhocaFullMuni (2,1) (Viva 100)
+            ]
+        })
+
+    -- M0 em (1,1), Jetpack Este para (1,2), célula livre
+    ,  (0, Dispara Jetpack Este, estadoBaseFinal
+       { minhocasEstado =
+            [ minhocaFullMuni (1,1) (Viva 100)
+      , minhocaFullMuni (3,3) (Viva 100)
+            ]
+       })
+
+    -- Jogada não é Jetpack → deve cair em podeDisparoJetpack _ _ _ = False
+    ,   (0, Dispara Bazuca Sul, estadoBaseFinal)
+  
+    -- M0 em (2,4), escavadora Sul para (3,4), que é Água
+    ,   (0, Dispara Escavadora Sul, estadoBaseFinal
+        { minhocasEstado =
+            [ minhocaFullMuni (2,4) (Viva 100)
+      , minhocaFullMuni (3,1) (Viva 100)
+            ]
+        })
+
+     -- M0 em (0,0), escavadora Norte para (-1,0) → posição inválida
+    ,   (0, Dispara Escavadora Norte, estadoBaseFinal
+        { minhocasEstado =
+            [ minhocaFullMuni (0,0) (Viva 100)
+      , minhocaFullMuni (2,1) (Viva 100)
+            ]
+        })
+    
+    , (0, Dispara Jetpack Norte, estadoBaseFinal
+       { minhocasEstado = [minhocaFullMuni (1,1) (Viva 100), minhocaFullMuni (2,1) (Viva 100)] })
+     
+    , (0, Dispara Bazuca Sul, estadoBaseFinal
+       { minhocasEstado = [minhocaFullMuni (1,1) (Viva 100)]
+        , objetosEstado = []
+       }) -- depois remove a minhoca do estado e tenta encontrá-la
+    
+    ,  (0, Dispara Bazuca Sul, estadoBaseFinal
+       { minhocasEstado = [(minhocaFullMuni (1,1) (Viva 100)) { posicaoMinhoca = Nothing }] })
+
+    ,  (0, Dispara Bazuca Sul, estadoBaseFinal
+       { minhocasEstado = [(minhocaFullMuni (1,1) (Viva 100)) { posicaoMinhoca = Nothing }] })
+    
+    ,  (3, Dispara Mina Sul, estadoBaseFinal)
+    
+    ,  (0, Dispara Mina Este, estadoBaseFinal
+       { objetosEstado = [Barril (1,2) True]
+       , minhocasEstado = [minhocaFullMuni (1,1) (Viva 100)] })
+     
+    ,  (0, Dispara Mina Sul, estadoBaseFinal
+       { minhocasEstado = [minhocaFullMuni (1,1) (Viva 100), minhocaFullMuni (2,1) (Viva 100)] })
+    
+    ,  (0, Dispara Jetpack Norte, estadoBaseFinal
+       { minhocasEstado = [minhocaFullMuni (0,0) (Viva 100)] })
+    
+    ,  (0, Dispara Escavadora Sul, estadoBaseFinal
+       { minhocasEstado = [minhocaFullMuni (2,1) (Viva 100)] }) -- (2,1) é Terra
+    
+    ,  (0, Dispara Escavadora Sul, estadoBaseFinal
+       { minhocasEstado = [minhocaFullMuni (1,1) (Viva 100)] }) -- (1,1) é Ar
+    
+    ,  (0, Dispara Bazuca Sul, estadoBaseFinal
+       { minhocasEstado = [minhocaNoMuni (1,1) (Viva 100)] })
+    
+    ,  (0, Dispara Bazuca Sul, estadoBaseFinal
+       { minhocasEstado = [minhocaFullMuni (1,1) Morta] })
 
 
-jogadasTeste :: [(Int, Jogada, Estado)]
-jogadasTeste = disparosTeste ++ movimentosTeste
+    ]
+ 
+-- ============================================================================
+-- COMBINAÇÃO FINAL
+-- ============================================================================
 
-
+jogadasTesteFinal :: [(Int, Jogada, Estado)]
+jogadasTesteFinal = testesDisparo ++ testesMove
 
 dataTarefa2 :: IO TaskData
 dataTarefa2 = do
-    let ins = jogadasTeste
+    let ins = jogadasTesteFinal
     outs <- mapM (\(i,j,e) -> runTest $ efetuaJogada i j e) ins
     return $ T2 ins outs
 

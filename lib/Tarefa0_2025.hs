@@ -57,17 +57,19 @@ eTerrenoOpaco Terra = True
 eTerrenoOpaco Pedra = True
 eTerrenoOpaco _     = False
 
--- | Verifica se uma posição do mapa está livre, i.e., pode ser ocupada por um objeto ou minhoca.
---
 -- __NB:__ Uma posição está livre se não contiver um terreno opaco.
 -- | Verifica se uma posição do mapa está livre, i.e., pode ser ocupada por um objeto ou minhoca.
---
+
 -- __NB:__ Uma posição está livre se não contiver um terreno opaco.
--- Esta versão é segura: retorna False para posições fora do mapa.
 ePosicaoMapaLivre :: Posicao -> Mapa -> Bool
-ePosicaoMapaLivre (x, y) mapa =
-    let terreno = mapa !! y !! x  -- acede à posição (x,y) na matriz
-    in not (eTerrenoOpaco terreno)
+ePosicaoMapaLivre pos mapa =
+  if not (ePosicaoMatrizValida pos mapa)
+    then False
+    else
+      let (l, c) = pos
+          terreno = (mapa !! l) !! c
+      in not (eTerrenoOpaco terreno)
+
 
 -- | Verifica se uma posição do estado está livre, i.e., pode ser ocupada por um objeto ou minhoca.
 --
@@ -95,13 +97,13 @@ minhocaTemDisparo arma numMinhoca objetos =
 
 -- | Destrói uma dada posição no mapa (tipicamente como consequência de uma explosão).
 --
--- __NB__: Só terrenos @Terra@ pode ser destruídos.
 destroiPosicao :: Posicao -> Mapa -> Mapa
-destroiPosicao (x, y) mapa =
-    [ if yi == y
-        then [ if xi == x && t == Terra then Ar else t | (xi, t) <- zip [0..] linha ]
-        else linha
-    | (yi, linha) <- zip [0..] mapa ]
+destroiPosicao (linha, coluna) mapa =
+    [ if yi == linha
+        then [ if xi == coluna && t == Terra then Ar else t | (xi, t) <- zip [0..] l ]
+        else l
+    | (yi, l) <- zip [0..] mapa ]
+
 
 -- Adiciona um novo objeto a um estado.
 --

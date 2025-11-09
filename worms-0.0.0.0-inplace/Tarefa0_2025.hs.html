@@ -44,7 +44,7 @@ span.spaces    { background: white }
 <span class="lineno">   25 </span><span class="decl"><span class="istickedoff">atualizaQuantidadeArmaMinhoca arma minhoca novaQuantidade =</span>
 <span class="lineno">   26 </span><span class="spaces">                 </span><span class="istickedoff">case arma of</span>
 <span class="lineno">   27 </span><span class="spaces">                    </span><span class="istickedoff">Jetpack -&gt; minhoca { jetpackMinhoca    = novaQuantidade }</span>
-<span class="lineno">   28 </span><span class="spaces">                    </span><span class="istickedoff">Escavadora -&gt; <span class="nottickedoff">minhoca { escavadoraMinhoca = novaQuantidade }</span></span>
+<span class="lineno">   28 </span><span class="spaces">                    </span><span class="istickedoff">Escavadora -&gt; minhoca { escavadoraMinhoca = novaQuantidade }</span>
 <span class="lineno">   29 </span><span class="spaces">                    </span><span class="istickedoff">Bazuca     -&gt; minhoca { bazucaMinhoca     = novaQuantidade }</span>
 <span class="lineno">   30 </span><span class="spaces">                    </span><span class="istickedoff">Mina       -&gt; minhoca { minaMinhoca       = novaQuantidade }</span>
 <span class="lineno">   31 </span><span class="spaces">                    </span><span class="istickedoff">Dinamite   -&gt; minhoca { dinamiteMinhoca   = novaQuantidade }</span></span>
@@ -72,70 +72,67 @@ span.spaces    { background: white }
 <span class="lineno">   53 </span>--
 <span class="lineno">   54 </span>-- __NB:__ Apenas @Terra@ ou @Pedra@ são opacos.
 <span class="lineno">   55 </span>eTerrenoOpaco :: Terreno -&gt; Bool
-<span class="lineno">   56 </span><span class="decl"><span class="istickedoff">eTerrenoOpaco Terra = <span class="nottickedoff">True</span></span>
-<span class="lineno">   57 </span><span class="spaces"></span><span class="istickedoff">eTerrenoOpaco Pedra = <span class="nottickedoff">True</span></span>
+<span class="lineno">   56 </span><span class="decl"><span class="istickedoff">eTerrenoOpaco Terra = True</span>
+<span class="lineno">   57 </span><span class="spaces"></span><span class="istickedoff">eTerrenoOpaco Pedra = True</span>
 <span class="lineno">   58 </span><span class="spaces"></span><span class="istickedoff">eTerrenoOpaco _     = False</span></span>
 <span class="lineno">   59 </span>
-<span class="lineno">   60 </span>-- | Verifica se uma posição do mapa está livre, i.e., pode ser ocupada por um objeto ou minhoca.
-<span class="lineno">   61 </span>--
-<span class="lineno">   62 </span>-- __NB:__ Uma posição está livre se não contiver um terreno opaco.
-<span class="lineno">   63 </span>-- | Verifica se uma posição do mapa está livre, i.e., pode ser ocupada por um objeto ou minhoca.
-<span class="lineno">   64 </span>--
-<span class="lineno">   65 </span>-- __NB:__ Uma posição está livre se não contiver um terreno opaco.
-<span class="lineno">   66 </span>-- Esta versão é segura: retorna False para posições fora do mapa.
-<span class="lineno">   67 </span>ePosicaoMapaLivre :: Posicao -&gt; Mapa -&gt; Bool
-<span class="lineno">   68 </span><span class="decl"><span class="istickedoff">ePosicaoMapaLivre pos mapa =</span>
-<span class="lineno">   69 </span><span class="spaces">  </span><span class="istickedoff">if <span class="tickonlyfalse">not (ePosicaoMatrizValida pos mapa)</span></span>
-<span class="lineno">   70 </span><span class="spaces">    </span><span class="istickedoff">then <span class="nottickedoff">False</span></span>
-<span class="lineno">   71 </span><span class="spaces">    </span><span class="istickedoff">else</span>
-<span class="lineno">   72 </span><span class="spaces">      </span><span class="istickedoff">let (l, c) = pos</span>
-<span class="lineno">   73 </span><span class="spaces">          </span><span class="istickedoff">terreno = (mapa !! l) !! c</span>
-<span class="lineno">   74 </span><span class="spaces">      </span><span class="istickedoff">in not (eTerrenoOpaco terreno)</span></span>
-<span class="lineno">   75 </span>
-<span class="lineno">   76 </span>
-<span class="lineno">   77 </span>-- | Verifica se uma posição do estado está livre, i.e., pode ser ocupada por um objeto ou minhoca.
-<span class="lineno">   78 </span>--
-<span class="lineno">   79 </span>-- __NB:__ Uma posição está livre se o mapa estiver livre e se não estiver já uma minhoca ou um barril nessa posição.
-<span class="lineno">   80 </span>ePosicaoEstadoLivre :: Posicao -&gt; Estado -&gt; Bool
-<span class="lineno">   81 </span><span class="decl"><span class="istickedoff">ePosicaoEstadoLivre pos estado =</span>
-<span class="lineno">   82 </span><span class="spaces">    </span><span class="istickedoff">let mapa = mapaEstado estado</span>
-<span class="lineno">   83 </span><span class="spaces">    </span><span class="istickedoff">in if not (ePosicaoMatrizValida pos mapa)</span>
-<span class="lineno">   84 </span><span class="spaces">       </span><span class="istickedoff">then False  -- fora do mapa → não está livre</span>
-<span class="lineno">   85 </span><span class="spaces">       </span><span class="istickedoff">else</span>
-<span class="lineno">   86 </span><span class="spaces">         </span><span class="istickedoff">let mapaLivre = ePosicaoMapaLivre pos mapa</span>
-<span class="lineno">   87 </span><span class="spaces">             </span><span class="istickedoff">minhocaLivre = all (\m -&gt; posicaoMinhoca m /= Just pos) (minhocasEstado estado)</span>
-<span class="lineno">   88 </span><span class="spaces">             </span><span class="istickedoff">barrilLivre  = all (\o -&gt; case o of</span>
-<span class="lineno">   89 </span><span class="spaces">                                         </span><span class="istickedoff">Barril {posicaoBarril = p} -&gt; p /= pos</span>
-<span class="lineno">   90 </span><span class="spaces">                                         </span><span class="istickedoff">_ -&gt; True) (objetosEstado estado)</span>
-<span class="lineno">   91 </span><span class="spaces">         </span><span class="istickedoff">in mapaLivre &amp;&amp; minhocaLivre &amp;&amp; barrilLivre</span></span>
-<span class="lineno">   92 </span>
-<span class="lineno">   93 </span>-- | Verifica se numa lista de objetos já existe um disparo feito para uma dada arma por uma dada minhoca.
-<span class="lineno">   94 </span>minhocaTemDisparo :: TipoArma -&gt; NumMinhoca -&gt; [Objeto] -&gt; Bool
-<span class="lineno">   95 </span><span class="decl"><span class="istickedoff">minhocaTemDisparo arma numMinhoca objetos =</span>
-<span class="lineno">   96 </span><span class="spaces">    </span><span class="istickedoff">any <span class="nottickedoff">(\o -&gt; case o of</span></span>
-<span class="lineno">   97 </span><span class="spaces">                 </span><span class="istickedoff"><span class="nottickedoff">Disparo { tipoDisparo = t, donoDisparo = d } -&gt; t == arma &amp;&amp; d == numMinhoca</span></span>
-<span class="lineno">   98 </span><span class="spaces">                 </span><span class="istickedoff"><span class="nottickedoff">_ -&gt; False)</span></span>
-<span class="lineno">   99 </span><span class="spaces">        </span><span class="istickedoff">objetos</span></span>
-<span class="lineno">  100 </span>
-<span class="lineno">  101 </span>-- | Destrói uma dada posição no mapa (tipicamente como consequência de uma explosão).
-<span class="lineno">  102 </span>--
-<span class="lineno">  103 </span>-- __NB__: Só terrenos @Terra@ pode ser destruídos.
-<span class="lineno">  104 </span>destroiPosicao :: Posicao -&gt; Mapa -&gt; Mapa
-<span class="lineno">  105 </span><span class="decl"><span class="nottickedoff">destroiPosicao (x, y) mapa =</span>
-<span class="lineno">  106 </span><span class="spaces">    </span><span class="nottickedoff">[ if yi == y</span>
-<span class="lineno">  107 </span><span class="spaces">        </span><span class="nottickedoff">then [ if xi == x &amp;&amp; t == Terra then Ar else t | (xi, t) &lt;- zip [0..] linha ]</span>
-<span class="lineno">  108 </span><span class="spaces">        </span><span class="nottickedoff">else linha</span>
-<span class="lineno">  109 </span><span class="spaces">    </span><span class="nottickedoff">| (yi, linha) &lt;- zip [0..] mapa ]</span></span>
-<span class="lineno">  110 </span>
-<span class="lineno">  111 </span>-- Adiciona um novo objeto a um estado.
-<span class="lineno">  112 </span>--
-<span class="lineno">  113 </span>-- __NB__: A posição onde é inserido não é relevante.
-<span class="lineno">  114 </span>adicionaObjeto :: Objeto -&gt; Estado -&gt; Estado
-<span class="lineno">  115 </span><span class="decl"><span class="nottickedoff">adicionaObjeto obj (Estado mapa objs minhocas) =</span>
-<span class="lineno">  116 </span><span class="spaces">    </span><span class="nottickedoff">Estado mapa (obj : objs) minhocas</span></span>
-<span class="lineno">  117 </span>
-<span class="lineno">  118 </span>
-<span class="lineno">  119 </span>
+<span class="lineno">   60 </span>-- __NB:__ Uma posição está livre se não contiver um terreno opaco.
+<span class="lineno">   61 </span>-- | Verifica se uma posição do mapa está livre, i.e., pode ser ocupada por um objeto ou minhoca.
+<span class="lineno">   62 </span>
+<span class="lineno">   63 </span>-- __NB:__ Uma posição está livre se não contiver um terreno opaco.
+<span class="lineno">   64 </span>ePosicaoMapaLivre :: Posicao -&gt; Mapa -&gt; Bool
+<span class="lineno">   65 </span><span class="decl"><span class="istickedoff">ePosicaoMapaLivre pos mapa =</span>
+<span class="lineno">   66 </span><span class="spaces">  </span><span class="istickedoff">if <span class="tickonlyfalse">not (ePosicaoMatrizValida pos mapa)</span></span>
+<span class="lineno">   67 </span><span class="spaces">    </span><span class="istickedoff">then <span class="nottickedoff">False</span></span>
+<span class="lineno">   68 </span><span class="spaces">    </span><span class="istickedoff">else</span>
+<span class="lineno">   69 </span><span class="spaces">      </span><span class="istickedoff">let (l, c) = pos</span>
+<span class="lineno">   70 </span><span class="spaces">          </span><span class="istickedoff">terreno = (mapa !! l) !! c</span>
+<span class="lineno">   71 </span><span class="spaces">      </span><span class="istickedoff">in not (eTerrenoOpaco terreno)</span></span>
+<span class="lineno">   72 </span>
+<span class="lineno">   73 </span>
+<span class="lineno">   74 </span>-- | Verifica se uma posição do estado está livre, i.e., pode ser ocupada por um objeto ou minhoca.
+<span class="lineno">   75 </span>--
+<span class="lineno">   76 </span>-- __NB:__ Uma posição está livre se o mapa estiver livre e se não estiver já uma minhoca ou um barril nessa posição.
+<span class="lineno">   77 </span>ePosicaoEstadoLivre :: Posicao -&gt; Estado -&gt; Bool
+<span class="lineno">   78 </span><span class="decl"><span class="istickedoff">ePosicaoEstadoLivre pos estado =</span>
+<span class="lineno">   79 </span><span class="spaces">    </span><span class="istickedoff">let mapa = mapaEstado estado</span>
+<span class="lineno">   80 </span><span class="spaces">    </span><span class="istickedoff">in if <span class="tickonlyfalse">not (ePosicaoMatrizValida pos mapa)</span></span>
+<span class="lineno">   81 </span><span class="spaces">       </span><span class="istickedoff">then <span class="nottickedoff">False</span>  -- fora do mapa → não está livre</span>
+<span class="lineno">   82 </span><span class="spaces">       </span><span class="istickedoff">else</span>
+<span class="lineno">   83 </span><span class="spaces">         </span><span class="istickedoff">let mapaLivre = ePosicaoMapaLivre pos mapa</span>
+<span class="lineno">   84 </span><span class="spaces">             </span><span class="istickedoff">minhocaLivre = all (\m -&gt; posicaoMinhoca m /= Just pos) (minhocasEstado estado)</span>
+<span class="lineno">   85 </span><span class="spaces">             </span><span class="istickedoff">barrilLivre  = all <span class="nottickedoff">(\o -&gt; case o of</span></span>
+<span class="lineno">   86 </span><span class="spaces">                                         </span><span class="istickedoff"><span class="nottickedoff">Barril {posicaoBarril = p} -&gt; p /= pos</span></span>
+<span class="lineno">   87 </span><span class="spaces">                                         </span><span class="istickedoff"><span class="nottickedoff">_ -&gt; True)</span> (objetosEstado estado)</span>
+<span class="lineno">   88 </span><span class="spaces">         </span><span class="istickedoff">in mapaLivre &amp;&amp; minhocaLivre &amp;&amp; barrilLivre</span></span>
+<span class="lineno">   89 </span>
+<span class="lineno">   90 </span>-- | Verifica se numa lista de objetos já existe um disparo feito para uma dada arma por uma dada minhoca.
+<span class="lineno">   91 </span>minhocaTemDisparo :: TipoArma -&gt; NumMinhoca -&gt; [Objeto] -&gt; Bool
+<span class="lineno">   92 </span><span class="decl"><span class="istickedoff">minhocaTemDisparo arma numMinhoca objetos =</span>
+<span class="lineno">   93 </span><span class="spaces">    </span><span class="istickedoff">any (\o -&gt; case o of</span>
+<span class="lineno">   94 </span><span class="spaces">                 </span><span class="istickedoff">Disparo { tipoDisparo = t, donoDisparo = d } -&gt; <span class="nottickedoff">t == arma &amp;&amp; d == numMinhoca</span></span>
+<span class="lineno">   95 </span><span class="spaces">                 </span><span class="istickedoff">_ -&gt; False)</span>
+<span class="lineno">   96 </span><span class="spaces">        </span><span class="istickedoff">objetos</span></span>
+<span class="lineno">   97 </span>
+<span class="lineno">   98 </span>-- | Destrói uma dada posição no mapa (tipicamente como consequência de uma explosão).
+<span class="lineno">   99 </span>--
+<span class="lineno">  100 </span>destroiPosicao :: Posicao -&gt; Mapa -&gt; Mapa
+<span class="lineno">  101 </span><span class="decl"><span class="istickedoff">destroiPosicao (linha, coluna) mapa =</span>
+<span class="lineno">  102 </span><span class="spaces">    </span><span class="istickedoff">[ if yi == linha</span>
+<span class="lineno">  103 </span><span class="spaces">        </span><span class="istickedoff">then [ if xi == coluna &amp;&amp; t == Terra then Ar else t | (xi, t) &lt;- zip [0..] l ]</span>
+<span class="lineno">  104 </span><span class="spaces">        </span><span class="istickedoff">else l</span>
+<span class="lineno">  105 </span><span class="spaces">    </span><span class="istickedoff">| (yi, l) &lt;- zip [0..] mapa ]</span></span>
+<span class="lineno">  106 </span>
+<span class="lineno">  107 </span>
+<span class="lineno">  108 </span>-- Adiciona um novo objeto a um estado.
+<span class="lineno">  109 </span>--
+<span class="lineno">  110 </span>-- __NB__: A posição onde é inserido não é relevante.
+<span class="lineno">  111 </span>adicionaObjeto :: Objeto -&gt; Estado -&gt; Estado
+<span class="lineno">  112 </span><span class="decl"><span class="nottickedoff">adicionaObjeto obj (Estado mapa objs minhocas) =</span>
+<span class="lineno">  113 </span><span class="spaces">    </span><span class="nottickedoff">Estado mapa (obj : objs) minhocas</span></span>
+<span class="lineno">  114 </span>
+<span class="lineno">  115 </span>
+<span class="lineno">  116 </span>
 
 </pre>
 </body>
