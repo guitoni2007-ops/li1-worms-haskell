@@ -24,6 +24,14 @@ jogadaMoveLivre estado pos (Move dir) =
       mapa = mapaEstado estado
   in ePosicaoMatrizValida destino mapa && ePosicaoEstadoLivre destino estado
 
+ePosicaoMapaLivre pos mapa =
+  if not (ePosicaoMatrizValida pos mapa)
+    then False
+    else
+      let (l, c) = pos
+          terreno = (mapa !! l) !! c
+      in not (eTerrenoOpaco terreno)
+
 -- | verifica se a minhoca esta no chao
 estaNoChao :: Estado -> Minhoca -> Bool
 estaNoChao estado minhoca =
