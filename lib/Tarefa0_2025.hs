@@ -66,7 +66,7 @@ eTerrenoOpaco _     = False
 -- Esta versão é segura: retorna False para posições fora do mapa.
 ePosicaoMapaLivre :: Posicao -> Mapa -> Bool
 ePosicaoMapaLivre (x, y) mapa =
-    let terreno = mapa !! y !! x  -- acede à posição (x,y) na matriz
+    let terreno = mapa !! x !! y  
     in not (eTerrenoOpaco terreno)
 
 -- | Verifica se uma posição do estado está livre, i.e., pode ser ocupada por um objeto ou minhoca.
