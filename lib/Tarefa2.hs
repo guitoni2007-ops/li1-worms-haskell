@@ -208,9 +208,7 @@ disparoMina estado minhoca (Dispara Mina dir) =
     Nothing -> Nothing
 disparoMina _ _ _ = Nothing
 
--- Cria um disparo do tipo Dinamite na posição de destino se estiver livre,
- caso contrário na posição atual da minhoca, com tempo 4 e na direção do disparo.
- Disparo de Dinamite
+-- Cria um disparo do tipo Dinamite na posição de destino se estiver livre,caso contrário na posição atual da minhoca, com tempo 4 e na direção do disparo. Disparo de Dinamite
 disparoDinamite :: Estado -> Minhoca -> Jogada -> Maybe Objeto
 disparoDinamite estado minhoca (Dispara Dinamite dir) =
   case posicaoMinhoca minhoca of
