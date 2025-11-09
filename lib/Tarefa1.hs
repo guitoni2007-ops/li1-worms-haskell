@@ -141,12 +141,11 @@ proximoObjeto :: [Objeto] -> Maybe (Objeto, [Objeto])
 proximoObjeto []     = Nothing
 proximoObjeto (o:os) = Just (o, os)
 
-
+-- Remove um objeto.
 removerObjeto :: Objeto -> [Objeto] -> [Objeto]
 removerObjeto obj = filter (/= obj)
 
-
---Recebe uma lista de objetos e passa a "objetoPosicao" um objeto de cada vez.
+-- | Recebe uma lista de objetos e passa a "objetoPosicao" um objeto de cada vez
 objetosPosicao :: [Objeto] -> [Minhoca] -> Bool
 objetosPosicao todos minhocas = verificar todos
   where
@@ -156,19 +155,12 @@ objetosPosicao todos minhocas = verificar todos
         Nothing -> True
         Just (obj, _) -> objetoPosicao obj (removerObjeto obj todos) minhocas && verificar (tail lista)
 
-
- 
-
-
 --Dado uma lista de disparos, verifica se algum elemento é do tipo de arma: Jetpack ou Escavadora.
 dispJetEsc :: [Objeto] -> Bool
 dispJetEsc [] = True
 dispJetEsc ((Disparo _ _ tipo _ _):os) =
   tipo /= Jetpack && tipo /= Escavadora && dispJetEsc os
 dispJetEsc (_:os) = dispJetEsc os
-
-
-
 
 --Dado uma lista de disparos, verifica se o tempo do disparo é válido para o tipo de arma.
 validatempoDisparo :: [Objeto] -> Bool
@@ -183,8 +175,8 @@ validatempoDisparo ((Disparo _ _ tipo tempo _):os) =
     Nothing ->   
       case tipo of
         Bazuca -> validatempoDisparo os
-        Mina -> validatempoDisparo os
-        
+        Mina -> validatempoDisparo os     
+
 validatempoDisparo (_:os) = validatempoDisparo os
 
 --Verifica se o dono do disparo tem um índice válido na lista de minhocas.
