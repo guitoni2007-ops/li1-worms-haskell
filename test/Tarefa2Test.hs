@@ -99,10 +99,6 @@ estadoMorteAgua2 = estadoMorteAgua
         ]
     }
 
--- ============================================================================
--- TESTES DE DISPARO (JÁ EXISTENTES)
--- ============================================================================
-
 testesDisparo :: [(Int, Jogada, Estado)]
 testesDisparo =
     [ -- COBERTURA DE CONDIÇÃO (Linhas 114 e 115)
@@ -112,33 +108,33 @@ testesDisparo =
       -- BAZUCA (Teste básico)
     , (0, Dispara Bazuca Sul, estadoBaseFinal) -- M0 dispara para (2,1)
 
-      -- JETPACK (Lógica: Bloqueado -> Gasta munição, não move; Livre -> Move)
+      -- JETPACK (Lógica: Bloqueado -> Gasta munição, não move; 
       -- 1. Bloqueado por Terra (Gasta munição, não move)
-    , (1, Dispara Jetpack Sul, estadoBaseFinal) -- M1 em (2,1) tenta ir para (3,1) (Terra) -> Bloqueado
+    , (1, Dispara Jetpack Sul, estadoBaseFinal) -- M1 em (2,1) tenta ir para (3,1) (Terra)
       -- 2. Bloqueado por Entidade (Gasta munição, não move)
-    , (0, Dispara Jetpack Norte, estadoColisao) -- M0 em (2,1) tenta ir para (1,1) (ocupado por M1) -> Bloqueado
+    , (0, Dispara Jetpack Norte, estadoColisao) -- M0 em (2,1) tenta ir para (1,1) (ocupado por M1) 
       -- 3. Livre (Move)
     , (0, Dispara Jetpack Este, estadoBaseFinal) -- M0 em (1,1) move para (1,2)
 
-      -- ESCAVADORA (Lógica: Colisão/Pedra/Fora -> Gasta munição; Terra -> Move e destrói)
+      -- ESCAVADORA (Lógica: Colisão/Pedra/Fora 
       -- 1. Colisão (Gasta munição, não move)
     , (0, Dispara Escavadora Norte, estadoColisao) -- M0 em (2,1) tenta ir para (1,1) (ocupado por M1)
       -- 2. Pedra (Gasta munição, não move)
-    , (1, Dispara Escavadora Sul, estadoBaseFinal) -- M1 em (2,1) tenta ir para (3,1) (Terra), depois (4,1) (Pedra) -> Bloqueado
+    , (1, Dispara Escavadora Sul, estadoBaseFinal) -- M1 em (2,1) tenta ir para (3,1) (Terra), depois (4,1) (Pedra) 
       -- 3. Terra (Move e destrói)
-    , (1, Dispara Escavadora Sul, estadoBaseFinal) -- M1 em (2,1) move para (3,1) (Terra) -> Move e destrói
+    , (1, Dispara Escavadora Sul, estadoBaseFinal) -- M1 em (2,1) move para (3,1) (Terra) 
 
       -- MINA (Lógica: Bloqueado -> Posição atual; Livre -> Destino)
       -- 1. Bloqueado por Terra (Posição atual)
-    , (1, Dispara Mina Sul, estadoBaseFinal) -- M1 em (2,1) tenta ir para (3,1) (Terra) -> Bloqueado (Fica em (2,1))
+    , (1, Dispara Mina Sul, estadoBaseFinal) -- M1 em (2,1) tenta ir para (3,1) (Terra) 
       -- 2. Livre (Destino)
-    , (0, Dispara Mina Este, estadoBaseFinal) -- M0 em (1,1) move para (1,2) (Ar) -> Livre (Vai para (1,2))
+    , (0, Dispara Mina Este, estadoBaseFinal) -- M0 em (1,1) move para (1,2) (Ar)
 
       -- DINAMITE (Lógica: Bloqueado -> Posição atual; Livre -> Destino)
       -- 1. Bloqueado por Terra (Posição atual)
-    , (1, Dispara Dinamite Sul, estadoBaseFinal) -- M1 em (2,1) tenta ir para (3,1) (Terra) -> Bloqueado (Fica em (2,1))
+    , (1, Dispara Dinamite Sul, estadoBaseFinal) -- M1 em (2,1) tenta ir para (3,1) (Terra)
       -- 2. Livre (Destino)
-    , (0, Dispara Dinamite Este, estadoBaseFinal) -- M0 em (1,1) move para (1,2) (Ar) -> Livre (Vai para (1,2))
+    , (0, Dispara Dinamite Este, estadoBaseFinal) -- M0 em (1,1) move para (1,2) (Ar) 
     ]
 
 -- ============================================================================
@@ -151,19 +147,19 @@ testesMove =
       (1, Move Norte, estadoMove) -- M1 em (3,1) move para (2,1) (Ar)
 
       -- MOVIMENTO BLOQUEADO (Move para Terra/Pedra)
-    , (1, Move Sul, estadoMove) -- M1 em (3,1) tenta ir para (4,1) (Pedra) -> Bloqueado (Fica em (3,1))
+    , (1, Move Sul, estadoMove) -- M1 em (3,1) tenta ir para (4,1) (Pedra) 
 
       -- MOVIMENTO BLOQUEADO (Move para Entidade)
-    , (0, Move Sul, estadoColisao) -- M0 em (2,1) tenta ir para (3,1) (ocupado por M1) -> Bloqueado (Fica em (2,1))
+    , (0, Move Sul, estadoColisao) -- M0 em (2,1) tenta ir para (3,1) (ocupado por M1) 
 
       -- QUEDA (Morte por Queda)
     , (0, Move Norte, estadoMove) -- M0 em (2,1) move para (1,1) (Ar), depois cai para (3,1) (Terra)
 
       -- QUEDA (Morte por Água (Teste 1: (2,3) -> Sudeste))
-    , (0, Move Sudeste, estadoMorteAgua) -- M0 em (2,3) move para (3,4) (Água) -> Morte por Água
+    , (0, Move Sudeste, estadoMorteAgua) -- M0 em (2,3) move para (3,4) (Água) -
 
       -- QUEDA (Morte por Água (Teste 2: (2,2) -> Sudeste))
-    , (0, Move Sudeste, estadoMorteAgua2) -- M0 em (2,2) move para (3,3) (Água) -> Morte por Água
+    , (0, Move Sudeste, estadoMorteAgua2) -- M0 em (2,2) move para (3,3) (Água) 
     
     -- Movimento ignorado por minhoca morta
     , (0, Move Norte, estadoBaseFinal { minhocasEstado = [minhocaFullMuni (1,1) Morta, minhocaFullMuni (2,1) (Viva 100)] })
@@ -210,11 +206,11 @@ testesMove =
     -- Movimento para posição válida e livre
     ,  (0, Move Este, estadoBaseFinal) -- M0 em (1,1) move para (1,2)
 
-        -- Morte por água (movimento para célula de Água)
-    , (0, Move Sudeste, estadoMorteAgua) -- M0 em (2,3) move para (3,4) (Água) → morte
+        -- Morte por água (movimento para posição de Água)
+    , (0, Move Sudeste, estadoMorteAgua) -- M0 em (2,3) move para (3,4) (Água) 
 
     -- Morte por água (posição diferente)
-    , (0, Move Sudeste, estadoMorteAgua2) -- M0 em (2,2) move para (3,3) (Água) → morte
+    , (0, Move Sudeste, estadoMorteAgua2) -- M0 em (2,2) move para (3,3) (Água) 
 
     -- Queda longa que termina em Água (morte)
     , (0, Move Norte, estadoBaseFinal { minhocasEstado = [minhocaFullMuni (1,4) (Viva 100), minhocaFullMuni (2,1) (Viva 100)] })
@@ -247,7 +243,7 @@ testesMove =
       , minhocaFullMuni (2,1) (Viva 100)
       ]
   })
-     -- M1 em (2,1) move para (3,1) (Terra) → escava com sucesso
+     -- M1 em (2,1) move para (3,1) (Terra) 
     ,(1, Dispara Escavadora Sul, estadoBaseFinal)
     
          -- Escavadora move para Ar (usa moveEscavadora)
@@ -328,7 +324,7 @@ testesMove =
             ]
         })
 
-        -- Escavadora para célula ocupada por outra minhoca
+        -- Escavadora para posiçao ocupada por outra minhoca
     , (0, Dispara Escavadora Sul, estadoColisao) -- M0 tenta ir para (3,1), onde está M1
 
     -- Escavadora para célula de Pedra
@@ -377,7 +373,7 @@ testesMove =
             ]
         })
 
-    -- M0 em (1,1), Jetpack Este para (1,2), célula livre
+    -- M0 em (1,1), Jetpack Este para (1,2),
     ,  (0, Dispara Jetpack Este, estadoBaseFinal
        { minhocasEstado =
             [ minhocaFullMuni (1,1) (Viva 100)
@@ -385,7 +381,7 @@ testesMove =
             ]
        })
 
-    -- Jogada não é Jetpack → deve cair em podeDisparoJetpack _ _ _ = False
+    -- Jogada não é Jetpack → deve cair em podeDisparoJetpack 
     ,   (0, Dispara Bazuca Sul, estadoBaseFinal)
   
     -- M0 em (2,4), escavadora Sul para (3,4), que é Água
@@ -445,9 +441,7 @@ testesMove =
 
     ]
  
--- ============================================================================
 -- COMBINAÇÃO FINAL
--- ============================================================================
 
 jogadasTesteFinal :: [(Int, Jogada, Estado)]
 jogadasTesteFinal = testesDisparo ++ testesMove
