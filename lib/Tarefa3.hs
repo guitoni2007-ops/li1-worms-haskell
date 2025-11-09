@@ -20,84 +20,6 @@ type Dano = Int
 type Danos = [(Posicao,Dano)]
 
 
-estadoTeste = Estado mapaTesteValido1 [] minhocasTeste14
-
-
-
-mapa7x7Ar =
-  [ [Ar, Ar, Ar, Ar, Ar, Ar, Ar]
-  , [Ar, Ar, Ar, Ar, Ar, Ar, Ar]
-  , [Ar, Ar, Ar, Ar, Ar, Ar, Ar]
-  , [Ar, Ar, Ar, Ar, Ar, Ar, Ar]
-  , [Ar, Ar, Ar, Ar, Ar, Ar, Ar]
-  , [Ar, Ar, Ar, Ar, Ar, Ar, Ar]
-  , [Ar, Ar, Ar, Ar, Ar, Ar, Ar]
-  ]
-
-
-mapaTesteSoAr =
-  [ [Ar, Ar, Ar, Ar]
-  , [Ar, Ar, Ar, Ar]
-  , [Ar, Ar, Ar, Ar]
-  , [Ar, Ar, Ar, Ar]
-  ]
-
-mapaTesteValido1 =
-  [ [Ar, Ar, Terra, Pedra, Ar]
-  , [Agua, Terra, Terra, Pedra, Ar]
-  , [Ar, Ar, Ar, Ar, Ar]
-  , [Pedra, Pedra, Terra, Agua ,Ar]
-  , [Ar, Ar, Terra, Pedra, Ar]
-  ]
-
-
-mapaTesteValido2 =
-  [ [Terra, Terra, Terra]
-  , [Ar,    Ar,    Ar]
-  , [Terra,  Ar,    Terra]
-  ]
-
-
-
-objetosTeste14 =
-  ( Disparo (4,4) Sul Mina (Just 0) 99)
-
-objetosTeste7 =
-  ( Barril (3,0) False )
-
-objetosTeste9 =
-  [ Disparo (1,0) Norte Dinamite (Just 1) 0
-  , Disparo (0,0) Sul Mina Nothing 0
-  ]
-
-
-minhocasTeste12 =
-  Minhoca (Just (1,0)) (Viva 100) 1 1 1 1 1
-
-minhocasTeste14 =
-  [ Minhoca (Just (2,3)) (Viva 90) 1 1 1 1 1
-  , Minhoca (Just (3,2)) (Viva 80) 1 1 1 1 1
-  , Minhoca (Just (3,3)) (Viva 80) 1 1 1 1 1
-  ]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 -- | Função principal da Tarefa 3. Avanço o estado do jogo um tick.
 avancaEstado :: Estado -> Estado
 avancaEstado e@(Estado mapa objetos minhocas) = foldr aplicaDanos e' danoss
@@ -112,11 +34,38 @@ avancaMinhoca (Estado mapa _ _) _ minhoca = minhocaComGravidade mapa minhoca
 
 -- | Para um dado estado, dado o índice de um objeto na lista de objetos e o estado desse objeto, retorna o novo estado do objeto no próximo tick ou, caso o objeto expluda, uma lista de posições afetadas com o dano associado.
 avancaObjeto :: Estado -> NumObjeto -> Objeto -> Either Objeto Danos
-avancaObjeto e i o = undefined
+avancaObjeto estado _ obj =
+  case atualizaObjetoFisica estado obj of
+    Just objAtualizado ->
+      if deveExplodirObjeto (mapaEstado estado) objAtualizado
+        then case posicaoObjeto objAtualizado of
+               Just p -> Right (explosaoDanos p (raioExplosao objAtualizado) (mapaEstado estado))
+               Nothing -> Right []
+        else Left objAtualizado
+    Nothing ->
+      case posicaoObjeto obj of
+        Just p -> Right (explosaoDanos p (raioExplosao obj) (mapaEstado estado))
+        Nothing -> Right []
+
+
 
 -- | Para uma lista de posições afetadas por uma explosão, recebe um estado e calcula o novo estado em que esses danos são aplicados.
 aplicaDanos :: Danos -> Estado -> Estado
-aplicaDanos ds e = undefined
+aplicaDanos danos (Estado mapa objetos minhocas) =
+  let aplicarDano minhoca = case minhoca of
+        Minhoca Nothing vida jet esc baz mina din ->
+          Minhoca Nothing vida jet esc baz mina din
+
+        Minhoca (Just pos) (Viva hp) jet esc baz mina din ->
+          let danoTotal = sum [d | (p, d) <- danos, p == pos]
+              novaVida = hp - danoTotal
+              estadoVida = if novaVida <= 0 then Morta else Viva novaVida
+          in Minhoca (Just pos) estadoVida jet esc baz mina din
+
+        Minhoca pos Morta jet esc baz mina din ->
+          Minhoca pos Morta jet esc baz mina din
+  in Estado mapa objetos (map aplicarDano minhocas)
+
 
 
 
@@ -182,11 +131,15 @@ minhocaComGravidade mapa minhoca
 
 --Verifica se um objeto deve explodir imediatamente.
 deveExplodirObjeto :: Mapa -> Objeto -> Bool
-deveExplodirObjeto mapa obj =
-  case obj of
-    Barril _ True -> True
-    Disparo pos dir Bazuca (Just 0) _ -> not (posicaoValidaOuBazuca  mapa pos dir)
-    _ -> False
+deveExplodirObjeto mapa obj = case obj of
+  Barril _ True -> True
+
+  Disparo pos dir Bazuca (Just 0) _ ->
+    not (posicaoValidaOuBazuca mapa pos dir)
+
+  Disparo _ _ _ (Just 0) _ -> True
+
+  _ -> False
 
 --Filtra os objetos que devem explodir imediatamente.
 filtraObjetosExplosivos :: Mapa -> [Objeto] -> [Objeto]
@@ -215,6 +168,39 @@ posicoesAfetadasPorExplosaoValida (cx, cy) d mapa =
   where
     r = d `div` 2
 
+
+posicaoObjeto :: Objeto -> Maybe Posicao
+posicaoObjeto (Barril p _)         = Just p
+posicaoObjeto (Disparo p _ _ _ _)  = Just p
+
+
+explosaoDanos :: Posicao -> Int -> Mapa -> Danos
+explosaoDanos (x,y) d mapa =
+    [((x+i, y+j), (exploDmg d (i,j))) | i <- [-r..r], j <- [-r..r], exploDmg d (i,j) > 0, ePosicaoMatrizValida (x+i, y+j) mapa]
+  where
+    r = div d 2
+    
+exploDmg :: Int -> (Int,Int) -> Int
+exploDmg d (0,0) = d * 10
+exploDmg d (i,j)
+    | abs i + abs j == 1 = (d-2) * 10
+    | abs i == 1 && abs j == 1 = (d-3) * 10
+    | otherwise =
+        let dist = abs i + abs j
+        in max ((d - dist) * 10) 0
+
+calculaDanosObjeto :: Mapa -> Objeto -> Danos
+calculaDanosObjeto mapa objeto =
+  case posicaoObjeto objeto of
+    Just p ->
+      let raio = raioExplosao objeto
+          posicoes = posicoesAfetadasPorExplosaoValida p raio mapa
+      in map (\pos -> (pos, 0)) posicoes
+    Nothing -> []
+
+
+
+
 --Devolve o terreno na posição, se for válida.
 terrenoNaPosicao :: Mapa -> Posicao -> Maybe Terreno
 terrenoNaPosicao mapa (l, c)
@@ -222,19 +208,22 @@ terrenoNaPosicao mapa (l, c)
   | otherwise                        = Nothing
 
 --Verifica se a posição está em terreno Ar ou Água (não opaco).
-terrenoNaoOpacoBarril :: Mapa -> Posicao -> Bool
-terrenoNaoOpacoBarril mapa pos =
-  case terrenoNaPosicao mapa pos of
-    Just Ar   -> True
-    Just Agua -> True
+terrenoNaoOpacoBarril :: Estado -> Posicao -> Bool
+terrenoNaoOpacoBarril estado (l, c) =
+  case terrenoNaPosicao (mapaEstado estado) (l, c) of
+    Just Ar   -> ePosicaoEstadoLivre (l + 1, c) estado
+    Just Agua -> ePosicaoEstadoLivre (l + 1, c) estado
     _         -> False
 
+
 --Atualiza o estado de um barril: se estiver em Ar ou Água, passa para prestes a explodir.
-atualizaBarril :: Mapa -> Objeto -> Objeto
-atualizaBarril mapa (Barril pos False)
-  | terrenoNaoOpacoBarril mapa pos = Barril pos True
-  | otherwise                      = Barril pos False
+atualizaBarril :: Estado -> Objeto -> Objeto
+atualizaBarril estado (Barril pos False)
+  | terrenoNaoOpacoBarril estado pos = Barril pos True
+  | otherwise                        = Barril pos False
 atualizaBarril _ barril = barril
+
+
 
 
 --Move a bazuca na direção indicada. Se sair do mapa, é removida.
@@ -251,11 +240,14 @@ eTerrenoAr :: Terreno -> Bool
 eTerrenoAr Ar = True
 eTerrenoAr _     = False
 
---Verifica se a posição de uma dinamite é afetada pela gravidade 
-ePosicaoDinamiteLivre :: Posicao -> Mapa -> Bool
-ePosicaoDinamiteLivre (x, y) mapa =
-    let terreno = mapa !! x !! y  
-    in eTerrenoAr terreno
+--Verifica se a dinamite está “no ar”: terreno Ar e posição inferior livre
+ePosicaoDinamiteLivre :: Estado -> Posicao -> Bool
+ePosicaoDinamiteLivre estado (l, c) =
+  case terrenoNaPosicao (mapaEstado estado) (l, c) of
+    Just Ar -> ePosicaoEstadoLivre (l + 1, c) estado
+    _       -> False
+
+
 
 --Calcula 
 rodaPosicaoDirecao1 :: (Posicao,Direcao) -> (Posicao,Direcao)
@@ -278,14 +270,16 @@ validaEDirecionaDinamiteRoda mapa obj@(Disparo pos dir Dinamite t d)
 validaEDirecionaDinamiteRoda _ obj = obj
 
 --Atualiza a dinamite se estiver no ar, aplicando rotação e movimento conforme rodaPosicaoDirecao1.
-atualizaDinamiteRodaSeNoAr :: Mapa -> Objeto -> Objeto
-atualizaDinamiteRodaSeNoAr mapa obj@(Disparo pos dir Dinamite t d)
-  | ePosicaoDinamiteLivre pos mapa && ePosicaoMatrizValida novaPos mapa =
-      Disparo novaPos novaDir Dinamite t d
+atualizaDinamiteRodaSeNoAr :: Estado -> Objeto -> Objeto
+atualizaDinamiteRodaSeNoAr estado obj@(Disparo pos dir Dinamite t d)
+  | ePosicaoDinamiteLivre estado pos =
+      let (novaPos, novaDir) = rodaPosicaoDirecao1 (pos, dir)
+      in if ePosicaoMatrizValida novaPos (mapaEstado estado)
+         then Disparo novaPos novaDir Dinamite t d
+         else obj
   | otherwise = obj
-  where
-    (novaPos, novaDir) = rodaPosicaoDirecao1 (pos, dir)
 atualizaDinamiteRodaSeNoAr _ obj = obj
+
 
 -- | Atualiza a posição da mina: se estiver em Ar ou Água, cai e aponta para Norte.
 atualizaDisparoMina :: Mapa -> Objeto -> Objeto
@@ -305,11 +299,20 @@ disparoEstaNoChao _ _ = False
 
 --Se for mina ou dinamite no chão, fica parado e aponta para Norte.
 fixaDisparoNoChao :: Estado -> Objeto -> Objeto
-fixaDisparoNoChao estado obj@(Disparo pos _ arma tempo d)
-  | arma == Mina || arma == Dinamite
+fixaDisparoNoChao estado obj@(Disparo (l, c) _ arma tempo dono)
+  -- Caso 1: Mina no ar ou na água -> cai verticalmente e aponta para Norte
+  | arma == Mina
+  , terrenoNaoOpacoBarril estado (l, c)
+  = Disparo (l + 1, c) Norte Mina tempo dono
+
+  -- Caso 2: Mina ou Dinamite no chão -> fica parado e aponta para Norte
+  | (arma == Mina || arma == Dinamite)
   , disparoEstaNoChao estado obj
-  = Disparo pos Norte arma tempo d
-fixaDisparoNoChao _ obj = obj
+  = Disparo (l, c) Norte arma tempo dono
+
+  -- Caso geral: mantém
+  | otherwise = obj
+
 
 --Atualiza o tempo do objeto se for maior que 0.
 atualizaTempoObjeto :: Objeto -> Objeto
@@ -328,50 +331,85 @@ minhocaInimigaViva :: Int -> Minhoca -> Bool
 minhocaInimigaViva dono (Minhoca _ vida num _ _ _ _) =
   num /= dono && minhocaViva (Minhoca Nothing vida num 0 0 0 0)
 
--- | Verifica se a minhoca está na área de explosão da mina.
+--Verifica se a minhoca está na área de explosão da mina.
 minhocaNaAreaExplosao :: Posicao -> Mapa -> Minhoca -> Bool
 minhocaNaAreaExplosao centro mapa (Minhoca (Just pos) _ _ _ _ _ _) =
   pos `elem` posicoesAfetadasPorExplosaoValida centro 3 mapa
 minhocaNaAreaExplosao _ _ _ = False
 
--- | Verifica se alguma minhoca inimiga viva está na área de explosão da mina.
+--Verifica se alguma minhoca inimiga viva está na área de explosão da mina.
 existeInimigoNaArea :: Posicao -> Int -> Mapa -> [Minhoca] -> Bool
 existeInimigoNaArea centro dono mapa minhocas =
   any (\m -> minhocaInimigaViva dono m && minhocaNaAreaExplosao centro mapa m) minhocas
 
--- | Ativa mina sem tempo se houver inimigo na área.
+--Ativa mina sem tempo se houver inimigo na área.
 ativaMinaSeInimigo :: Mapa -> [Minhoca] -> Objeto -> Objeto
 ativaMinaSeInimigo mapa minhocas obj@(Disparo pos _ Mina Nothing dono)
   | existeInimigoNaArea pos dono mapa minhocas = Disparo pos Norte Mina (Just 2) dono
   | otherwise = obj
 ativaMinaSeInimigo _ _ obj = obj
 
--- | Aplica ativação de minas sem tempo a todos os objetos.
+--Aplica ativação de minas sem tempo a todos os objetos.
 ativaMinasPorMinhocasInimigas :: Estado -> [Objeto] -> [Objeto]
 ativaMinasPorMinhocasInimigas (Estado mapa _ minhocas) =
   map (ativaMinaSeInimigo mapa minhocas)
 
-distanciaManhattan :: Posicao -> Posicao -> Int
-distanciaManhattan (x1, y1) (x2, y2) = abs (x1 - x2) + abs (y1 - y2)
+atualizaObjetoFisica :: Estado -> Objeto -> Maybe Objeto
+atualizaObjetoFisica estado obj = case obj of
+  -- 1. Barril em Ar ou Água → passa a prestes a explodir
+  Barril _ _ ->
+    Just (atualizaBarril estado obj)
 
-danoPorDistancia :: Int -> Int -> Int
-danoPorDistancia d dist
-  | dist == 0  = d * 10
-  | otherwise  = max 0 ((d - dist - 1) * 10)
+  -- 2. Bazuca → avança; se sair do mapa, é removida
+  Disparo _ _ Bazuca _ _ ->
+    atualizaDisparoBazuca (mapaEstado estado) obj
 
-posicoesComDistancia :: Posicao -> Int -> Mapa -> [(Posicao, Int)]
-posicoesComDistancia centro d mapa =
-  [ (pos, distanciaManhattan centro pos)
-  | pos <- posicoesAfetadasPorExplosaoValida centro d mapa
-  ]
+  -- 3. Dinamite → comportamento depende do ambiente
+  Disparo pos dir Dinamite t dono
+    -- Se estiver no ar → move-se e roda
+    | ePosicaoDinamiteLivre estado pos ->
+        let (novaPos, novaDir) = rodaPosicaoDirecao1 (pos, dir)
+        in if ePosicaoMatrizValida novaPos (mapaEstado estado)
+           then Just (atualizaTempoObjeto (Disparo novaPos novaDir Dinamite t dono))
+           else Just (atualizaTempoObjeto obj)
 
-danoPorExplosao :: Posicao -> Int -> Mapa -> [(Posicao, Int)]
-danoPorExplosao centro d mapa =
-  [ (pos, dano)
-  | (pos, dist) <- posicoesComDistancia centro d mapa
-  , let dano = danoPorDistancia d dist
-  , dano > 0
-  ]
+    -- Se estiver no chão → fixa e aponta para Norte
+    | disparoEstaNoChao estado obj ->
+        Just (atualizaTempoObjeto (fixaDisparoNoChao estado obj))
+
+    -- Caso intermédio → mantém e atualiza tempo
+    | otherwise ->
+        Just (atualizaTempoObjeto obj)
+
+  -- 4. Mina em Água ou Ar com direção Sul → cai e aponta para Norte
+  Disparo _ Sul Mina _ _ ->
+    Just (atualizaTempoObjeto (atualizaDisparoMina (mapaEstado estado) obj))
+
+  -- 5. Mina sem tempo → ativa se houver inimigo na área
+  Disparo _ _ Mina Nothing _ ->
+    Just (ativaMinaSeInimigo (mapaEstado estado) (minhocasEstado estado) obj)
+
+  -- 6. Mina ou Dinamite no chão → fixa e aponta para Norte
+  Disparo _ _ arma _ _
+    | (arma == Mina || arma == Dinamite)
+    , disparoEstaNoChao estado obj ->
+        Just (atualizaTempoObjeto (fixaDisparoNoChao estado obj))
+
+  -- 7. Caso geral → mantém
+  _ -> Just obj
+
+
+
+
+
+ 
+
+
+
+
+
+
+
 
 
 

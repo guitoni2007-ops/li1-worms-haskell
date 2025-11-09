@@ -30,313 +30,306 @@ span.spaces    { background: white }
 <span class="lineno">   11 </span>
 <span class="lineno">   12 </span>-- | Função principal da Tarefa 1. Recebe um estado e retorna se este é válido ou não.
 <span class="lineno">   13 </span>validaEstado :: Estado -&gt; Bool
-<span class="lineno">   14 </span><span class="decl"><span class="istickedoff">validaEstado estado =</span>
-<span class="lineno">   15 </span><span class="spaces">  </span><span class="istickedoff">let mapa     = mapaEstado estado</span>
-<span class="lineno">   16 </span><span class="spaces">      </span><span class="istickedoff">objetos  = objetosEstado estado</span>
-<span class="lineno">   17 </span><span class="spaces">      </span><span class="istickedoff">minhocas = minhocasEstado estado</span>
-<span class="lineno">   18 </span><span class="spaces">  </span><span class="istickedoff">in validaMapa mapa &amp;&amp; validaObj <span class="nottickedoff">(1,1)</span> mapa objetos minhocas &amp;&amp; validaWorms <span class="nottickedoff">(0,0)</span> mapa objetos minhocas</span></span>
+<span class="lineno">   14 </span><span class="decl"><span class="nottickedoff">validaEstado estado =</span>
+<span class="lineno">   15 </span><span class="spaces">  </span><span class="nottickedoff">let mapa     = mapaEstado estado</span>
+<span class="lineno">   16 </span><span class="spaces">      </span><span class="nottickedoff">objetos  = objetosEstado estado</span>
+<span class="lineno">   17 </span><span class="spaces">      </span><span class="nottickedoff">minhocas = minhocasEstado estado</span>
+<span class="lineno">   18 </span><span class="spaces">  </span><span class="nottickedoff">in validaMapa mapa &amp;&amp; validaObj (1,1) mapa objetos minhocas &amp;&amp; validaWorms (0,0) mapa objetos minhocas</span></span>
 <span class="lineno">   19 </span>
 <span class="lineno">   20 </span>
 <span class="lineno">   21 </span>-- | 1 Função secundária da Tarefa 1. Recebe um mapa e retorna se este é válido ou não.
 <span class="lineno">   22 </span>validaMapa :: Mapa -&gt; Bool
-<span class="lineno">   23 </span><span class="decl"><span class="istickedoff">validaMapa mapa = eMatrizValida(mapa) &amp;&amp; eTerrenosValido(mapa)</span></span>
+<span class="lineno">   23 </span><span class="decl"><span class="nottickedoff">validaMapa mapa = eMatrizValida(mapa) &amp;&amp; eTerrenosValido(mapa)</span></span>
 <span class="lineno">   24 </span>
 <span class="lineno">   25 </span>
 <span class="lineno">   26 </span>--Aux a eTerrenoValido.
 <span class="lineno">   27 </span>eTerrenosValido :: Mapa -&gt; Bool
-<span class="lineno">   28 </span><span class="decl"><span class="istickedoff">eTerrenosValido [] = True</span>
-<span class="lineno">   29 </span><span class="spaces"></span><span class="istickedoff">eTerrenosValido (t1:ts) = eTerrenoValido t1 &amp;&amp; eTerrenosValido ts</span></span>
+<span class="lineno">   28 </span><span class="decl"><span class="nottickedoff">eTerrenosValido [] = True</span>
+<span class="lineno">   29 </span><span class="spaces"></span><span class="nottickedoff">eTerrenosValido (t1:ts) = eTerrenoValido t1 &amp;&amp; eTerrenosValido ts</span></span>
 <span class="lineno">   30 </span>
 <span class="lineno">   31 </span>--Valida se o terreno é algum dos 4 possíveis.
 <span class="lineno">   32 </span>eTerrenoValido :: [Terreno] -&gt; Bool
-<span class="lineno">   33 </span><span class="decl"><span class="istickedoff">eTerrenoValido [] = True</span>
-<span class="lineno">   34 </span><span class="spaces"></span><span class="istickedoff">eTerrenoValido (t1:ts) = if (t1 == Ar || t1 == Agua || t1 == Terra || t1 == Pedra) then eTerrenoValido(ts)</span>
-<span class="lineno">   35 </span><span class="spaces">                         </span><span class="istickedoff">else False</span></span>
+<span class="lineno">   33 </span><span class="decl"><span class="nottickedoff">eTerrenoValido [] = True</span>
+<span class="lineno">   34 </span><span class="spaces"></span><span class="nottickedoff">eTerrenoValido (t1:ts) = if (t1 == Ar || t1 == Agua || t1 == Terra || t1 == Pedra) then eTerrenoValido(ts)</span>
+<span class="lineno">   35 </span><span class="spaces">                         </span><span class="nottickedoff">else False</span></span>
 <span class="lineno">   36 </span>
 <span class="lineno">   37 </span>
 <span class="lineno">   38 </span>
 <span class="lineno">   39 </span>
 <span class="lineno">   40 </span>-- | 2 Função secundária da Tarefa 1. Verifica se uma lista de objetos é válida ou não.
 <span class="lineno">   41 </span>validaObj :: Posicao -&gt; Mapa -&gt; [Objeto] -&gt; [Minhoca] -&gt; Bool
-<span class="lineno">   42 </span><span class="decl"><span class="istickedoff">validaObj posicao mapa objetos minhocas = objetosValidosComExcecaoBazuca mapa objetos &amp;&amp; objetosPosicao objetos minhocas &amp;&amp; objeto_disparo objetos minhocas</span></span>
+<span class="lineno">   42 </span><span class="decl"><span class="nottickedoff">validaObj posicao mapa objetos minhocas = objetosValidosComExcecaoBazuca mapa objetos &amp;&amp; objetosPosicao objetos minhocas &amp;&amp; objeto_disparo objetos minhocas</span></span>
 <span class="lineno">   43 </span>
-<span class="lineno">   44 </span>-- | Verifica se todas as posicoes dos objetos são válidas, incluindo a exceção da bazuca.
+<span class="lineno">   44 </span>--Verifica se todas as posicoes dos objetos são válidas, incluindo a exceção da bazuca.
 <span class="lineno">   45 </span>objetosValidosComExcecaoBazuca :: Mapa -&gt; [Objeto] -&gt; Bool
-<span class="lineno">   46 </span><span class="decl"><span class="istickedoff">objetosValidosComExcecaoBazuca mapa =</span>
-<span class="lineno">   47 </span><span class="spaces">  </span><span class="istickedoff">all (objetoValidoComExcecao mapa)</span></span>
+<span class="lineno">   46 </span><span class="decl"><span class="nottickedoff">objetosValidosComExcecaoBazuca mapa =</span>
+<span class="lineno">   47 </span><span class="spaces">  </span><span class="nottickedoff">all (objetoValidoComExcecao mapa)</span></span>
 <span class="lineno">   48 </span>
 <span class="lineno">   49 </span>
 <span class="lineno">   50 </span>--Verifica se uma posição é válida e livre no mapa.
 <span class="lineno">   51 </span>posicaovalidalivre :: Posicao -&gt; Mapa -&gt; Bool
-<span class="lineno">   52 </span><span class="decl"><span class="istickedoff">posicaovalidalivre (l,c) mapa = ePosicaoMatrizValida (l,c) mapa &amp;&amp; not (eTerrenoOpaco (mapa !! l !! c))</span></span>
+<span class="lineno">   52 </span><span class="decl"><span class="nottickedoff">posicaovalidalivre (l,c) mapa = ePosicaoMatrizValida (l,c) mapa &amp;&amp; not (eTerrenoOpaco (mapa !! l !! c))</span></span>
 <span class="lineno">   53 </span>
 <span class="lineno">   54 </span>--Devolve a direção oposta à dada.
 <span class="lineno">   55 </span>direcaoContraria :: Direcao -&gt; Direcao
-<span class="lineno">   56 </span><span class="decl"><span class="istickedoff">direcaoContraria Norte     = <span class="nottickedoff">Sul</span></span>
-<span class="lineno">   57 </span><span class="spaces"></span><span class="istickedoff">direcaoContraria Sul       = Norte</span>
-<span class="lineno">   58 </span><span class="spaces"></span><span class="istickedoff">direcaoContraria Este      = Oeste</span>
-<span class="lineno">   59 </span><span class="spaces"></span><span class="istickedoff">direcaoContraria Oeste     = Este</span>
-<span class="lineno">   60 </span><span class="spaces"></span><span class="istickedoff">direcaoContraria Nordeste  = <span class="nottickedoff">Sudoeste</span></span>
-<span class="lineno">   61 </span><span class="spaces"></span><span class="istickedoff">direcaoContraria Sudoeste  = <span class="nottickedoff">Nordeste</span></span>
-<span class="lineno">   62 </span><span class="spaces"></span><span class="istickedoff">direcaoContraria Noroeste  = <span class="nottickedoff">Sudeste</span></span>
-<span class="lineno">   63 </span><span class="spaces"></span><span class="istickedoff">direcaoContraria Sudeste   = <span class="nottickedoff">Noroeste</span></span></span>
+<span class="lineno">   56 </span><span class="decl"><span class="nottickedoff">direcaoContraria Norte     = Sul</span>
+<span class="lineno">   57 </span><span class="spaces"></span><span class="nottickedoff">direcaoContraria Sul       = Norte</span>
+<span class="lineno">   58 </span><span class="spaces"></span><span class="nottickedoff">direcaoContraria Este      = Oeste</span>
+<span class="lineno">   59 </span><span class="spaces"></span><span class="nottickedoff">direcaoContraria Oeste     = Este</span>
+<span class="lineno">   60 </span><span class="spaces"></span><span class="nottickedoff">direcaoContraria Nordeste  = Sudoeste</span>
+<span class="lineno">   61 </span><span class="spaces"></span><span class="nottickedoff">direcaoContraria Sudoeste  = Nordeste</span>
+<span class="lineno">   62 </span><span class="spaces"></span><span class="nottickedoff">direcaoContraria Noroeste  = Sudeste</span>
+<span class="lineno">   63 </span><span class="spaces"></span><span class="nottickedoff">direcaoContraria Sudeste   = Noroeste</span></span>
 <span class="lineno">   64 </span>
 <span class="lineno">   65 </span>--Devolve o terreno numa posição da matriz, ou Ar se a posição for inválida.
 <span class="lineno">   66 </span>terrenoEm :: Posicao -&gt; Matriz Terreno -&gt; Terreno
-<span class="lineno">   67 </span><span class="decl"><span class="istickedoff">terrenoEm pos mapa =</span>
-<span class="lineno">   68 </span><span class="spaces">  </span><span class="istickedoff">case encontraPosicaoMatriz pos mapa of</span>
-<span class="lineno">   69 </span><span class="spaces">    </span><span class="istickedoff">Just t  -&gt; t</span>
-<span class="lineno">   70 </span><span class="spaces">    </span><span class="istickedoff">Nothing -&gt; Ar</span></span>
+<span class="lineno">   67 </span><span class="decl"><span class="nottickedoff">terrenoEm pos mapa =</span>
+<span class="lineno">   68 </span><span class="spaces">  </span><span class="nottickedoff">case encontraPosicaoMatriz pos mapa of</span>
+<span class="lineno">   69 </span><span class="spaces">    </span><span class="nottickedoff">Just t  -&gt; t</span>
+<span class="lineno">   70 </span><span class="spaces">    </span><span class="nottickedoff">Nothing -&gt; Ar</span></span>
 <span class="lineno">   71 </span>
 <span class="lineno">   72 </span>--Permite disparo de bazuca sobre terreno opaco se a posição anterior não for opaca.
 <span class="lineno">   73 </span>bazucaPodeEstarSobreOpaco :: Mapa -&gt; Posicao -&gt; Direcao -&gt; Bool
-<span class="lineno">   74 </span><span class="decl"><span class="istickedoff">bazucaPodeEstarSobreOpaco mapa pos dir =</span>
-<span class="lineno">   75 </span><span class="spaces">  </span><span class="istickedoff">eTerrenoOpaco (terrenoEm pos mapa) &amp;&amp;</span>
-<span class="lineno">   76 </span><span class="spaces">  </span><span class="istickedoff">not (eTerrenoOpaco (terrenoEm (movePosicao (direcaoContraria dir) pos) mapa))</span></span>
+<span class="lineno">   74 </span><span class="decl"><span class="nottickedoff">bazucaPodeEstarSobreOpaco mapa pos dir =</span>
+<span class="lineno">   75 </span><span class="spaces">  </span><span class="nottickedoff">eTerrenoOpaco (terrenoEm pos mapa) &amp;&amp;</span>
+<span class="lineno">   76 </span><span class="spaces">  </span><span class="nottickedoff">not (eTerrenoOpaco (terrenoEm (movePosicao (direcaoContraria dir) pos) mapa))</span></span>
 <span class="lineno">   77 </span> 
-<span class="lineno">   78 </span>-- | Verifica se uma posição é válida e livre no mapa,
+<span class="lineno">   78 </span>--Verifica se uma posição é válida e livre no mapa,
 <span class="lineno">   79 </span>-- ou se pode conter um disparo de bazuca sobre terreno opaco.
 <span class="lineno">   80 </span>posicaoValidaOuBazuca :: Mapa -&gt; Posicao -&gt; Direcao -&gt; Bool
-<span class="lineno">   81 </span><span class="decl"><span class="istickedoff">posicaoValidaOuBazuca mapa pos dir =</span>
-<span class="lineno">   82 </span><span class="spaces">  </span><span class="istickedoff">posicaovalidalivre pos mapa || bazucaPodeEstarSobreOpaco mapa pos dir</span></span>
+<span class="lineno">   81 </span><span class="decl"><span class="nottickedoff">posicaoValidaOuBazuca mapa pos dir =</span>
+<span class="lineno">   82 </span><span class="spaces">  </span><span class="nottickedoff">posicaovalidalivre pos mapa || bazucaPodeEstarSobreOpaco mapa pos dir</span></span>
 <span class="lineno">   83 </span>
-<span class="lineno">   84 </span>-- | Verifica se um objeto é válido, considerando a exceção da bazuca.
+<span class="lineno">   84 </span>--Verifica se um objeto é válido, considerando a exceção da bazuca.
 <span class="lineno">   85 </span>objetoValidoComExcecao :: Mapa -&gt; Objeto -&gt; Bool
-<span class="lineno">   86 </span><span class="decl"><span class="istickedoff">objetoValidoComExcecao mapa (Disparo pos dir Bazuca _ _) =</span>
-<span class="lineno">   87 </span><span class="spaces">  </span><span class="istickedoff">posicaoValidaOuBazuca mapa pos dir</span>
-<span class="lineno">   88 </span><span class="spaces"></span><span class="istickedoff">objetoValidoComExcecao mapa (Disparo pos _ _ _ _) =</span>
-<span class="lineno">   89 </span><span class="spaces">  </span><span class="istickedoff">posicaovalidalivre pos mapa</span>
-<span class="lineno">   90 </span><span class="spaces"></span><span class="istickedoff">objetoValidoComExcecao _ _ = True</span></span>
+<span class="lineno">   86 </span><span class="decl"><span class="nottickedoff">objetoValidoComExcecao mapa (Disparo pos dir Bazuca _ _) =</span>
+<span class="lineno">   87 </span><span class="spaces">  </span><span class="nottickedoff">posicaoValidaOuBazuca mapa pos dir</span>
+<span class="lineno">   88 </span><span class="spaces"></span><span class="nottickedoff">objetoValidoComExcecao mapa (Disparo pos _ _ _ _) =</span>
+<span class="lineno">   89 </span><span class="spaces">  </span><span class="nottickedoff">posicaovalidalivre pos mapa</span>
+<span class="lineno">   90 </span><span class="spaces"></span><span class="nottickedoff">objetoValidoComExcecao _ _ = True</span></span>
 <span class="lineno">   91 </span>
 <span class="lineno">   92 </span>
 <span class="lineno">   93 </span>--Verifica se duas posições sao diferentes.
 <span class="lineno">   94 </span>posicoesDiferentes :: Posicao -&gt; Posicao -&gt; Bool
-<span class="lineno">   95 </span><span class="decl"><span class="istickedoff">posicoesDiferentes p1 p2 = p1 /= p2</span></span>
+<span class="lineno">   95 </span><span class="decl"><span class="nottickedoff">posicoesDiferentes p1 p2 = p1 /= p2</span></span>
 <span class="lineno">   96 </span>
 <span class="lineno">   97 </span>--Verifica se duas posições sao diferentes para maybe posição.
 <span class="lineno">   98 </span>posicoesDiferentes2 :: Posicao -&gt; Maybe Posicao -&gt; Bool
-<span class="lineno">   99 </span><span class="decl"><span class="istickedoff">posicoesDiferentes2 p1 (Just p2) = p1 /= p2</span>
-<span class="lineno">  100 </span><span class="spaces"></span><span class="istickedoff">posicoesDiferentes2 _ Nothing    = True</span></span>
+<span class="lineno">   99 </span><span class="decl"><span class="nottickedoff">posicoesDiferentes2 p1 (Just p2) = p1 /= p2</span>
+<span class="lineno">  100 </span><span class="spaces"></span><span class="nottickedoff">posicoesDiferentes2 _ Nothing    = True</span></span>
 <span class="lineno">  101 </span>
 <span class="lineno">  102 </span>
 <span class="lineno">  103 </span>--Verificar a posição do barril em relação a todas as minhocas.
 <span class="lineno">  104 </span>verificaPosBarrilMinhoca :: Posicao -&gt; [Minhoca] -&gt; Bool
-<span class="lineno">  105 </span><span class="decl"><span class="istickedoff">verificaPosBarrilMinhoca pos1 [] = True</span>
-<span class="lineno">  106 </span><span class="spaces"></span><span class="istickedoff">verificaPosBarrilMinhoca pos1 ((Minhoca pos vida jet escava bazuca mina dina):ms) = posicoesDiferentes2 pos1 pos &amp;&amp; verificaPosBarrilMinhoca pos1 ms</span></span>
+<span class="lineno">  105 </span><span class="decl"><span class="nottickedoff">verificaPosBarrilMinhoca pos1 [] = True</span>
+<span class="lineno">  106 </span><span class="spaces"></span><span class="nottickedoff">verificaPosBarrilMinhoca pos1 ((Minhoca pos vida jet escava bazuca mina dina):ms) = posicoesDiferentes2 pos1 pos &amp;&amp; verificaPosBarrilMinhoca pos1 ms</span></span>
 <span class="lineno">  107 </span>
 <span class="lineno">  108 </span>--Verifica se as posições do barris e das minhocas não são iguais.
 <span class="lineno">  109 </span>verificaPosBarril :: Objeto -&gt; [Objeto] -&gt; [Minhoca] -&gt; Bool
-<span class="lineno">  110 </span><span class="decl"><span class="istickedoff">verificaPosBarril (Barril pos1 explode1) [] m = verificaPosBarrilMinhoca pos1 m</span>
-<span class="lineno">  111 </span><span class="spaces"></span><span class="istickedoff">verificaPosBarril (Barril pos1 explode1) ((Barril pos2 explode2):os) minhocas = posicoesDiferentes pos1 pos2 &amp;&amp; verificaPosBarrilMinhoca pos1 minhocas &amp;&amp; verificaPosBarril (Barril pos1 <span class="nottickedoff">explode1</span>) os minhocas</span></span>
+<span class="lineno">  110 </span><span class="decl"><span class="nottickedoff">verificaPosBarril (Barril pos1 explode1) [] m = verificaPosBarrilMinhoca pos1 m</span>
+<span class="lineno">  111 </span><span class="spaces"></span><span class="nottickedoff">verificaPosBarril (Barril pos1 explode1) ((Barril pos2 explode2):os) minhocas = posicoesDiferentes pos1 pos2 &amp;&amp; verificaPosBarrilMinhoca pos1 minhocas &amp;&amp; verificaPosBarril (Barril pos1 explode1) os minhocas</span></span>
 <span class="lineno">  112 </span>
 <span class="lineno">  113 </span>--Verifica se as posições da mina e da dinamite
 <span class="lineno">  114 </span>verificaPosMinaDina :: Objeto -&gt; [Objeto] -&gt; Bool
-<span class="lineno">  115 </span><span class="decl"><span class="istickedoff">verificaPosMinaDina o [] = True</span>
-<span class="lineno">  116 </span><span class="spaces"></span><span class="istickedoff">verificaPosMinaDina (Disparo pos1 dir1 tipo1 tempo1 dono1) ((Barril pos2 explode2):os) = posicoesDiferentes pos1 pos2 &amp;&amp; verificaPosMinaDina (Disparo pos1 <span class="nottickedoff">dir1</span> <span class="nottickedoff">tipo1</span> <span class="nottickedoff">tempo1</span> <span class="nottickedoff">dono1</span>) os</span></span>
+<span class="lineno">  115 </span><span class="decl"><span class="nottickedoff">verificaPosMinaDina o [] = True</span>
+<span class="lineno">  116 </span><span class="spaces"></span><span class="nottickedoff">verificaPosMinaDina (Disparo pos1 dir1 tipo1 tempo1 dono1) ((Barril pos2 explode2):os) = posicoesDiferentes pos1 pos2 &amp;&amp; verificaPosMinaDina (Disparo pos1 dir1 tipo1 tempo1 dono1) os</span></span>
 <span class="lineno">  117 </span>
-<span class="lineno">  118 </span>-- Filtra uma lista de objetos retornando uma lista só de barris.
+<span class="lineno">  118 </span>--Filtra uma lista de objetos retornando uma lista só de barris.
 <span class="lineno">  119 </span>filtraBarris :: [Objeto] -&gt; [Objeto]
-<span class="lineno">  120 </span><span class="decl"><span class="istickedoff">filtraBarris = filter isBarril</span>
-<span class="lineno">  121 </span><span class="spaces">  </span><span class="istickedoff">where</span>
-<span class="lineno">  122 </span><span class="spaces">    </span><span class="istickedoff">isBarril (Barril _ _) = True</span>
-<span class="lineno">  123 </span><span class="spaces">    </span><span class="istickedoff">isBarril _            = False</span></span>
+<span class="lineno">  120 </span><span class="decl"><span class="nottickedoff">filtraBarris = filter isBarril</span>
+<span class="lineno">  121 </span><span class="spaces">  </span><span class="nottickedoff">where</span>
+<span class="lineno">  122 </span><span class="spaces">    </span><span class="nottickedoff">isBarril (Barril _ _) = True</span>
+<span class="lineno">  123 </span><span class="spaces">    </span><span class="nottickedoff">isBarril _            = False</span></span>
 <span class="lineno">  124 </span>
 <span class="lineno">  125 </span>
 <span class="lineno">  126 </span>--Verifica a posição de objetos especificos (Barril, Dinamite ou Mina).
 <span class="lineno">  127 </span>objetoPosicao :: Objeto -&gt; [Objeto] -&gt; [Minhoca] -&gt; Bool
-<span class="lineno">  128 </span><span class="decl"><span class="istickedoff">objetoPosicao objeto listaObjetos minhocas = case objeto of</span>
-<span class="lineno">  129 </span><span class="spaces">                                        </span><span class="istickedoff">Barril pos explode -&gt; verificaPosBarril objeto (filtraBarris listaObjetos) minhocas</span>
-<span class="lineno">  130 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  131 </span><span class="spaces">                                        </span><span class="istickedoff">Disparo pos dir tipo tempo dono -&gt;</span>
-<span class="lineno">  132 </span><span class="spaces">                                            </span><span class="istickedoff">case tipo of</span>
-<span class="lineno">  133 </span><span class="spaces">                                                </span><span class="istickedoff">Dinamite -&gt; verificaPosMinaDina objeto (filtraBarris listaObjetos)</span>
-<span class="lineno">  134 </span><span class="spaces">                                                </span><span class="istickedoff">Mina     -&gt; verificaPosMinaDina objeto (filtraBarris listaObjetos)</span>
-<span class="lineno">  135 </span><span class="spaces">                                                </span><span class="istickedoff">_        -&gt; True</span></span>
+<span class="lineno">  128 </span><span class="decl"><span class="nottickedoff">objetoPosicao objeto listaObjetos minhocas = case objeto of</span>
+<span class="lineno">  129 </span><span class="spaces">                                        </span><span class="nottickedoff">Barril pos explode -&gt; verificaPosBarril objeto (filtraBarris listaObjetos) minhocas</span>
+<span class="lineno">  130 </span><span class="spaces"></span><span class="nottickedoff"></span>
+<span class="lineno">  131 </span><span class="spaces">                                        </span><span class="nottickedoff">Disparo pos dir tipo tempo dono -&gt;</span>
+<span class="lineno">  132 </span><span class="spaces">                                            </span><span class="nottickedoff">case tipo of</span>
+<span class="lineno">  133 </span><span class="spaces">                                                </span><span class="nottickedoff">Dinamite -&gt; verificaPosMinaDina objeto (filtraBarris listaObjetos)</span>
+<span class="lineno">  134 </span><span class="spaces">                                                </span><span class="nottickedoff">Mina     -&gt; verificaPosMinaDina objeto (filtraBarris listaObjetos)</span>
+<span class="lineno">  135 </span><span class="spaces">                                                </span><span class="nottickedoff">_        -&gt; True</span></span>
 <span class="lineno">  136 </span>
 <span class="lineno">  137 </span>
 <span class="lineno">  138 </span>
 <span class="lineno">  139 </span>--AuxobjetosPosicao. 
 <span class="lineno">  140 </span>proximoObjeto :: [Objeto] -&gt; Maybe (Objeto, [Objeto])
-<span class="lineno">  141 </span><span class="decl"><span class="istickedoff">proximoObjeto []     = <span class="nottickedoff">Nothing</span></span>
-<span class="lineno">  142 </span><span class="spaces"></span><span class="istickedoff">proximoObjeto (o:os) = Just (o, <span class="nottickedoff">os</span>)</span></span>
+<span class="lineno">  141 </span><span class="decl"><span class="nottickedoff">proximoObjeto []     = Nothing</span>
+<span class="lineno">  142 </span><span class="spaces"></span><span class="nottickedoff">proximoObjeto (o:os) = Just (o, os)</span></span>
 <span class="lineno">  143 </span>
 <span class="lineno">  144 </span>
 <span class="lineno">  145 </span>removerObjeto :: Objeto -&gt; [Objeto] -&gt; [Objeto]
-<span class="lineno">  146 </span><span class="decl"><span class="istickedoff">removerObjeto obj = filter (/= obj)</span></span>
+<span class="lineno">  146 </span><span class="decl"><span class="nottickedoff">removerObjeto obj = filter (/= obj)</span></span>
 <span class="lineno">  147 </span>
 <span class="lineno">  148 </span>
 <span class="lineno">  149 </span>--Recebe uma lista de objetos e passa a &quot;objetoPosicao&quot; um objeto de cada vez.
 <span class="lineno">  150 </span>objetosPosicao :: [Objeto] -&gt; [Minhoca] -&gt; Bool
-<span class="lineno">  151 </span><span class="decl"><span class="istickedoff">objetosPosicao todos minhocas = verificar todos</span>
-<span class="lineno">  152 </span><span class="spaces">  </span><span class="istickedoff">where</span>
-<span class="lineno">  153 </span><span class="spaces">    </span><span class="istickedoff">verificar [] = True</span>
-<span class="lineno">  154 </span><span class="spaces">    </span><span class="istickedoff">verificar lista =</span>
-<span class="lineno">  155 </span><span class="spaces">      </span><span class="istickedoff">case proximoObjeto lista of</span>
-<span class="lineno">  156 </span><span class="spaces">        </span><span class="istickedoff">Nothing -&gt; <span class="nottickedoff">True</span></span>
-<span class="lineno">  157 </span><span class="spaces">        </span><span class="istickedoff">Just (obj, _) -&gt; objetoPosicao obj (removerObjeto obj todos) minhocas &amp;&amp; verificar (tail lista)</span></span>
+<span class="lineno">  151 </span><span class="decl"><span class="nottickedoff">objetosPosicao todos minhocas = verificar todos</span>
+<span class="lineno">  152 </span><span class="spaces">  </span><span class="nottickedoff">where</span>
+<span class="lineno">  153 </span><span class="spaces">    </span><span class="nottickedoff">verificar [] = True</span>
+<span class="lineno">  154 </span><span class="spaces">    </span><span class="nottickedoff">verificar lista =</span>
+<span class="lineno">  155 </span><span class="spaces">      </span><span class="nottickedoff">case proximoObjeto lista of</span>
+<span class="lineno">  156 </span><span class="spaces">        </span><span class="nottickedoff">Nothing -&gt; True</span>
+<span class="lineno">  157 </span><span class="spaces">        </span><span class="nottickedoff">Just (obj, _) -&gt; objetoPosicao obj (removerObjeto obj todos) minhocas &amp;&amp; verificar (tail lista)</span></span>
 <span class="lineno">  158 </span>
 <span class="lineno">  159 </span>
 <span class="lineno">  160 </span> 
 <span class="lineno">  161 </span>
 <span class="lineno">  162 </span>
-<span class="lineno">  163 </span>-- Dado uma lista de disparos, verifica se algum elemento é do tipo de arma: Jetpack ou Escavadora.
+<span class="lineno">  163 </span>--Dado uma lista de disparos, verifica se algum elemento é do tipo de arma: Jetpack ou Escavadora.
 <span class="lineno">  164 </span>dispJetEsc :: [Objeto] -&gt; Bool
-<span class="lineno">  165 </span><span class="decl"><span class="istickedoff">dispJetEsc [] = True</span>
-<span class="lineno">  166 </span><span class="spaces"></span><span class="istickedoff">dispJetEsc ((Disparo _ _ tipo _ _):os) =</span>
-<span class="lineno">  167 </span><span class="spaces">  </span><span class="istickedoff">tipo /= Jetpack &amp;&amp; tipo /= Escavadora &amp;&amp; dispJetEsc os</span>
-<span class="lineno">  168 </span><span class="spaces"></span><span class="istickedoff">dispJetEsc (_:os) = dispJetEsc os</span></span>
+<span class="lineno">  165 </span><span class="decl"><span class="nottickedoff">dispJetEsc [] = True</span>
+<span class="lineno">  166 </span><span class="spaces"></span><span class="nottickedoff">dispJetEsc ((Disparo _ _ tipo _ _):os) =</span>
+<span class="lineno">  167 </span><span class="spaces">  </span><span class="nottickedoff">tipo /= Jetpack &amp;&amp; tipo /= Escavadora &amp;&amp; dispJetEsc os</span>
+<span class="lineno">  168 </span><span class="spaces"></span><span class="nottickedoff">dispJetEsc (_:os) = dispJetEsc os</span></span>
 <span class="lineno">  169 </span>
 <span class="lineno">  170 </span>
 <span class="lineno">  171 </span>
 <span class="lineno">  172 </span>
-<span class="lineno">  173 </span>-- Dado uma lista de disparos, verifica se o tempo do disparo é válido para o tipo de arma.
+<span class="lineno">  173 </span>--Dado uma lista de disparos, verifica se o tempo do disparo é válido para o tipo de arma.
 <span class="lineno">  174 </span>validatempoDisparo :: [Objeto] -&gt; Bool
-<span class="lineno">  175 </span><span class="decl"><span class="istickedoff">validatempoDisparo [] = True</span>
-<span class="lineno">  176 </span><span class="spaces"></span><span class="istickedoff">validatempoDisparo ((Disparo _ _ tipo tempo _):os) =</span>
-<span class="lineno">  177 </span><span class="spaces">  </span><span class="istickedoff">case tempo of</span>
-<span class="lineno">  178 </span><span class="spaces">    </span><span class="istickedoff">Just t -&gt;</span>
-<span class="lineno">  179 </span><span class="spaces">      </span><span class="istickedoff">case tipo of</span>
-<span class="lineno">  180 </span><span class="spaces">        </span><span class="istickedoff">Mina     -&gt; (t &gt;= 0 &amp;&amp; t &lt;= 2) &amp;&amp; validatempoDisparo os</span>
-<span class="lineno">  181 </span><span class="spaces">        </span><span class="istickedoff">Dinamite -&gt; (t &gt;= 0 &amp;&amp; t &lt;= 4) &amp;&amp; validatempoDisparo os</span>
-<span class="lineno">  182 </span><span class="spaces">        </span><span class="istickedoff">_        -&gt; <span class="nottickedoff">validatempoDisparo os</span></span>
-<span class="lineno">  183 </span><span class="spaces">    </span><span class="istickedoff">Nothing -&gt;   </span>
-<span class="lineno">  184 </span><span class="spaces">      </span><span class="istickedoff">case tipo of</span>
-<span class="lineno">  185 </span><span class="spaces">        </span><span class="istickedoff">Bazuca -&gt; validatempoDisparo os</span>
-<span class="lineno">  186 </span><span class="spaces">        </span><span class="istickedoff">Mina -&gt; validatempoDisparo os</span>
-<span class="lineno">  187 </span><span class="spaces">        </span><span class="istickedoff">_ -&gt; <span class="nottickedoff">validatempoDisparo os</span></span>
-<span class="lineno">  188 </span><span class="spaces"></span><span class="istickedoff">validatempoDisparo (_:os) = validatempoDisparo os</span></span>
+<span class="lineno">  175 </span><span class="decl"><span class="nottickedoff">validatempoDisparo [] = True</span>
+<span class="lineno">  176 </span><span class="spaces"></span><span class="nottickedoff">validatempoDisparo ((Disparo _ _ tipo tempo _):os) =</span>
+<span class="lineno">  177 </span><span class="spaces">  </span><span class="nottickedoff">case tempo of</span>
+<span class="lineno">  178 </span><span class="spaces">    </span><span class="nottickedoff">Just t -&gt;</span>
+<span class="lineno">  179 </span><span class="spaces">      </span><span class="nottickedoff">case tipo of</span>
+<span class="lineno">  180 </span><span class="spaces">        </span><span class="nottickedoff">Mina     -&gt; (t &gt;= 0 &amp;&amp; t &lt;= 2) &amp;&amp; validatempoDisparo os</span>
+<span class="lineno">  181 </span><span class="spaces">        </span><span class="nottickedoff">Dinamite -&gt; (t &gt;= 0 &amp;&amp; t &lt;= 4) &amp;&amp; validatempoDisparo os</span>
+<span class="lineno">  182 </span><span class="spaces">        </span><span class="nottickedoff"></span>
+<span class="lineno">  183 </span><span class="spaces">    </span><span class="nottickedoff">Nothing -&gt;   </span>
+<span class="lineno">  184 </span><span class="spaces">      </span><span class="nottickedoff">case tipo of</span>
+<span class="lineno">  185 </span><span class="spaces">        </span><span class="nottickedoff">Bazuca -&gt; validatempoDisparo os</span>
+<span class="lineno">  186 </span><span class="spaces">        </span><span class="nottickedoff">Mina -&gt; validatempoDisparo os</span>
+<span class="lineno">  187 </span><span class="spaces">        </span><span class="nottickedoff"></span>
+<span class="lineno">  188 </span><span class="spaces"></span><span class="nottickedoff">validatempoDisparo (_:os) = validatempoDisparo os</span></span>
 <span class="lineno">  189 </span>
-<span class="lineno">  190 </span>-- Verifica se o dono do disparo tem um índice válido na lista de minhocas.
+<span class="lineno">  190 </span>--Verifica se o dono do disparo tem um índice válido na lista de minhocas.
 <span class="lineno">  191 </span>validaDonoDisparo :: [Objeto] -&gt; [Minhoca] -&gt; Bool
-<span class="lineno">  192 </span><span class="decl"><span class="istickedoff">validaDonoDisparo [] _ = True</span>
-<span class="lineno">  193 </span><span class="spaces"></span><span class="istickedoff">validaDonoDisparo ((Disparo _ _ _ _ dono):os) minhocas =</span>
-<span class="lineno">  194 </span><span class="spaces">  </span><span class="istickedoff">eIndiceListaValido dono minhocas &amp;&amp; validaDonoDisparo os minhocas</span>
-<span class="lineno">  195 </span><span class="spaces"></span><span class="istickedoff">validaDonoDisparo (_:os) minhocas = validaDonoDisparo os minhocas</span></span>
+<span class="lineno">  192 </span><span class="decl"><span class="nottickedoff">validaDonoDisparo [] _ = True</span>
+<span class="lineno">  193 </span><span class="spaces"></span><span class="nottickedoff">validaDonoDisparo ((Disparo _ _ _ _ dono):os) minhocas =</span>
+<span class="lineno">  194 </span><span class="spaces">  </span><span class="nottickedoff">eIndiceListaValido dono minhocas &amp;&amp; validaDonoDisparo os minhocas</span>
+<span class="lineno">  195 </span><span class="spaces"></span><span class="nottickedoff">validaDonoDisparo (_:os) minhocas = validaDonoDisparo os minhocas</span></span>
 <span class="lineno">  196 </span>
-<span class="lineno">  197 </span>-- Verifica se o mesmo dono nao tem simultaneamente mais do que um disparo de cada tipo.
+<span class="lineno">  197 </span>--Verifica se o mesmo dono nao tem simultaneamente mais do que um disparo de cada tipo.
 <span class="lineno">  198 </span>maisQueUmDisparo :: [Objeto] -&gt; Bool
-<span class="lineno">  199 </span><span class="decl"><span class="istickedoff">maisQueUmDisparo objetos = verifica [] objetos</span></span>
+<span class="lineno">  199 </span><span class="decl"><span class="nottickedoff">maisQueUmDisparo objetos = verifica [] objetos</span></span>
 <span class="lineno">  200 </span> 
-<span class="lineno">  201 </span> -- Função auxiiar de maisQueUmDisparo.
+<span class="lineno">  201 </span> --Função auxiiar de maisQueUmDisparo.
 <span class="lineno">  202 </span>verifica :: [(NumMinhoca, TipoArma)] -&gt; [Objeto] -&gt; Bool
-<span class="lineno">  203 </span><span class="decl"><span class="istickedoff">verifica _ [] = True</span>
-<span class="lineno">  204 </span><span class="spaces"></span><span class="istickedoff">verifica vistos (Disparo _ _ tipo _ dono : os)</span>
-<span class="lineno">  205 </span><span class="spaces">    </span><span class="istickedoff">| (dono, tipo) `elem` vistos = False</span>
-<span class="lineno">  206 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = verifica ((dono, tipo) : vistos) os</span>
-<span class="lineno">  207 </span><span class="spaces"></span><span class="istickedoff">verifica vistos (_ : os) = verifica vistos os</span></span>
+<span class="lineno">  203 </span><span class="decl"><span class="nottickedoff">verifica _ [] = True</span>
+<span class="lineno">  204 </span><span class="spaces"></span><span class="nottickedoff">verifica vistos (Disparo _ _ tipo _ dono : os)</span>
+<span class="lineno">  205 </span><span class="spaces">    </span><span class="nottickedoff">| (dono, tipo) `elem` vistos = False</span>
+<span class="lineno">  206 </span><span class="spaces">    </span><span class="nottickedoff">| otherwise = verifica ((dono, tipo) : vistos) os</span>
+<span class="lineno">  207 </span><span class="spaces"></span><span class="nottickedoff">verifica vistos (_ : os) = verifica vistos os</span></span>
 <span class="lineno">  208 </span>
 <span class="lineno">  209 </span>
 <span class="lineno">  210 </span>
-<span class="lineno">  211 </span>-- Recebe uma lista de objetos e verifica se os disparos são válidos.
+<span class="lineno">  211 </span>--Recebe uma lista de objetos e verifica se os disparos são válidos.
 <span class="lineno">  212 </span>objeto_disparo :: [Objeto] -&gt; [Minhoca] -&gt; Bool
-<span class="lineno">  213 </span><span class="decl"><span class="istickedoff">objeto_disparo objetos minhocas = dispJetEsc objetos &amp;&amp; validatempoDisparo objetos &amp;&amp; validaDonoDisparo objetos minhocas &amp;&amp; maisQueUmDisparo objetos</span></span> 
+<span class="lineno">  213 </span><span class="decl"><span class="nottickedoff">objeto_disparo objetos minhocas = dispJetEsc objetos &amp;&amp; validatempoDisparo objetos &amp;&amp; validaDonoDisparo objetos minhocas &amp;&amp; maisQueUmDisparo objetos</span></span> 
 <span class="lineno">  214 </span>
 <span class="lineno">  215 </span>-- | 3 Função secundária da Tarefa 1. Recebe uma lista de minhocas e retorna se este é válido ou não.
 <span class="lineno">  216 </span>validaWorms :: Posicao -&gt; Mapa -&gt; [Objeto] -&gt; [Minhoca] -&gt; Bool
-<span class="lineno">  217 </span><span class="decl"><span class="istickedoff">validaWorms posicao mapa objetos minhocas =</span>
-<span class="lineno">  218 </span><span class="spaces">  </span><span class="istickedoff">posicaovalidaminhoca minhocas mapa &amp;&amp;</span>
-<span class="lineno">  219 </span><span class="spaces">  </span><span class="istickedoff">minhocasValidas minhocas objetos mapa &amp;&amp;</span>
-<span class="lineno">  220 </span><span class="spaces">  </span><span class="istickedoff">minhocamorta mapa minhocas &amp;&amp;</span>
-<span class="lineno">  221 </span><span class="spaces">  </span><span class="istickedoff">verificavidaminhocas minhocas &amp;&amp;</span>
-<span class="lineno">  222 </span><span class="spaces">  </span><span class="istickedoff">validaMinhocasMunicao minhocas</span></span>
+<span class="lineno">  217 </span><span class="decl"><span class="nottickedoff">validaWorms posicao mapa objetos minhocas =</span>
+<span class="lineno">  218 </span><span class="spaces">  </span><span class="nottickedoff">posicaovalidaminhoca minhocas mapa &amp;&amp;</span>
+<span class="lineno">  219 </span><span class="spaces">  </span><span class="nottickedoff">minhocasValidas minhocas objetos mapa &amp;&amp;</span>
+<span class="lineno">  220 </span><span class="spaces">  </span><span class="nottickedoff">minhocamorta mapa minhocas &amp;&amp;</span>
+<span class="lineno">  221 </span><span class="spaces">  </span><span class="nottickedoff">verificavidaminhocas minhocas &amp;&amp;</span>
+<span class="lineno">  222 </span><span class="spaces">  </span><span class="nottickedoff">validaMinhocasMunicao minhocas</span></span>
 <span class="lineno">  223 </span>
 <span class="lineno">  224 </span>
-<span class="lineno">  225 </span>-- Valida se uma lista de minhocas tem uma posição válida e livre no mapa ou nenhuma posição
+<span class="lineno">  225 </span>--Valida se uma lista de minhocas tem uma posição válida e livre no mapa ou nenhuma posição
 <span class="lineno">  226 </span>posicaovalidaminhoca :: [Minhoca] -&gt; Mapa -&gt; Bool
-<span class="lineno">  227 </span><span class="decl"><span class="istickedoff">posicaovalidaminhoca [] _ = True</span>
-<span class="lineno">  228 </span><span class="spaces"></span><span class="istickedoff">posicaovalidaminhoca (m:ms) mapa =</span>
-<span class="lineno">  229 </span><span class="spaces">  </span><span class="istickedoff">case posicaoMinhoca m of</span>
-<span class="lineno">  230 </span><span class="spaces">    </span><span class="istickedoff">Just pos -&gt; posicaovalidalivre pos mapa &amp;&amp; posicaovalidaminhoca ms mapa</span>
-<span class="lineno">  231 </span><span class="spaces">    </span><span class="istickedoff">Nothing  -&gt; estaMorta m &amp;&amp; posicaovalidaminhoca ms <span class="nottickedoff">mapa</span></span></span>
+<span class="lineno">  227 </span><span class="decl"><span class="nottickedoff">posicaovalidaminhoca [] _ = True</span>
+<span class="lineno">  228 </span><span class="spaces"></span><span class="nottickedoff">posicaovalidaminhoca (m:ms) mapa =</span>
+<span class="lineno">  229 </span><span class="spaces">  </span><span class="nottickedoff">case posicaoMinhoca m of</span>
+<span class="lineno">  230 </span><span class="spaces">    </span><span class="nottickedoff">Just pos -&gt; posicaovalidalivre pos mapa &amp;&amp; posicaovalidaminhoca ms mapa</span>
+<span class="lineno">  231 </span><span class="spaces">    </span><span class="nottickedoff">Nothing  -&gt; estaMorta m &amp;&amp; posicaovalidaminhoca ms mapa</span></span>
 <span class="lineno">  232 </span>
 <span class="lineno">  233 </span>
-<span class="lineno">  234 </span>-- Verifica se a posição da minhoca não coincide com outras minhocas
+<span class="lineno">  234 </span>--Verifica se a posição da minhoca não coincide com outras minhocas
 <span class="lineno">  235 </span>verificaPosMinhocaMinhocas :: Minhoca -&gt; [Minhoca] -&gt; Bool
-<span class="lineno">  236 </span><span class="decl"><span class="istickedoff">verificaPosMinhocaMinhocas minhoca outras =</span>
-<span class="lineno">  237 </span><span class="spaces">  </span><span class="istickedoff">case posicaoMinhoca minhoca of</span>
-<span class="lineno">  238 </span><span class="spaces">    </span><span class="istickedoff">Nothing   -&gt; True</span>
-<span class="lineno">  239 </span><span class="spaces">    </span><span class="istickedoff">Just pos1 -&gt; all (\m -&gt; posicoesDiferentes2 pos1 (posicaoMinhoca m)) outras</span></span>
+<span class="lineno">  236 </span><span class="decl"><span class="nottickedoff">verificaPosMinhocaMinhocas minhoca outras =</span>
+<span class="lineno">  237 </span><span class="spaces">  </span><span class="nottickedoff">case posicaoMinhoca minhoca of</span>
+<span class="lineno">  238 </span><span class="spaces">    </span><span class="nottickedoff">Nothing   -&gt; True</span>
+<span class="lineno">  239 </span><span class="spaces">    </span><span class="nottickedoff">Just pos1 -&gt; all (\m -&gt; posicoesDiferentes2 pos1 (posicaoMinhoca m)) outras</span></span>
 <span class="lineno">  240 </span>
-<span class="lineno">  241 </span>-- Verifica se a posição da minhoca não coincide com nenhum barril
+<span class="lineno">  241 </span>--Verifica se a posição da minhoca não coincide com nenhum barril
 <span class="lineno">  242 </span>verificaPosMinhocaBarris :: Minhoca -&gt; [Objeto] -&gt; Bool
-<span class="lineno">  243 </span><span class="decl"><span class="istickedoff">verificaPosMinhocaBarris minhoca objetos =</span>
-<span class="lineno">  244 </span><span class="spaces">  </span><span class="istickedoff">case posicaoMinhoca minhoca of</span>
-<span class="lineno">  245 </span><span class="spaces">    </span><span class="istickedoff">Nothing   -&gt; True</span>
-<span class="lineno">  246 </span><span class="spaces">    </span><span class="istickedoff">Just pos1 -&gt; all (posicoesDiferentes pos1) (posicoesDosBarris objetos)</span></span>
+<span class="lineno">  243 </span><span class="decl"><span class="nottickedoff">verificaPosMinhocaBarris minhoca objetos =</span>
+<span class="lineno">  244 </span><span class="spaces">  </span><span class="nottickedoff">case posicaoMinhoca minhoca of</span>
+<span class="lineno">  245 </span><span class="spaces">    </span><span class="nottickedoff">Nothing   -&gt; True</span>
+<span class="lineno">  246 </span><span class="spaces">    </span><span class="nottickedoff">Just pos1 -&gt; all (posicoesDiferentes pos1) (posicoesDosBarris objetos)</span></span>
 <span class="lineno">  247 </span>
 <span class="lineno">  248 </span>--Função auxiliar a verificaPosMinhocaBarris
 <span class="lineno">  249 </span>posicoesDosBarris :: [Objeto] -&gt; [Posicao]
-<span class="lineno">  250 </span><span class="decl"><span class="istickedoff">posicoesDosBarris [] = []</span>
-<span class="lineno">  251 </span><span class="spaces"></span><span class="istickedoff">posicoesDosBarris ((Barril p _):os) = p : posicoesDosBarris os</span>
-<span class="lineno">  252 </span><span class="spaces"></span><span class="istickedoff">posicoesDosBarris (_:os) = posicoesDosBarris os</span></span>
+<span class="lineno">  250 </span><span class="decl"><span class="nottickedoff">posicoesDosBarris [] = []</span>
+<span class="lineno">  251 </span><span class="spaces"></span><span class="nottickedoff">posicoesDosBarris ((Barril p _):os) = p : posicoesDosBarris os</span>
+<span class="lineno">  252 </span><span class="spaces"></span><span class="nottickedoff">posicoesDosBarris (_:os) = posicoesDosBarris os</span></span>
 <span class="lineno">  253 </span>
-<span class="lineno">  254 </span>-- Junta todas as verificações para uma minhoca
+<span class="lineno">  254 </span>--Junta todas as verificações para uma minhoca
 <span class="lineno">  255 </span>minhocaValida :: Minhoca -&gt; [Minhoca] -&gt; [Objeto] -&gt; Mapa -&gt; Bool
-<span class="lineno">  256 </span><span class="decl"><span class="istickedoff">minhocaValida m outras objetos mapa =</span>
-<span class="lineno">  257 </span><span class="spaces">  </span><span class="istickedoff">verificaPosMinhocaBarris m objetos &amp;&amp;</span>
-<span class="lineno">  258 </span><span class="spaces">  </span><span class="istickedoff">verificaPosMinhocaMinhocas m outras &amp;&amp;</span>
-<span class="lineno">  259 </span><span class="spaces">  </span><span class="istickedoff">case posicaoMinhoca m of</span>
-<span class="lineno">  260 </span><span class="spaces">    </span><span class="istickedoff">Nothing  -&gt; True</span>
-<span class="lineno">  261 </span><span class="spaces">    </span><span class="istickedoff">Just pos -&gt; posicaovalidalivre pos mapa</span></span>
+<span class="lineno">  256 </span><span class="decl"><span class="nottickedoff">minhocaValida m outras objetos mapa =</span>
+<span class="lineno">  257 </span><span class="spaces">  </span><span class="nottickedoff">verificaPosMinhocaBarris m objetos &amp;&amp;</span>
+<span class="lineno">  258 </span><span class="spaces">  </span><span class="nottickedoff">verificaPosMinhocaMinhocas m outras &amp;&amp;</span>
+<span class="lineno">  259 </span><span class="spaces">  </span><span class="nottickedoff">case posicaoMinhoca m of</span>
+<span class="lineno">  260 </span><span class="spaces">    </span><span class="nottickedoff">Nothing  -&gt; True</span>
+<span class="lineno">  261 </span><span class="spaces">    </span><span class="nottickedoff">Just pos -&gt; posicaovalidalivre pos mapa</span></span>
 <span class="lineno">  262 </span>
-<span class="lineno">  263 </span>-- Aplica a verificação a todas as minhocas
+<span class="lineno">  263 </span>--Aplica a verificação a todas as minhocas
 <span class="lineno">  264 </span>minhocasValidas :: [Minhoca] -&gt; [Objeto] -&gt; Mapa -&gt; Bool
-<span class="lineno">  265 </span><span class="decl"><span class="istickedoff">minhocasValidas [] _ _ = True</span>
-<span class="lineno">  266 </span><span class="spaces"></span><span class="istickedoff">minhocasValidas (m:ms) objetos mapa =</span>
-<span class="lineno">  267 </span><span class="spaces">  </span><span class="istickedoff">minhocaValida m ms objetos mapa &amp;&amp; minhocasValidas ms objetos mapa</span></span>
+<span class="lineno">  265 </span><span class="decl"><span class="nottickedoff">minhocasValidas [] _ _ = True</span>
+<span class="lineno">  266 </span><span class="spaces"></span><span class="nottickedoff">minhocasValidas (m:ms) objetos mapa =</span>
+<span class="lineno">  267 </span><span class="spaces">  </span><span class="nottickedoff">minhocaValida m ms objetos mapa &amp;&amp; minhocasValidas ms objetos mapa</span></span>
 <span class="lineno">  268 </span>
-<span class="lineno">  269 </span>-- | Verifica se a vida da minhoca está como Morta
+<span class="lineno">  269 </span>--Verifica se a vida da minhoca está como Morta
 <span class="lineno">  270 </span>estaMorta :: Minhoca -&gt; Bool
-<span class="lineno">  271 </span><span class="decl"><span class="istickedoff">estaMorta minhoca = vidaMinhoca minhoca == Morta</span></span>
+<span class="lineno">  271 </span><span class="decl"><span class="nottickedoff">estaMorta minhoca = vidaMinhoca minhoca == Morta</span></span>
 <span class="lineno">  272 </span>
-<span class="lineno">  273 </span>-- | Verifica se a minhoca está viva em água 
-<span class="lineno">  274 </span>casoTerreno :: Posicao -&gt; Mapa -&gt; VidaMinhoca -&gt; Bool
-<span class="lineno">  275 </span><span class="decl"><span class="nottickedoff">casoTerreno pos mapa vida =</span>
-<span class="lineno">  276 </span><span class="spaces">  </span><span class="nottickedoff">case encontraPosicaoMatriz pos mapa of</span>
-<span class="lineno">  277 </span><span class="spaces">    </span><span class="nottickedoff">Just Agua -&gt; vida == Morta</span>
-<span class="lineno">  278 </span><span class="spaces">    </span><span class="nottickedoff">_         -&gt; True</span></span>
-<span class="lineno">  279 </span>
-<span class="lineno">  280 </span>-- | Verifica se uma minhoca está morta se estiver fora do mapa ou em água
-<span class="lineno">  281 </span>minhocaEstaCorretamenteMorta :: Mapa -&gt; Minhoca -&gt; Bool
-<span class="lineno">  282 </span><span class="decl"><span class="istickedoff">minhocaEstaCorretamenteMorta mapa minhoca =</span>
-<span class="lineno">  283 </span><span class="spaces">  </span><span class="istickedoff">case posicaoMinhoca minhoca of</span>
-<span class="lineno">  284 </span><span class="spaces">    </span><span class="istickedoff">Nothing -&gt; estaMorta minhoca</span>
-<span class="lineno">  285 </span><span class="spaces">    </span><span class="istickedoff">Just pos -&gt;</span>
-<span class="lineno">  286 </span><span class="spaces">      </span><span class="istickedoff">case encontraPosicaoMatriz pos mapa of</span>
-<span class="lineno">  287 </span><span class="spaces">        </span><span class="istickedoff">Just Agua -&gt; estaMorta minhoca</span>
-<span class="lineno">  288 </span><span class="spaces">        </span><span class="istickedoff">_         -&gt; True</span></span>
-<span class="lineno">  289 </span>
-<span class="lineno">  290 </span>-- | Verifica se todas as minhocas estão corretamente mortas quando fora do mapa ou em água
-<span class="lineno">  291 </span>minhocamorta :: Mapa -&gt; [Minhoca] -&gt; Bool
-<span class="lineno">  292 </span><span class="decl"><span class="istickedoff">minhocamorta mapa = all (minhocaEstaCorretamenteMorta mapa)</span></span>
-<span class="lineno">  293 </span>
-<span class="lineno">  294 </span>-- | Verifica se a vida de uma minhoca é válida
-<span class="lineno">  295 </span>verificavidaminhoca :: VidaMinhoca -&gt; Bool
-<span class="lineno">  296 </span><span class="decl"><span class="istickedoff">verificavidaminhoca (Viva n) = n &gt;= 0 &amp;&amp; n &lt;= 100</span>
-<span class="lineno">  297 </span><span class="spaces"></span><span class="istickedoff">verificavidaminhoca Morta    = True</span></span>
+<span class="lineno">  273 </span>--Verifica se uma minhoca está morta se estiver fora do mapa ou em água
+<span class="lineno">  274 </span>minhocaEstaCorretamenteMorta :: Mapa -&gt; Minhoca -&gt; Bool
+<span class="lineno">  275 </span><span class="decl"><span class="nottickedoff">minhocaEstaCorretamenteMorta mapa minhoca =</span>
+<span class="lineno">  276 </span><span class="spaces">  </span><span class="nottickedoff">case posicaoMinhoca minhoca of</span>
+<span class="lineno">  277 </span><span class="spaces">    </span><span class="nottickedoff">Nothing -&gt; estaMorta minhoca</span>
+<span class="lineno">  278 </span><span class="spaces">    </span><span class="nottickedoff">Just pos -&gt;</span>
+<span class="lineno">  279 </span><span class="spaces">      </span><span class="nottickedoff">case encontraPosicaoMatriz pos mapa of</span>
+<span class="lineno">  280 </span><span class="spaces">        </span><span class="nottickedoff">Just Agua -&gt; estaMorta minhoca</span>
+<span class="lineno">  281 </span><span class="spaces">        </span><span class="nottickedoff">_         -&gt; True</span></span>
+<span class="lineno">  282 </span>
+<span class="lineno">  283 </span>--Verifica se todas as minhocas estão corretamente mortas quando fora do mapa ou em água
+<span class="lineno">  284 </span>minhocamorta :: Mapa -&gt; [Minhoca] -&gt; Bool
+<span class="lineno">  285 </span><span class="decl"><span class="nottickedoff">minhocamorta mapa = all (minhocaEstaCorretamenteMorta mapa)</span></span>
+<span class="lineno">  286 </span>
+<span class="lineno">  287 </span>--Verifica se a vida de uma minhoca é válida
+<span class="lineno">  288 </span>verificavidaminhoca :: VidaMinhoca -&gt; Bool
+<span class="lineno">  289 </span><span class="decl"><span class="nottickedoff">verificavidaminhoca (Viva n) = n &gt;= 0 &amp;&amp; n &lt;= 100</span>
+<span class="lineno">  290 </span><span class="spaces"></span><span class="nottickedoff">verificavidaminhoca Morta    = True</span></span>
+<span class="lineno">  291 </span>
+<span class="lineno">  292 </span>
+<span class="lineno">  293 </span>--Verifica se a vida de uma lista de minhocas é válida
+<span class="lineno">  294 </span>verificavidaminhocas :: [Minhoca] -&gt; Bool
+<span class="lineno">  295 </span><span class="decl"><span class="nottickedoff">verificavidaminhocas [] = True</span>
+<span class="lineno">  296 </span><span class="spaces"></span><span class="nottickedoff">verificavidaminhocas (m:ms) =</span>
+<span class="lineno">  297 </span><span class="spaces">  </span><span class="nottickedoff">verificavidaminhoca (vidaMinhoca m) &amp;&amp; verificavidaminhocas ms</span></span>
 <span class="lineno">  298 </span>
-<span class="lineno">  299 </span>
-<span class="lineno">  300 </span>-- Verifica se a vida de uma lista de minhocas é válida
-<span class="lineno">  301 </span>verificavidaminhocas :: [Minhoca] -&gt; Bool
-<span class="lineno">  302 </span><span class="decl"><span class="istickedoff">verificavidaminhocas [] = True</span>
-<span class="lineno">  303 </span><span class="spaces"></span><span class="istickedoff">verificavidaminhocas (m:ms) =</span>
-<span class="lineno">  304 </span><span class="spaces">  </span><span class="istickedoff">verificavidaminhoca (vidaMinhoca m) &amp;&amp; verificavidaminhocas ms</span></span>
-<span class="lineno">  305 </span>
-<span class="lineno">  306 </span>--Valida a quantidade de munições das diversas armas para uma minhoca
-<span class="lineno">  307 </span>validaMinhocaMunicao :: Minhoca -&gt; Bool
-<span class="lineno">  308 </span><span class="decl"><span class="istickedoff">validaMinhocaMunicao m =</span>
-<span class="lineno">  309 </span><span class="spaces">  </span><span class="istickedoff">jetpackMinhoca m    &gt;= 0 &amp;&amp;</span>
-<span class="lineno">  310 </span><span class="spaces">  </span><span class="istickedoff">escavadoraMinhoca m &gt;= 0 &amp;&amp;</span>
-<span class="lineno">  311 </span><span class="spaces">  </span><span class="istickedoff">bazucaMinhoca m     &gt;= 0 &amp;&amp;</span>
-<span class="lineno">  312 </span><span class="spaces">  </span><span class="istickedoff">minaMinhoca m       &gt;= 0 &amp;&amp;</span>
-<span class="lineno">  313 </span><span class="spaces">  </span><span class="istickedoff">dinamiteMinhoca m   &gt;= 0</span></span>
-<span class="lineno">  314 </span>
-<span class="lineno">  315 </span>
-<span class="lineno">  316 </span>--Valida a quantidade de munições das diversas armas para uma lista de minhocas
-<span class="lineno">  317 </span>validaMinhocasMunicao :: [Minhoca] -&gt; Bool
-<span class="lineno">  318 </span><span class="decl"><span class="istickedoff">validaMinhocasMunicao [] = True</span>
-<span class="lineno">  319 </span><span class="spaces"></span><span class="istickedoff">validaMinhocasMunicao (m:ms) = validaMinhocaMunicao m &amp;&amp; validaMinhocasMunicao ms</span></span>
-<span class="lineno">  320 </span>
+<span class="lineno">  299 </span>--Valida a quantidade de munições das diversas armas para uma minhoca
+<span class="lineno">  300 </span>validaMinhocaMunicao :: Minhoca -&gt; Bool
+<span class="lineno">  301 </span><span class="decl"><span class="nottickedoff">validaMinhocaMunicao m =</span>
+<span class="lineno">  302 </span><span class="spaces">  </span><span class="nottickedoff">jetpackMinhoca m    &gt;= 0 &amp;&amp;</span>
+<span class="lineno">  303 </span><span class="spaces">  </span><span class="nottickedoff">escavadoraMinhoca m &gt;= 0 &amp;&amp;</span>
+<span class="lineno">  304 </span><span class="spaces">  </span><span class="nottickedoff">bazucaMinhoca m     &gt;= 0 &amp;&amp;</span>
+<span class="lineno">  305 </span><span class="spaces">  </span><span class="nottickedoff">minaMinhoca m       &gt;= 0 &amp;&amp;</span>
+<span class="lineno">  306 </span><span class="spaces">  </span><span class="nottickedoff">dinamiteMinhoca m   &gt;= 0</span></span>
+<span class="lineno">  307 </span>
+<span class="lineno">  308 </span>
+<span class="lineno">  309 </span>--Valida a quantidade de munições das diversas armas para uma lista de minhocas
+<span class="lineno">  310 </span>validaMinhocasMunicao :: [Minhoca] -&gt; Bool
+<span class="lineno">  311 </span><span class="decl"><span class="nottickedoff">validaMinhocasMunicao [] = True</span>
+<span class="lineno">  312 </span><span class="spaces"></span><span class="nottickedoff">validaMinhocasMunicao (m:ms) = validaMinhocaMunicao m &amp;&amp; validaMinhocasMunicao ms</span></span>
+<span class="lineno">  313 </span>
 
 </pre>
 </body>
