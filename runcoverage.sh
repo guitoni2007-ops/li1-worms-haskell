@@ -5,11 +5,11 @@ set -Eeuo pipefail
 TAREFA=
 
 case "$1" in
-  t1 | t2 | t3)
+  t1 | t2 | t3 | t4)
     TAREFA="$1"
     ;;
   *)
-    echo "Usage: $0 (t1 | t2 | t3)"
+    echo "Usage: $0 (t1 | t2 | t3 | t4)"
     exit 1
     ;;
 esac
