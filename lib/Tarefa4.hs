@@ -44,4 +44,4 @@ avancaObjetoJogada e objetos (i,objeto') = if elem objeto' objetos
 
 -- | Para um número de ticks desde o início da tática, dado um estado, determina a próxima jogada.
 jogadaTatica :: Ticks -> Estado -> (NumMinhoca,Jogada)
-jogadaTatica t e = (0,Move Este)
+jogadaTatica t e = undefined
