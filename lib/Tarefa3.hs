@@ -18,42 +18,57 @@ import Tarefa1
 type Dano = Int
 type Danos = [(Posicao,Dano)]
 
-
-mapaTesteValido15 =
-  [ [Agua, Ar, Terra, Pedra]
+-- Mapa de teste válido
+mapaTesteValido :: Mapa
+mapaTesteValido =
+  [ [Ar, Ar, Terra, Pedra]
   , [Agua, Terra, Terra, Pedra]
-  , [Agua, Ar, Ar, Ar]
+  , [Ar, Ar, Ar, Ar]
   , [Pedra, Pedra, Terra, Agua]
   ]
+mapaTesteValidos :: Mapa
+mapaTesteValidos =
+  [ [Ar, Ar, Ar, Ar, Ar]
+  , [Ar, Ar, Ar, Ar, Ar]
+  , [Ar, Ar, Ar, Ar, Ar]
+  , [Ar, Ar, Ar, Ar, Ar]
+  , [Ar, Ar, Ar, Ar, Ar]
+  ]
+-- Objetos de teste
+objetosTeste :: [Objeto]
+objetosTeste =
+  [ Barril
+      { posicaoBarril = (1,3)
+      , explodeBarril = False
+      }
+  , Barril
+      { posicaoBarril = (2,2)
+      , explodeBarril = True
+      }
+  , Disparo
+      { posicaoDisparo = (3,3)
+      , direcaoDisparo = Norte
+      , tipoDisparo = Dinamite
+      , tempoDisparo = Just 0
+      , donoDisparo = 2
+      }
+  ]
 
-objetosTeste15 =
-  [Barril (2,2) True
-  ,Disparo (1,2) Sul Bazuca Nothing 5 ]
+-- Minhocas de teste
+minhocasTeste :: [Minhoca]
+minhocasTeste =
+  [ Minhoca (Just (0,0)) (Viva 100) 1 1 1 1 1
+  , Minhoca (Just (0,1)) (Viva 50)  1 1 1 1 1
+  , Minhoca (Just (3,3)) Morta      1 1 1 1 1
+  ]
 
-
-objetosTeste16 =
-  ( Disparo (1,2) Norte Bazuca (Just 0) 5 )
-
-e1 = Estado mapaTesteValido15 objetosTeste15 minhocasTeste1
-
-
-
-minhocasTeste1 =
-  [ Minhoca (Just (1,0)) (Viva 100) 1 1 1 1 1 ]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+-- Estado de teste
+estadoTeste :: Estado
+estadoTeste = Estado
+  { mapaEstado = mapaTesteValido
+  , objetosEstado = objetosTeste
+  , minhocasEstado = minhocasTeste
+  }
 
 
 
@@ -72,39 +87,69 @@ avancaMinhoca :: Estado -> NumMinhoca -> Minhoca -> Minhoca
 avancaMinhoca (Estado mapa _ _) _ minhoca = minhocaComGravidade mapa minhoca
 
 -- | Para um dado estado, dado o índice de um objeto na lista de objetos e o estado desse objeto, retorna o novo estado do objeto no próximo tick ou, caso o objeto expluda, uma lista de posições afetadas com o dano associado.
+-- | Avança um objeto um tick: ou atualiza-o (Left Objeto) ou devolve danos de explosão (Right Danos).
 avancaObjeto :: Estado -> NumObjeto -> Objeto -> Either Objeto Danos
 avancaObjeto estado _ obj =
   case atualizaObjetoFisica estado obj of
     Just objAtualizado ->
-      if deveExplodirObjeto (mapaEstado estado) obj
+      if deveExplodirObjeto (mapaEstado estado) objAtualizado
         then case posicaoObjeto objAtualizado of
-               Just p -> Right (calculaDanosExplosao p (raioExplosao objAtualizado) (mapaEstado estado))
+               Just p ->
+                 let raio = raioExplosao objAtualizado
+                     posAfetadas = posicoesAfetadasPorExplosaoValida p raio (mapaEstado estado)
+                     danos = calculaDanosExplosao p raio (mapaEstado estado)
+                     estado' = transformaTerrenoEmAr estado posAfetadas
+                 in Right danos
                Nothing -> Right []
         else Left objAtualizado
 
     Nothing ->
       case posicaoObjeto obj of
-        Just p -> Right (calculaDanosExplosao p (raioExplosao obj) (mapaEstado estado))
+        Just p ->
+          let raio = raioExplosao obj
+              posAfetadas = posicoesAfetadasPorExplosaoValida p raio (mapaEstado estado)
+              danos = calculaDanosExplosao p raio (mapaEstado estado)
+              estado' = transformaTerrenoEmAr estado posAfetadas
+          in Right danos
         Nothing -> Right []
 
 
 
+
 -- | Para uma lista de posições afetadas por uma explosão, recebe um estado e calcula o novo estado em que esses danos são aplicados.
+-- | Aplica danos às minhocas e transforma o terreno Terra atingido em Ar
 aplicaDanos :: Danos -> Estado -> Estado
 aplicaDanos danos (Estado mapa objetos minhocas) =
-  let aplicarDano minhoca = case minhoca of
-        Minhoca Nothing vida jet esc baz mina din ->
-          Minhoca Nothing vida jet esc baz mina din
+  let -- só posições com dano > 10 e que sejam Terra
+      posAfetadas = [p | (p, d) <- danos, d > 10
+                       , terrenoNaPosicao mapa p == Just Terra]
+
+      -- atualiza o mapa: apenas posições Terra atingidas viram Ar
+      atualizaCelula l c terreno =
+        if (l,c) `elem` posAfetadas then Ar else terreno
+
+      mapa' =
+        [ [ atualizaCelula l c terreno
+          | (c, terreno) <- zip [0..] linha ]
+        | (l, linha) <- zip [0..] mapa ]
+
+      -- aplica dano às minhocas conforme Danos
+      aplicarDano minhoca = case minhoca of
+        Minhoca Nothing vida jet esc baz mina din -> minhoca
 
         Minhoca (Just pos) (Viva hp) jet esc baz mina din ->
           let danoTotal = sum [d | (p, d) <- danos, p == pos]
-              novaVida = hp - danoTotal
+              novaVida  = hp - danoTotal
               estadoVida = if novaVida <= 0 then Morta else Viva novaVida
           in Minhoca (Just pos) estadoVida jet esc baz mina din
 
-        Minhoca pos Morta jet esc baz mina din ->
-          Minhoca pos Morta jet esc baz mina din
-  in Estado mapa objetos (map aplicarDano minhocas)
+        Minhoca pos Morta jet esc baz mina din -> minhoca
+  in Estado mapa' objetos (map aplicarDano minhocas)
+
+
+
+
+
 
 
 --Verifica se uma minhoca está viva.
@@ -198,6 +243,8 @@ posicoesAfetadasPorExplosaoValida (cx, cy) d mapa =
   where
     r = d `div` 2
 
+
+
 --Devolve a posição de um objeto, se aplicável (barris e disparos).
 posicaoObjeto :: Objeto -> Maybe Posicao
 posicaoObjeto (Barril p _)         = Just p
@@ -205,9 +252,16 @@ posicaoObjeto (Disparo p _ _ _ _)  = Just p
 
 --Gera danos de explosão numa área válida do mapa.
 calculaDanosExplosao :: Posicao -> Int -> Mapa -> Danos
-calculaDanosExplosao (x, y) d mapa =
-  [((x+i, y+j), danoExplosao d (i,j)) | i <- [-r..r], j <- [-r..r], danoExplosao d (i,j) > 0, ePosicaoMatrizValida (x+i, y+j) mapa]
-  where r = d `div` 2
+calculaDanosExplosao centro@(cx, cy) d mapa =
+  [ (p, dano)
+  | p@(x, y) <- posicoesAfetadasPorExplosaoValida centro d mapa
+  , let dx = x - cx
+        dy = y - cy
+        dano = danoExplosao d (dx, dy)
+  , dano > 0
+  ]
+
+
 
     
 --Calcula o dano causado numa célula relativa à posição central da explosão.
@@ -219,6 +273,14 @@ danoExplosao d (i,j)
   | otherwise =
       let dist = abs i + abs j
       in max ((d - dist) * 10) 0
+
+--Transforma o terreno nas posições dadas em Ar.
+transformaTerrenoEmAr :: Estado -> [Posicao] -> Estado
+transformaTerrenoEmAr (Estado mapa objetos minhocas) posicoes =
+  let mapa' = [ [ if (l,c) `elem` posicoes then Ar else terreno
+                | (c, terreno) <- zip [0..] linha ]
+              | (l, linha) <- zip [0..] mapa ]
+  in Estado mapa' objetos minhocas
 
 
 
@@ -353,40 +415,46 @@ ativaMinaSeInimigo mapa minhocas obj@(Disparo pos _ Mina Nothing dono)
   | otherwise = obj
 ativaMinaSeInimigo _ _ obj = obj
 
---Atualiza a posição de todos os objetos que não sofrem explosão
+
+-- Atualiza a posição de todos os objetos que não sofrem explosão
 atualizaObjetoFisica :: Estado -> Objeto -> Maybe Objeto
 atualizaObjetoFisica estado obj = case obj of
   -- 1. Barril -> atualiza primeiro, depois verifica se explode
-  Barril _ _->
-    let barrilAtualizado = atualizaBarril estado obj
+  Barril p e ->
+    let barrilAtualizado = atualizaBarril estado (Barril p e)
     in if deveExplodirObjeto (mapaEstado estado) barrilAtualizado
-       then Nothing
-       else Just barrilAtualizado
+         then Nothing
+         else Just barrilAtualizado
 
   -- 2. Bazuca -> avança; se sair do mapa, é removida
-  Disparo _ _ Bazuca _ _ ->
-    atualizaDisparoBazuca (mapaEstado estado) obj
+  Disparo p d Bazuca t dono ->
+    atualizaDisparoBazuca (mapaEstado estado) (Disparo p d Bazuca t dono)
 
-  -- 3. Mina sem tempo -> ativa se houver inimigo na área
-  Disparo _ _ Mina Nothing _ ->
-    Just (ativaMinaSeInimigo (mapaEstado estado) (minhocasEstado estado) obj)
+  -- 3. Mina sem tempo -> ativa se houver inimigo na área; se estiver em Ar/Água, ativa para explodir em breve
+  Disparo p d Mina Nothing dono ->
+    if terrenoNaoOpacoBarril estado p
+      then Just (Disparo p Norte Mina (Just 2) dono)
+      else Just (ativaMinaSeInimigo (mapaEstado estado) (minhocasEstado estado) (Disparo p d Mina Nothing dono))
 
   -- 4. Mina com tempo -> cai se estiver no ar ou água
-  Disparo _ _ Mina (Just _) _ ->
-    Just (atualizaTempoObjeto (atualizaDisparoMina estado obj))
+  Disparo p d Mina (Just tt) dono ->
+    Just (atualizaTempoObjeto (atualizaDisparoMina estado (Disparo p d Mina (Just tt) dono)))
 
   -- 5. Mina ou Dinamite no chão -> fixa e aponta para Norte
-  Disparo _ _ arma _ _
+  Disparo p d arma t dono
     | (arma == Mina || arma == Dinamite)
-    , disparoEstaNoChao estado obj ->
-        Just (atualizaTempoObjeto (fixaDisparoNoChao estado obj))
+    , disparoEstaNoChao estado (Disparo p d arma t dono) ->
+        Just (atualizaTempoObjeto (fixaDisparoNoChao estado (Disparo p d arma t dono)))
 
-  -- 6. Dinamite -> comportamento depende do ambiente
-  Disparo _ _ Dinamite _ _ ->
-    Just (atualizaTempoObjeto (atualizaDinamiteRodaSeNoAr estado obj))
+  -- 6. Dinamite -> comportamento depende do ambiente; se estiver em Ar/Água, mantém mas vai explodir
+  Disparo p d Dinamite t dono ->
+    let objAtualizado = atualizaDinamiteRodaSeNoAr estado (Disparo p d Dinamite t dono)
+    in Just (atualizaTempoObjeto objAtualizado)
 
   -- 7. Caso geral -> mantém
   _ -> Just obj
+
+
 
 
 
