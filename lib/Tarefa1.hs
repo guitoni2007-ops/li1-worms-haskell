@@ -303,3 +303,8 @@ validaMinhocasMunicao :: [Minhoca] -> Bool
 validaMinhocasMunicao [] = True
 validaMinhocasMunicao (m:ms) = validaMinhocaMunicao m && validaMinhocasMunicao ms
 
+filtraMinhocasPosicao :: [Minhoca] -> [Minhoca]
+filtraMinhocasPosicao (m:ms) =
+  case posicaoMinhoca m of 
+    Just pos -> m : filtraMinhocasPosicao ms
+    Nothing -> filtraMinhocasPosicao ms

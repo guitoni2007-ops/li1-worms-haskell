@@ -19,6 +19,46 @@ type Dano = Int
 type Danos = [(Posicao,Dano)]
 
 
+mapaTesteValido15 =
+  [ [Agua, Ar, Terra, Pedra]
+  , [Agua, Terra, Terra, Pedra]
+  , [Agua, Ar, Ar, Ar]
+  , [Pedra, Pedra, Terra, Agua]
+  ]
+
+objetosTeste15 =
+  [Barril (2,2) True
+  ,Disparo (1,2) Sul Bazuca Nothing 5 ]
+
+
+objetosTeste16 =
+  ( Disparo (1,2) Norte Bazuca (Just 0) 5 )
+
+e1 = Estado mapaTesteValido15 objetosTeste15 minhocasTeste1
+
+
+
+minhocasTeste1 =
+  [ Minhoca (Just (1,0)) (Viva 100) 1 1 1 1 1 ]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 -- | Função principal da Tarefa 3. Avanço o estado do jogo um tick.
 avancaEstado :: Estado -> Estado
 avancaEstado e@(Estado mapa objetos minhocas) = foldr aplicaDanos e' danoss
@@ -130,11 +170,11 @@ minhocaComGravidade mapa minhoca
 --Verifica se um objeto deve explodir imediatamente.
 deveExplodirObjeto :: Mapa -> Objeto -> Bool
 deveExplodirObjeto mapa obj = case obj of
-  Barril _ True -> False  
-  Disparo pos dir Bazuca (Just 0) _ ->
-    not (posicaoValidaOuBazuca mapa pos dir)
+  Barril _ True -> True  
+  Disparo pos dir Bazuca _ _ -> not (posicaoValidaOuBazuca mapa pos dir)
   Disparo _ _ _ (Just 0) _ -> True
   _ -> False
+
 --Retorna o raio de explosão de um objeto.
 raioExplosao :: Objeto -> Int
 raioExplosao obj =
@@ -317,7 +357,7 @@ ativaMinaSeInimigo _ _ obj = obj
 atualizaObjetoFisica :: Estado -> Objeto -> Maybe Objeto
 atualizaObjetoFisica estado obj = case obj of
   -- 1. Barril -> atualiza primeiro, depois verifica se explode
-  Barril _ _ ->
+  Barril _ _->
     let barrilAtualizado = atualizaBarril estado obj
     in if deveExplodirObjeto (mapaEstado estado) barrilAtualizado
        then Nothing
