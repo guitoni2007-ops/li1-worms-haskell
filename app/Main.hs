@@ -1,26 +1,53 @@
 module Main where
 
 import Graphics.Gloss
-
-import Desenhar
-import Eventos
-import Worms
-import Tempo
+import Graphics.Gloss.Juicy (loadJuicyPNG)
+import Desenhar (desenha)
+import Eventos (reageEventos)
+import Worms (initialState, Worms)
+import Tempo (reageTempo)
 
 janela :: Display
-janela = InWindow "Worms" (1920, 1080) (0, 0)
+janela = InWindow "Worms World Cup" (1280, 720) (100, 100)
 
 fundo :: Color
-fundo = white
+fundo = greyN 0.5
 
 fr :: Int
 fr = 60
 
--- | Função principal que invoca o Gloss para correr o jogo.
+flagFiles :: [FilePath]
+flagFiles =
+  [ "flagsportugal.png", "flagsbrasil.png", "flagsargentina.png", "flagsfranca.png"
+  , "flagsalemanha.png", "flagsespanha.png", "flagsinglaterra.png", "flagsjapao.png"
+  ]
+
 main :: IO ()
 main = do
-  putStrLn "Hello from Worms!"
+  mTitle <- loadJuicyPNG "Worms world cup.png"
+  titlePic <- case mTitle of
+    Just p  -> return p
+    Nothing -> return $ Translate 0 0 $ Scale 0.001 0.001 $ Text "WORMS WORLD CUP"
 
-  play janela fundo fr it desenha reageEventos reageTempo
-  where
-    it = Worms {}
+  mFlags <- mapM loadJuicyPNG flagFiles
+
+  let it :: Worms
+      it = initialState
+
+  play janela fundo fr it (\w -> desenha titlePic mFlags w) reageEventos reageTempo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
