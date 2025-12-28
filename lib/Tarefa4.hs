@@ -10,7 +10,7 @@ import Labs2025
 import Tarefa2
 import Tarefa3
 
--- | Função principal da Tarefa 4.
+-- | Função principal da Tarefa 4 que gera uma sequência de 100 jogadas.
 tatica :: Estado -> [(NumMinhoca,Jogada)]
 tatica e = reverse $ snd $ foldl avancaTatica (e,[]) [0..99]
 
@@ -28,21 +28,25 @@ avancaJogada (i,j) e@(Estado _ objetos minhocas) = foldr aplicaDanos e'' danoss'
     (objetos'',danoss'') = partitionEithers $ map (avancaObjetoJogada (e' { minhocasEstado = minhocas''}) objetos) (zip [0..] objetos')
     e'' = Estado mapa' objetos'' minhocas''
 
+-- | Atualiza o estado interno de uma minhoca após uma jogada.
 avancaMinhocaJogada :: Estado -> (NumMinhoca,Minhoca,Minhoca) -> Minhoca
 avancaMinhocaJogada e (i,minhoca,minhoca') = if posicaoMinhoca minhoca == posicaoMinhoca minhoca'
     then avancaMinhoca e i minhoca'
     else minhoca'
 
+-- | Atualiza o estado de um objeto, verificando se este ainda existe ou se resultou em danos.
 avancaObjetoJogada :: Estado -> [Objeto] -> (NumObjeto,Objeto) -> Either Objeto Danos
 avancaObjetoJogada e objetos (i,objeto') = if elem objeto' objetos
     then avancaObjeto e i objeto'
     else Left objeto'
 
--- | Determina a próxima jogada com foco em pontuação máxima e suicídio estratégico.
+-- | Calcula a melhor jogada para uma minhoca num determinado instante.
+-- Prioriza ações ofensivas, seguidas de limpeza de mapa e, por fim, suicídio.
 jogadaTatica :: Ticks -> Estado -> (NumMinhoca, Jogada)
 jogadaTatica t e = (idx, acao)
   where
     minhocas = minhocasEstado e
+    -- Seleção cíclica das minhocas vivas
     vivas = [i | (i, m) <- zip [0..] minhocas, vidaMinhoca m /= Morta]
     idx = if null vivas then 0 else vivas !! (t `mod` length vivas)
     mAtual = minhocas !! idx
@@ -51,6 +55,8 @@ jogadaTatica t e = (idx, acao)
         Nothing -> Move Norte
         Just (x, y) -> decidir (x, y)
     
+    -- | Máquina de estados para decidir a ação da minhoca.
+   
     decidir (x, y)
         -- 1. Atacar inimigos alinhados
         | not (null alvosVivos) && bazucaMinhoca mAtual > 0 = 
@@ -64,16 +70,15 @@ jogadaTatica t e = (idx, acao)
         | bazucaMinhoca mAtual > 0 && not (null terrasAlinhadas) =
             Dispara Bazuca (dirPara (head terrasAlinhadas) (x, y))
         
-        -- 4. Ir para a Água (Suicídio = 100 pontos se tiver HP cheio)
+        -- 4. Ir para a Água 
         | not (null aguasNoMapa) = Move (dirPara (head aguasNoMapa) (x, y))
 
-        -- 5. Ir para a Terra (Para aproximar e usar escavadora ou alinhar bazuca)
+        -- 5. Ir para a Terra 
         | not (null todasTerras) = Move (dirPara (head todasTerras) (x, y))
         
-        -- 6. Sair do mapa / Explorar Este (Evita ficar preso)
+        -- 6. Sair do mapa / Explorar Este 
         | otherwise = Move Este
       where
-        -- CORREÇÃO: Definir (ax, ay) ANTES de usar no filtro
         alvosVivos = [p | m <- inimigosVivos, 
                          let p = posicaoInimigo m, 
                          let (ax, ay) = p, 
@@ -90,8 +95,9 @@ jogadaTatica t e = (idx, acao)
 
         aguasNoMapa = [(lx, ly) | (lx, linha) <- zip [0..] (mapaEstado e), 
                                   (ly, terreno) <- zip [0..] linha, terreno == Agua]
-
+    -- | Lista de outras minhocas que ainda estão em jogo.
     inimigosVivos = [m | (i, m) <- zip [0..] minhocas, i /= idx, vidaMinhoca m /= Morta]
+    -- | Obtém a posição de uma minhoca (padrão 0,0 caso não exista).
     posicaoInimigo m = fromMaybe (0,0) (posicaoMinhoca m)
 
     -- Função de direção robusta para navegação
