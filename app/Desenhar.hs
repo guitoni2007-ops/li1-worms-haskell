@@ -7,6 +7,7 @@ import qualified Labs2025 as L25
 import qualified Worms as W
 import Worms (Worms)
 import Data.List (elemIndex)
+import qualified Tarefa6 as T6
 
 paises :: [String]
 paises =
@@ -17,101 +18,168 @@ paises =
 menuBg :: Color
 menuBg = greyN 0.80
 
--- assinatura: 14 imagens/valores + Worms -> Picture
-desenha :: Maybe Picture      -- mMenuBg
-       -> Maybe Picture      -- mBracketBg
-       -> Maybe Picture      -- mGameBg
-       -> Maybe Picture      -- mTitlePic
-       -> [Maybe Picture]    -- flagsMenu
-       -> [Maybe Picture]    -- flagsBracket
-       -> [Maybe Picture]    -- mWormPics
-       -> Maybe Picture      -- mBarrilPic
-       -> Maybe Picture      -- mBarrilExplodirPic
-       -> Maybe Picture      -- mMinaPic
-       -> Maybe Picture      -- mJetpackPic
-       -> Maybe Picture      -- mDinamitePic
-       -> Maybe Picture      -- mBazucaPic
-       -> Maybe Picture      -- mEscavadoraPic
-       -> Worms
-       -> Picture
-desenha mMenuBg mBracketBg mGameBg mTitlePic flagsMenu flagsBracket mWormPics mBarrilPic mBarrilExplodirPic mMinaPic mJetpackPic mDinamitePic mBazucaPic mEscavadoraPic w =
-  case W.estadoJogo w of
-    -- jogo a decorrer: desenha o fundo do jogo (mGameBg) atrás do mapa/objetos/minhocas
-    Just st ->
-      let bgPic = case mGameBg of
-                    Just p  -> Scale 1 1 p
-                    Nothing -> Translate 0 0 $ color menuBg $ rectangleSolid 1920 1080
-          gamePic = desenhaEstado mWormPics mBarrilPic mBarrilExplodirPic mMinaPic mJetpackPic mDinamitePic mBazucaPic mEscavadoraPic st
-          timerPic = drawTurnTimer w
-          sidePanel = drawSidePanel mWormPics mBazucaPic mMinaPic mJetpackPic mEscavadoraPic mDinamitePic w
-      in Pictures [ bgPic, gamePic, timerPic, sidePanel ]
+-- ---------------------------------------------------------------------
+-- Barra de progresso do turno
+-- ---------------------------------------------------------------------
+drawTurnTimer :: Worms -> Picture
+drawTurnTimer w =
+  let x = 760
+      y = 200
+      boxW = 220
+      pad = 8
+      innerW = boxW - 2 * pad
+      innerH = 24
 
-    -- não há estado de jogo: estamos no menu/bracket
-    Nothing ->
-      -- se estamos em modo torneio e devemos mostrar a bracket (tournament + showWhite usado como trigger)
-      if W.menu w == W.Game && W.showWhite w && W.tournament w && W.lastWinner w == Nothing
-        then
-          -- ecrã da bracket: usa mBracketBg como fundo e desenha os quartos com flags
-          let bgPic = case mBracketBg of
-                        Just p  -> Scale 1 1 p
-                        Nothing -> Translate 0 0 $ color menuBg $ rectangleSolid 1920 1080
-          in Pictures
-               [ bgPic
-               , drawQuarterFinals flagsBracket (W.bracket w) w
-               , drawBracketButtons w
-               ]
-        else
-          -- resto do menu principal: usa o fundo normal e as flags do menu/seleção
-          let bgPic = case mMenuBg of
-                        Just p  -> Scale 1 1 p
-                        Nothing -> Translate 0 0 $ color menuBg $ rectangleSolid 1920 1080
-          in Pictures
-               [ bgPic
-               , Translate 0 350 $ Scale 0.9 0.9 $
-                   case mTitlePic of
-                     Just p  -> p
-                     Nothing -> Translate 0 0 $ Scale 0.001 0.001 $ Text "WORMS WORLD CUP"
-               , case W.menu w of
-                   W.MainMenu      -> desenhaMain (W.hoverMain w)
-                   W.CountrySelect -> desenhaCountrySelect flagsMenu w
-                   W.Game          -> desenhaGameScreen flagsMenu w
-               ]
+      ticksLeft = W.turnTicksLeft w
+      ticksTotal = W.turnDuration w
+      pct = if ticksTotal <= 0 then 0 else max 0 (min 1 (fromIntegral ticksLeft / fromIntegral ticksTotal))
 
--- Botões da bracket: Replay (centro) e Back (embaixo)
-drawBracketButtons :: Worms -> Picture
-drawBracketButtons w =
-  let replayY = -120
-      replayW = 220
-      replayH = 64
-      replayFill = if W.hoverPlay w then makeColor 0.90 0.30 0.05 1 else white
-      replayText = if W.hoverPlay w then boldText white 0.28 "Replay" else Scale 0.28 0.28 (color black $ Text "Replay")
-      replayPic = Translate 0 replayY $
-        Pictures [ color replayFill $ rectangleSolid replayW replayH
-                 , color black $ rectangleWire replayW replayH
-                 , Translate (-40) (-12) replayText
-                 ]
+      fg = makeColor 0.90 0.30 0.05 1
+      barBg = greyN 0.2
+      textCol = white
 
-      backY = -260
-      backW = 160
-      backH = 48
-      backFill = white
-      backText = Scale 0.22 0.22 (color black $ Text "Back")
-      backPic = Translate 0 backY $
-        Pictures [ color backFill $ rectangleSolid backW backH
-                 , color black $ rectangleWire backW backH
-                 , Translate (-28) (backY - 10) backText
-                 ]
-  in Pictures [ replayPic, backPic ]
+      barX = x
+      barY = y
 
--- Função desenhaEstado (mantive a tua versão anterior, centrada)
+      barBgPic = Translate barX barY $ color barBg $ rectangleSolid innerW innerH
+      barFillW = innerW * pct
+      fillOffset :: Float
+      fillOffset = 8.0
+      barFillPic = Translate (barX - innerW/2 + barFillW/2 + fillOffset) barY $ color fg $ rectangleSolid barFillW innerH
+
+      playerIdx = Translate (barX - innerW/2) (barY + 40) $
+                  boldText textCol 0.28 ("Jogador " ++ show (W.currentTurn w + 1))
+  in Pictures [barBgPic, barFillPic, playerIdx]
+
+-- ---------------------------------------------------------------------
+-- Painel lateral com inventários
+-- ---------------------------------------------------------------------
+drawSidePanel :: [Maybe Picture] -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Worms -> Picture
+drawSidePanel mWormPics mBazucaPic mMinaPic _mJetpackPic _mEscavadoraPic mDinamitePic w =
+  let x = -800
+      yTop = 220
+      yGap = 400
+      portraitSize = 140
+      iconSize = 28
+      mEst = W.estadoJogo w
+      minhList = case mEst of
+                   Just est -> L25.minhocasEstado est
+                   Nothing  -> []
+      getMinh i field =
+        if i >= 0 && i < length minhList
+          then field (minhList !! i)
+          else 0
+      drawIconLocal :: Maybe Picture -> Float -> Picture
+      drawIconLocal mPic size =
+        case mPic of
+          Just p  -> Scale (size/550) (size/550) p
+          Nothing -> Color (greyN 0.8) $ rectangleSolid size size
+      drawEntry i posY =
+        let portraitPic = if i >= 0 && i < length mWormPics
+                            then case mWormPics !! i of
+                                   Just p -> Scale (portraitSize/550) (portraitSize/550) p
+                                   Nothing -> Translate 0 0 $ color white $ circleSolid (portraitSize/2)
+                            else Translate 0 0 $ color white $ circleSolid (portraitSize/2)
+            baz = getMinh i L25.bazucaMinhoca
+            minas = getMinh i L25.minaMinhoca
+            din = getMinh i L25.dinamiteMinhoca
+            portrait = Translate x posY portraitPic
+            invX = x + portraitSize/2 + 80
+            invYStart = posY + portraitSize/2
+            itemGap = 70
+            bgLeft = x - portraitSize / 2 - 30
+            bgRight = invX + 60
+            bgW = bgRight - bgLeft
+            bgCX = (bgLeft + bgRight) / 2
+            bgCY = posY + portraitSize / 2 - 70
+            bgH = portraitSize + 130
+            bgRect = Translate bgCX bgCY $ color (greyN 0.50) $ rectangleSolid bgW bgH
+            invLineIcon :: Float -> Maybe Picture -> Int -> Picture
+            invLineIcon dy mPic count =
+              Translate invX (invYStart - dy) $
+                Pictures
+                  [ Translate (-20) 0 $ drawIconLocal mPic iconSize
+                  , Translate 10 0 $ boldText white 0.18 (show count)
+                  ]
+            invPics = Pictures
+              [ invLineIcon (0 * itemGap)   mBazucaPic baz
+              , invLineIcon (1 * itemGap)   mMinaPic minas
+              , invLineIcon (2 * itemGap)   mDinamitePic din
+              ]
+        in Pictures [ bgRect, portrait, invPics ]
+  in Pictures [ drawEntry 0 yTop, drawEntry 1 (yTop - yGap) ]
+
+-- ---------------------------------------------------------------------
+-- Quarter finals / Bracket (apenas um botão Play em baixo)
+-- ---------------------------------------------------------------------
+drawQuarterFinals :: [Maybe Picture] -> Maybe (W.Bracket String) -> Worms -> Picture
+drawQuarterFinals _ Nothing _ = Blank
+drawQuarterFinals flags (Just b) w =
+  let firstRound = if null (W.rounds b) then [] else head (W.rounds b)
+      rowSpacing = 270
+      startX = -295
+      startY = 140
+      picScale = 0.38
+      refW = 276
+      refH = 183
+      flagW = refW * picScale
+      flagH = refH * picScale
+
+      flagForName :: String -> Maybe Picture
+      flagForName name =
+        case elemIndex name paises of
+          Just i -> if i < length flags then flags !! i else Nothing
+          Nothing -> Nothing
+
+      drawFlag :: Maybe Picture -> Picture
+      drawFlag (Just p) = Scale picScale picScale p
+      drawFlag Nothing  = Pictures
+        [ color white $ rectangleSolid flagW flagH
+        , color black $ rectangleWire flagW flagH
+        ]
+
+      drawMatch :: W.Match String -> Float -> Float -> Picture
+      drawMatch (W.Match a b) x y =
+        let sep = flagH / 2 + 30
+            topY = y + sep
+            botY = y - sep
+            top = Translate x topY $ drawFlag (flagForName a)
+            bot = Translate x botY $ drawFlag (flagForName b)
+        in Pictures [top, bot]
+
+      half = length firstRound `div` 2
+      leftMatches = take half firstRound
+      rightMatches = drop half firstRound
+      leftX = startX - 480
+      rightX = startX + 1070
+
+      drawSide ms x = Pictures $ zipWith (\m i ->
+        let y = startY - fromIntegral i * rowSpacing
+        in drawMatch m x y) ms [0..]
+
+      playW = 220
+      playH = 64
+      playY = -260
+      isHoverPlay = W.hoverPlay w
+      playFill = if isHoverPlay then makeColor 0.90 0.30 0.05 1 else white
+      playTextPic = if isHoverPlay then boldText white 0.35 "Play" else Scale 0.35 0.35 (color black $ Text "Play")
+      playButton = Translate 0 playY $
+        Pictures
+          [ color playFill $ rectangleSolid playW playH
+          , color black $ Translate 0 playY $ rectangleWire playW playH
+          , Translate (-40) (-12) playTextPic
+          ]
+  in Pictures [ drawSide leftMatches leftX, drawSide rightMatches rightX, playButton ]
+
+-- ---------------------------------------------------------------------
+-- desenhaEstado (mapa, objetos, minhocas)
+-- ---------------------------------------------------------------------
 desenhaEstado :: [Maybe Picture] -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> L25.Estado -> Picture
 desenhaEstado mWormPics mBarrilPic mBarrilExplodirPic mMinaPic mJetpackPic mDinamitePic mBazucaPic mEscavadoraPic st =
   let mapa = L25.mapaEstado st
       (rows, cols) = (length mapa, if null mapa then 0 else length (head mapa))
-      -- AUMENTEI AQUI: área de jogo maior (como tinhas antes)
       winW = 1800
       winH = 1010
-      -- margem reduzida para aumentar o tamanho do grid (opção recomendada)
       margin = 10
       availW = fromIntegral winW - 2 * margin
       availH = fromIntegral winH - 2 * margin
@@ -162,7 +230,6 @@ drawObjeto tileSize originX originY mBarrilPic mBarrilExplodirPic mMinaPic mJetp
              let imgScale = (tileSize * 0.9) / 850.0
              in Translate x y $ Scale imgScale imgScale p
            _ -> Blank
-
     L25.Disparo { L25.posicaoDisparo = (l,c), L25.tipoDisparo = t } ->
       let x = originX + (fromIntegral c + 0.5) * tileSize
           y = originY - (fromIntegral l + 0.5) * tileSize
@@ -222,7 +289,9 @@ drawMinhoca tileSize originX originY mWormPics minhoca idx =
            Nothing ->
              Translate x y $ Color (if alive then green else greyN 0.4) $ circleSolid radius
 
--- Menu principal: Quick Play, Tournament, Exit (3 botões)
+-- ---------------------------------------------------------------------
+-- Botões e textos do menu principal
+-- ---------------------------------------------------------------------
 desenhaMain :: Int -> Picture
 desenhaMain hover =
   Pictures
@@ -231,10 +300,9 @@ desenhaMain hover =
     , desenhaBotao "Exit"      10  (hover == 2)
     ]
 
--- desenhaBotao: botão com destaque laranja ao passar o rato
 desenhaBotao :: String -> Float -> Bool -> Picture
 desenhaBotao txt y hovered =
-  let hoverFill = makeColor 0.95 0.45 0.10 1   -- laranja mais vivo para hover
+  let hoverFill = makeColor 0.95 0.45 0.10 1
       normalFill = white
       borderCol = black
       textCol = if hovered then white else black
@@ -246,7 +314,6 @@ desenhaBotao txt y hovered =
        , Translate (-70) (y - 12) $ boldText textCol 0.22 txt
        ]
 
--- helper para texto "bold" desenhado com múltiplas cópias ligeiramente deslocadas
 boldText :: Color -> Float -> String -> Picture
 boldText col s txt =
   let offsets = [ (0,0)
@@ -305,166 +372,116 @@ desenhaGameScreen _ w =
       nome = if idx >= 0 && idx < length paises then paises !! idx else "Nenhum pais escolhido"
   in Translate 0 0 $ Scale 0.4 0.4 $ color black $ Text ("Jogo: " ++ nome)
 
--- drawQuarterFinals usa a lista flagsBracket passada desde Main.hs
-drawQuarterFinals :: [Maybe Picture] -> Maybe (W.Bracket String) -> Worms -> Picture
-drawQuarterFinals _ Nothing _ = Blank
-drawQuarterFinals flags (Just b) w =
-  let firstRound = if null (W.rounds b) then [] else head (W.rounds b)
-      rowSpacing = 270
-      startX = -295
-      startY = 140
-      picScale = 0.38
-      refW = 276
-      refH = 183
-      flagW = refW * picScale
-      flagH = refH * picScale
+-- ---------------------------------------------------------------------
+-- Função principal de desenho (exportada)
+-- ---------------------------------------------------------------------
+desenha :: Maybe Picture      -- mMenuBg
+       -> Maybe Picture      -- mBracketBg
+       -> Maybe Picture      -- mGameBg
+       -> Maybe Picture      -- mTitlePic
+       -> [Maybe Picture]    -- flagsMenu
+       -> [Maybe Picture]    -- flagsBracket
+       -> [Maybe Picture]    -- mWormPics
+       -> Maybe Picture      -- mBarrilPic
+       -> Maybe Picture      -- mBarrilExplodirPic
+       -> Maybe Picture      -- mMinaPic
+       -> Maybe Picture      -- mJetpackPic
+       -> Maybe Picture      -- mDinamitePic
+       -> Maybe Picture      -- mBazucaPic
+       -> Maybe Picture      -- mEscavadoraPic
+       -> Worms
+       -> Picture
+desenha mMenuBg mBracketBg mGameBg mTitlePic flagsMenu flagsBracket mWormPics mBarrilPic mBarrilExplodirPic mMinaPic mJetpackPic mDinamitePic mBazucaPic mEscavadoraPic w =
+  case W.estadoJogo w of
+    Just st ->
+      let bgPic = case mGameBg of
+                    Just p  -> Scale 1 1 p
+                    Nothing -> Translate 0 0 $ color menuBg $ rectangleSolid 1920 1080
+          gamePic = desenhaEstado mWormPics mBarrilPic mBarrilExplodirPic mMinaPic mJetpackPic mDinamitePic mBazucaPic mEscavadoraPic st
+          timerPic = drawTurnTimer w
+          sidePanel = drawSidePanel mWormPics mBazucaPic mMinaPic mJetpackPic mEscavadoraPic mDinamitePic w
+      in Pictures [ bgPic, gamePic, timerPic, sidePanel ]
+    Nothing ->
+      if W.showStatistics w
+        then drawStatisticsScreen w
+      else
+        if W.menu w == W.Game && W.showWhite w && W.tournament w && W.lastWinner w == Nothing
+          then
+            let bgPic = case mBracketBg of
+                          Just p  -> Scale 1 1 p
+                          Nothing -> Translate 0 0 $ color menuBg $ rectangleSolid 1920 1080
+            in Pictures [ bgPic, drawQuarterFinals flagsBracket (W.bracket w) w ]
+          else
+            let bgPic = case mMenuBg of
+                          Just p  -> Scale 1 1 p
+                          Nothing -> Translate 0 0 $ color menuBg $ rectangleSolid 1920 1080
+            in Pictures
+                 [ bgPic
+                 , Translate 0 350 $ Scale 0.9 0.9 $
+                     case mTitlePic of
+                       Just p  -> p
+                       Nothing -> Translate 0 0 $ Scale 0.001 0.001 $ Text "WORMS WORLD CUP"
+                 , case W.menu w of
+                     W.MainMenu      -> desenhaMain (W.hoverMain w)
+                     W.CountrySelect -> desenhaCountrySelect flagsMenu w
+                     W.Game          -> desenhaGameScreen flagsMenu w
+                 ]
 
-      flagForName :: String -> Maybe Picture
-      flagForName name =
-        case elemIndex name paises of
-          Just i -> if i < length flags then flags !! i else Nothing
-          Nothing -> Nothing
+-- ---------------------------------------------------------------------
+-- drawStatisticsScreen: fundo cinzento, estatísticas a preto, botão branco "Menu"
+-- ---------------------------------------------------------------------
+-- drawStatisticsScreen: fundo preto, painel branco com estatísticas a preto, botão branco "Menu" em baixo
+drawStatisticsScreen :: Worms -> Picture
+drawStatisticsScreen w =
+  let
+      -- fundo preto (tela inteira)
+      bg = color black $ rectangleSolid 1920 1080
 
-      drawFlag :: Maybe Picture -> Picture
-      drawFlag (Just p) = Scale picScale picScale p
-      drawFlag Nothing  = Pictures
-        [ color white $ rectangleSolid flagW flagH
-        , color black $ rectangleWire flagW flagH
-        ]
+      -- painel central branco com borda preta
+      rectW = 800
+      rectH = 420
+      rectX = 0
+      rectY = 40
+      bgRect = Translate rectX rectY $ color white $ rectangleSolid rectW rectH
+      borderRect = Translate rectX rectY $ color black $ rectangleWire rectW rectH
 
-      drawMatch :: W.Match String -> Float -> Float -> Picture
-      drawMatch (W.Match a b) x y =
-        let sep = flagH / 2 + 30
-            topY = y + sep
-            botY = y - sep
-            top = Translate x topY $ drawFlag (flagForName a)
-            bot = Translate x botY $ drawFlag (flagForName b)
-        in Pictures [top, bot]
+      -- texto das estatísticas (preto)
+      textLeft = rectX - rectW/2 + 30
+      textTop  = rectY + rectH/2 - 40
+      lineGap  = 40
 
-      half = length firstRound `div` 2
-      leftMatches = take half firstRound
-      rightMatches = drop half firstRound
-      leftX = startX - 480
-      rightX = startX + 1070
+      statsPic =
+        case (W.lastMatchInitial w, W.lastMatchFinal w) of
+          (Just estI, Just estF) ->
+            let rel = T6.gerarRelatorio estI estF
+                title = Translate textLeft textTop $ Scale 0.35 0.35 $ color black $ Text "Statistics"
+                winnerLine = Translate textLeft (textTop - lineGap) $ Scale 0.22 0.22 $ color black $ Text (T6.mostraVencedor rel)
+                line2 = Translate textLeft (textTop - 2*lineGap) $ Scale 0.18 0.18 $ color black $ Text ("Titulo P1: " ++ T6.tituloP1 rel)
+                line3 = Translate textLeft (textTop - 3*lineGap) $ Scale 0.18 0.18 $ color black $ Text ("Titulo P2: " ++ T6.tituloP2 rel)
+                line4 = Translate textLeft (textTop - 4*lineGap) $ Scale 0.18 0.18 $ color black $ Text ("Explosivos P1: " ++ show (T6.explosivosP1 rel) ++ "  P2: " ++ show (T6.explosivosP2 rel))
+                line5 = Translate textLeft (textTop - 5*lineGap) $ Scale 0.18 0.18 $ color black $ Text ("Terra destruida: " ++ show (T6.terraDestruida rel))
+            in Pictures [ title, winnerLine, line2, line3, line4, line5 ]
+          _ ->
+            let msg = Translate (-120) 0 $ Scale 0.25 0.25 $ color black $ Text "Relatorio indisponivel"
+            in msg
 
-      drawSide ms x = Pictures $ zipWith (\m i ->
-        let y = startY - fromIntegral i * rowSpacing
-        in drawMatch m x y) ms [0..]
+      -- botão "Menu" branco em baixo (coordenadas e tamanho devem coincidir com Eventos.hs)
+      menuW = 160
+      menuH = 48
+      menuY = -380
+      menuPic = Translate 0 menuY $
+                Pictures [ color white $ rectangleSolid menuW menuH
+                         , color black $ rectangleWire menuW menuH
+                         , Translate (-28) (-10) $ Scale 0.22 0.22 $ color black $ Text "Menu"
+                         ]
 
-      playW = 220
-      playH = 64
-      playY = -260
-      isHoverPlay = W.hoverPlay w
-      playFill = if isHoverPlay then makeColor 0.90 0.30 0.05 1 else white
-      playTextPic = if isHoverPlay then boldText white 0.35 "Play" else Scale 0.35 0.35 (color black $ Text "Play")
-      playButton = Translate 0 playY $
-        Pictures
-          [ color playFill $ rectangleSolid playW playH
-          , color black $ rectangleWire playW playH
-          , Translate (-40) (-12) playTextPic
-          ]
+  in Pictures [ bg, bgRect, borderRect, statsPic, menuPic ]
 
-  in Pictures [ drawSide leftMatches leftX, drawSide rightMatches rightX, playButton ]
 
--- Desenha apenas a barra de progresso do turno (sem caixa preta), com texto do jogador
-drawTurnTimer :: Worms -> Picture
-drawTurnTimer w =
-  let -- posição e dimensões (ajusta conforme necessário)
-      x = 760    -- posição horizontal da barra (mais à esquerda)
-      y = 200    -- posição vertical da barra
-      boxW = 220 -- largura de referência (não desenhamos o box)
-      pad = 8
-      innerW = boxW - 2 * pad
-      innerH = 24
 
-      -- valores do turno
-      ticksLeft = W.turnTicksLeft w
-      ticksTotal = W.turnDuration w
-      pct = if ticksTotal <= 0 then 0 else max 0 (min 1 (fromIntegral ticksLeft / fromIntegral ticksTotal))
 
-      -- cores
-      fg = makeColor 0.90 0.30 0.05 1
-      barBg = greyN 0.2
-      textCol = white
 
-      -- posição da barra (centro em x,y)
-      barX = x
-      barY = y
 
-      -- fundo da barra
-      barBgPic = Translate barX barY $ color barBg $ rectangleSolid innerW innerH
-
-      -- preenchimento laranja (alinhado à esquerda do fundo)
-      barFillW = innerW * pct
-
-      -- deslocamento extra para a direita do preenchimento (ajusta se necessário)
-      fillOffset :: Float
-      fillOffset = 8.0
-
-      barFillPic = Translate (barX - innerW/2 + barFillW/2 + fillOffset) barY $ color fg $ rectangleSolid barFillW innerH
-
-      -- texto do jogador (1-based), maior e em negrito, ligeiramente acima
-      playerIdx = Translate (barX - innerW/2) (barY + 40) $
-                  boldText textCol 0.28 ("Jogador " ++ show (W.currentTurn w + 1))
-
-  in Pictures [barBgPic, barFillPic, playerIdx]
-
--- Novo: desenha painel lateral com duas minhocas e os seus inventários (ícone + número)
-drawSidePanel :: [Maybe Picture] -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Worms -> Picture
-drawSidePanel mWormPics mBazucaPic mMinaPic _mJetpackPic _mEscavadoraPic mDinamitePic w =
-  let x = -800
-      yTop = 220
-      yGap = 400
-      portraitSize = 140
-      iconSize = 28
-      textScale = 0.14
-      mEst = W.estadoJogo w
-      minhList = case mEst of
-                   Just est -> L25.minhocasEstado est
-                   Nothing  -> []
-      getMinh i field =
-        if i >= 0 && i < length minhList
-          then field (minhList !! i)
-          else 0
-      drawIconLocal :: Maybe Picture -> Float -> Picture
-      drawIconLocal mPic size =
-        case mPic of
-          Just p  -> Scale (size/550) (size/550) p
-          Nothing -> Color (greyN 0.8) $ rectangleSolid size size
-      drawEntry i posY =
-        let portraitPic = if i >= 0 && i < length mWormPics
-                            then case mWormPics !! i of
-                                   Just p -> Scale (portraitSize/550) (portraitSize/550) p
-                                   Nothing -> Translate 0 0 $ color white $ circleSolid (portraitSize/2)
-                            else Translate 0 0 $ color white $ circleSolid (portraitSize/2)
-            baz = getMinh i L25.bazucaMinhoca
-            minas = getMinh i L25.minaMinhoca
-            din = getMinh i L25.dinamiteMinhoca
-            portrait = Translate x posY portraitPic
-            invX = x + portraitSize/2 + 80
-            invYStart = posY + portraitSize/2
-            itemGap = 70
-            bgLeft = x - portraitSize / 2 - 30
-            bgRight = invX + 60
-            bgW = bgRight - bgLeft
-            bgCX = (bgLeft + bgRight) / 2
-            bgCY = posY + portraitSize / 2 - 70
-            bgH = portraitSize + 130
-            bgRect = Translate bgCX bgCY $ color (greyN 0.50) $ rectangleSolid bgW bgH
-            invLineIcon :: Float -> Maybe Picture -> Int -> Picture
-            invLineIcon dy mPic count =
-              Translate invX (invYStart - dy) $
-                Pictures
-                  [ Translate (-20) 0 $ drawIconLocal mPic iconSize
-                  , Translate 10 0 $ boldText white 0.18 (show count)
-                  ]
-            invPics = Pictures
-              [ invLineIcon (0 * itemGap)   mBazucaPic baz
-              , invLineIcon (1 * itemGap)   mMinaPic minas
-              , invLineIcon (2 * itemGap)   mDinamitePic din
-              ]
-        in Pictures [ bgRect, portrait, invPics ]
-  in Pictures [ drawEntry 0 yTop, drawEntry 1 (yTop - yGap) ]
 
 
 

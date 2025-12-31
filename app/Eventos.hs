@@ -79,7 +79,7 @@ playW = 220
 playH = 64
 playY = -260
 
--- Parâmetros do botão Back / Statistics (devem coincidir com Main.hs)
+-- Parâmetros do botão Back / Statistics (devem coincidir com Desenhar.hs)
 backW, backH, backY :: Float
 backW = 160
 backH = 48
@@ -129,6 +129,13 @@ isJetpack :: L25.Objeto -> Bool
 isJetpack L25.Disparo { L25.tipoDisparo = L25.Jetpack } = True
 isJetpack _ = False
 
+-- identifica um Disparo Jetpack cujo dono é o índice dado
+isJetpackOf :: Int -> L25.Objeto -> Bool
+isJetpackOf idx o =
+  case o of
+    L25.Disparo { L25.tipoDisparo = L25.Jetpack, L25.donoDisparo = d } -> d == idx
+    _ -> False
+
 isEscavadora :: L25.Objeto -> Bool
 isEscavadora L25.Disparo { L25.tipoDisparo = L25.Escavadora } = True
 isEscavadora _ = False
@@ -174,6 +181,9 @@ reageEventos (EventKey (MouseButton LeftButton) Down _ (mx,my)) s =
                   , W.turnTicksLeft = W.turnDuration s
                   , W.currentMatch = Nothing
                   , W.lastWinner = Nothing
+                  , W.lastMatchInitial = Just est
+                  , W.lastMatchFinal = Nothing
+                  , W.showStatistics = False
                   , W.hoverMain = -1
                   , W.hoverPlay = False
                   , W.hoverFlag = False
@@ -200,20 +210,18 @@ reageEventos (EventKey (MouseButton LeftButton) Down _ (mx,my)) s =
            , W.estadoJogo = Nothing
            , W.currentMatch = Nothing
            , W.lastWinner = Nothing
+           , W.lastMatchInitial = Nothing
+           , W.lastMatchFinal = Nothing
+           , W.showStatistics = False
            }
   else
   -- MainMenu: Exit (bottom) -> índice 2
   if W.menu s == W.MainMenu && isOverMainButton coordsForMain 2
     then error "Exit"
   else
-  -- Se estivermos na tela de vitória e o utilizador clicar no botão Statistics, por agora volta ao menu principal
+  -- Se estivermos na tela de vitória e o utilizador clicar no botão Statistics, mostra o ecrã de estatísticas
   if W.lastWinner s /= Nothing && isOverRect (mx,my) (0, statsY) (backW, backH)
-    then s { W.menu = W.MainMenu
-           , W.tournament = False
-           , W.bracket = Nothing
-           , W.showWhite = False
-           , W.estadoJogo = Nothing
-           , W.lastWinner = Nothing
+    then s { W.showStatistics = True
            , W.hoverPlay = False
            , W.hoverFlag = False
            , W.hoverMain = -1
@@ -227,6 +235,9 @@ reageEventos (EventKey (MouseButton LeftButton) Down _ (mx,my)) s =
            , W.showWhite = False
            , W.estadoJogo = Nothing
            , W.lastWinner = Nothing
+           , W.lastMatchInitial = Nothing
+           , W.lastMatchFinal = Nothing
+           , W.showStatistics = False
            , W.hoverPlay = False
            , W.hoverFlag = False
            , W.hoverMain = -1
@@ -249,6 +260,9 @@ reageEventos (EventKey (MouseButton LeftButton) Down _ (mx,my)) s =
                       , W.hoverMain = -1
                       , W.hoverPlay = False
                       , W.hoverFlag = False
+                      , W.lastMatchInitial = Just est
+                      , W.lastMatchFinal = Nothing
+                      , W.showStatistics = False
                       -- mantemos tournament e bracket tal como estão
                       }
                else s
@@ -258,7 +272,19 @@ reageEventos (EventKey (MouseButton LeftButton) Down _ (mx,my)) s =
           then s { W.countryIndex = (W.countryIndex s - 1) `mod` 8 }
         else if W.menu s == W.CountrySelect && isOverRect (mx,my) (rightArrowX, arrowY) (arrowW, arrowH)
           then s { W.countryIndex = (W.countryIndex s + 1) `mod` 8 }
-        else s { W.hoverPlay = False }
+        else
+          -- Se estivermos a mostrar estatísticas e o utilizador clicar no Back, volta ao menu principal
+          if W.showStatistics s && isOverRect (mx,my) (0, backY) (backW, backH)
+            then s { W.showStatistics = False
+                   , W.menu = W.MainMenu
+                   , W.tournament = False
+                   , W.bracket = Nothing
+                   , W.lastWinner = Nothing
+                   , W.lastMatchInitial = Nothing
+                   , W.lastMatchFinal = Nothing
+                   , W.hoverMain = -1
+                   }
+            else s { W.hoverPlay = False }
 
 -- Movimento do rato (hover)
 reageEventos (EventMotion (mx,my)) s =
@@ -295,6 +321,8 @@ reageEventos (EventMotion (mx,my)) s =
          | W.lastWinner s /= Nothing && overStats ->
              s { W.hoverPlay = True, W.hoverArrow = -1, W.hoverMain = -1, W.hoverFlag = False }
          | W.lastWinner s /= Nothing && overBack ->
+             s { W.hoverPlay = True, W.hoverArrow = -1, W.hoverMain = -1, W.hoverFlag = False }
+         | W.showStatistics s && overBack ->
              s { W.hoverPlay = True, W.hoverArrow = -1, W.hoverMain = -1, W.hoverFlag = False }
          | W.showWhite s && overPlay -> s { W.hoverPlay = True, W.hoverArrow = -1, W.hoverMain = -1, W.hoverFlag = False }
          | W.showWhite s             -> s { W.hoverPlay = False, W.hoverArrow = -1, W.hoverMain = -1, W.hoverFlag = False }
@@ -421,35 +449,49 @@ reageEventos (EventKey key Down _ _) s =
 
 reageEventos _ s = s
 
--- Jetpack: move up + cria/actualiza Jetpack com tempo = 1
+-- duração do jetpack em ticks (ajusta aqui)
+jetpackDuration :: Int
+jetpackDuration = 4
+
+-- número mínimo de ticks restantes para permitir activar o jetpack
+minJetpackTicks :: Int
+minJetpackTicks = 2
+
+-- Jetpack: move up + cria/actualiza Jetpack com tempo = jetpackDuration
 jetpackMoveUp :: W.Worms -> W.Worms
 jetpackMoveUp s =
   case W.estadoJogo s of
     Nothing -> s
     Just est ->
-      let idx = W.currentTurn s
-      in case getMinhocaIdx idx est of
-           Nothing -> s
-           Just m ->
-             case L25.posicaoMinhoca m of
-               Nothing -> toggleJetpack s
-               Just pos ->
-                 let mapa = L25.mapaEstado est
-                     newPos = movePosicao L25.Norte pos
-                     canMove = ePosicaoMatrizValida newPos mapa && ePosicaoEstadoLivre newPos est
-                 in if not canMove
-                      then s
-                      else
-                        let objsNoJet = filter (not . isJetpack) (L25.objetosEstado est)
-                            disparo = L25.Disparo { L25.posicaoDisparo = newPos
-                                                  , L25.direcaoDisparo = L25.Norte
-                                                  , L25.tipoDisparo = L25.Jetpack
-                                                  , L25.tempoDisparo = Just 1
-                                                  , L25.donoDisparo = idx
-                                                  }
-                            m' = m { L25.posicaoMinhoca = Nothing }
-                            est' = updateMinhocaIdx idx m' (est { L25.objetosEstado = disparo : objsNoJet })
-                        in s { W.estadoJogo = Just est' }
+      -- bloqueia se faltar pouco tempo para o fim do turno
+      if W.turnTicksLeft s <= minJetpackTicks
+        then s
+        else
+          let idx = W.currentTurn s
+          in case getMinhocaIdx idx est of
+               Nothing -> s
+               Just m ->
+                 case L25.posicaoMinhoca m of
+                   Nothing -> toggleJetpack s
+                   Just pos ->
+                     let mapa = L25.mapaEstado est
+                         newPos = movePosicao L25.Norte pos
+                         canMove = ePosicaoMatrizValida newPos mapa && ePosicaoEstadoLivre newPos est
+                     in if not canMove
+                          then s
+                          else
+                            -- remove qualquer jetpack existente do mesmo dono antes de criar novo
+                            let objsNoJet = filter (not . isJetpackOf idx) (L25.objetosEstado est)
+                                disparo = L25.Disparo { L25.posicaoDisparo = newPos
+                                                      , L25.direcaoDisparo = L25.Norte
+                                                      , L25.tipoDisparo = L25.Jetpack
+                                                      , L25.tempoDisparo = Just jetpackDuration
+                                                      , L25.donoDisparo = idx
+                                                      }
+                                m' = m { L25.posicaoMinhoca = Nothing }
+                                est' = updateMinhocaIdx idx m' (est { L25.objetosEstado = disparo : objsNoJet })
+                            in s { W.estadoJogo = Just est' }
+
 
 -- Escavadora toggle usando inventário por-minhoca
 escavadoraToggle :: W.Worms -> W.Worms
@@ -541,6 +583,9 @@ keyToInput (Char 'a')            = Just W.ILeft
 keyToInput (Char 'd')            = Just W.IRight
 keyToInput (Char ' ')            = Just W.IFire
 keyToInput _                     = Nothing
+
+
+
 
 
 

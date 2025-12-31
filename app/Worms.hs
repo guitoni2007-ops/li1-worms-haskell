@@ -123,24 +123,28 @@ applySingleInputIdx idx inp est =
 -- Tipo principal do estado da aplicação (Worms)
 -- contém campos de UI e controlo do jogo
 data Worms = Worms
-  { menu           :: Menu
-  , countryIndex   :: Int
-  , hoverArrow     :: Int
-  , hoverMain      :: Int
-  , hoverFlag      :: Bool
-  , hoverPlay      :: Bool
-  , tournament     :: Bool
-  , showWhite      :: Bool
-  , bracket        :: Maybe (Bracket String)
-  , position       :: (Float, Float)
-  , estadoJogo     :: Maybe Labs2025.Estado
-  , pendingInputs  :: [Input]
-  , tickAcc        :: Float
-  , currentTurn    :: Int
-  , turnTicksLeft  :: Int
-  , turnDuration   :: Int
-  , currentMatch   :: Maybe (Match String)  -- novo: match actualmente a jogar
-  , lastWinner     :: Maybe String          -- novo: último vencedor (nome do país)
+  { menu             :: Menu
+  , countryIndex     :: Int
+  , hoverArrow       :: Int
+  , hoverMain        :: Int
+  , hoverFlag        :: Bool
+  , hoverPlay        :: Bool
+  , tournament       :: Bool
+  , showWhite        :: Bool
+  , bracket          :: Maybe (Bracket String)
+  , position         :: (Float, Float)
+  , estadoJogo       :: Maybe Labs2025.Estado
+  , pendingInputs    :: [Input]
+  , tickAcc          :: Float
+  , currentTurn      :: Int
+  , turnTicksLeft    :: Int
+  , turnDuration     :: Int
+  , currentMatch     :: Maybe (Match String)  -- match actualmente a jogar
+  , lastWinner       :: Maybe String          -- último vencedor (nome do país)
+  -- novos campos para estatísticas
+  , lastMatchInitial :: Maybe Labs2025.Estado
+  , lastMatchFinal   :: Maybe Labs2025.Estado
+  , showStatistics   :: Bool
   } deriving (Show, Eq)
 
 -- Estado inicial do wrapper Worms (UI + jogo)
@@ -164,6 +168,9 @@ initialState = Worms
   , turnDuration = 30
   , currentMatch = Nothing
   , lastWinner = Nothing
+  , lastMatchInitial = Nothing
+  , lastMatchFinal = Nothing
+  , showStatistics = False
   }
 
 -- criaEstadoInicial: devolve um Estado de jogo com mapa, objetos e minhocas.
@@ -210,14 +217,13 @@ criaEstadoInicial = Labs2025.Estado
         ,[Terra,Terra,Terra,Pedra,Terra,Pedra,Pedra,Pedra,Agua,Agua,Agua,Terra,Terra,Pedra,Terra,Pedra,Pedra,Pedra,Pedra,Pedra,Pedra,Pedra,Pedra,Ar,Terra,Terra,Terra,Terra,Terra,Pedra,Agua,Agua,Agua,Agua,Pedra,Terra,Terra,Terra,Terra,Terra]
         ,[Terra,Terra,Terra,Pedra,Pedra,Pedra,Pedra,Agua,Agua,Agua,Agua,Terra,Pedra,Pedra,Terra,Pedra,Pedra,Pedra,Pedra,Pedra,Pedra,Pedra,Pedra,Pedra,Terra,Terra,Terra,Terra,Terra,Pedra,Agua,Agua,Agua,Agua,Agua,Terra,Terra,Terra,Terra,Terra]
         ,[Terra,Terra,Terra,Terra,Pedra,Ar,Pedra,Agua,Agua,Agua,Agua,Terra,Terra,Pedra,Pedra,Pedra,Pedra,Pedra,Pedra,Pedra,Pedra,Pedra,Terra,Terra,Terra,Terra,Terra,Terra,Terra,Pedra,Agua,Agua,Agua,Agua,Agua,Terra,Terra,Terra,Terra,Terra]
-        ],
-        
-      Labs2025.objetosEstado =
+        ]
+    , Labs2025.objetosEstado =
         [ Labs2025.Barril { Labs2025.posicaoBarril = (25,5), Labs2025.explodeBarril = False }
         , Labs2025.Barril { Labs2025.posicaoBarril = (10,36), Labs2025.explodeBarril = False }
         , Labs2025.Barril { Labs2025.posicaoBarril = (26,33), Labs2025.explodeBarril = False }
-        ],
-      Labs2025.minhocasEstado =
+        ]
+    , Labs2025.minhocasEstado =
         [ Labs2025.Minhoca { Labs2025.posicaoMinhoca = Just (7,13)
                            , Labs2025.vidaMinhoca = Labs2025.Viva 100
                            , Labs2025.jetpackMinhoca = 1
@@ -242,9 +248,6 @@ criaEstadoInicial = Labs2025.Estado
 -- do match em posições específicas, diz-me que eu altero aqui.
 criaEstadoForMatch :: Match String -> Labs2025.Estado
 criaEstadoForMatch _ = criaEstadoInicial
-
-
-
 
 
 
