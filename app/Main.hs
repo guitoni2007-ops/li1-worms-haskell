@@ -1,7 +1,6 @@
-
 module Main where
 
-import Graphics.Gloss (Display(InWindow), Color, greyN)
+import Graphics.Gloss
 import Graphics.Gloss.Interface.Pure.Game (play)
 import Graphics.Gloss.Juicy (loadJuicyPNG)
 import Desenhar (desenha)
@@ -48,7 +47,7 @@ main = do
   mFlagsMenu     <- mapM loadJuicyPNG flagFilesMenu
   mFlagsBracket  <- mapM loadJuicyPNG flagFilesBracket
 
-  -- imagens das minhocas: nomes em minúsculas conforme pedido
+  -- imagens das minhocas
   let wormFiles =
         [ "wormsportugal.png"
         , "wormsbrasil.png"
@@ -61,12 +60,17 @@ main = do
         ]
   mWormsMaybe <- mapM loadJuicyPNG wormFiles
 
+  -- imagens de vitória
+  mVictoryPT <- loadJuicyPNG "fundovitoriaportugal.png"
+  mVictoryBR <- loadJuicyPNG "fundovitoriabrasil.png"
+
   -- verifica se alguma imagem falhou a carregar
   let missingWorms = [f | (f, Nothing) <- zip wormFiles mWormsMaybe]
       missingFlagsMenu = [f | (f, Nothing) <- zip flagFilesMenu mFlagsMenu]
       missingFlagsBracket = [f | (f, Nothing) <- zip flagFilesBracket mFlagsBracket]
       missingTitle = if mTitle == Nothing then ["simbolo.png"] else []
-      missingAll = missingTitle ++ missingWorms ++ missingFlagsMenu ++ missingFlagsBracket
+      missingVictoryFiles = [ "fundovitoriaportugal.png" | mVictoryPT == Nothing ] ++ [ "fundovitoriabrasil.png" | mVictoryBR == Nothing ]
+      missingAll = missingTitle ++ missingWorms ++ missingFlagsMenu ++ missingFlagsBracket ++ missingVictoryFiles
 
   if not (null missingAll)
     then do
@@ -80,6 +84,8 @@ main = do
           mFlagsMenu' = map fromJust mFlagsMenu
           mFlagsBracket' = map fromJust mFlagsBracket
           mWorms = map fromJust mWormsMaybe
+          mVictoryPT' = mVictoryPT
+          mVictoryBR' = mVictoryBR
 
       mBarril        <- loadJuicyPNG "barrilnormal.png" >>= ensure "barrilnormal.png"
       mBarrilExplode <- loadJuicyPNG "barrilexplodir.png" >>= ensure "barrilexplodir.png"
@@ -100,8 +106,76 @@ main = do
                  , W.estadoJogo = Nothing
                  }
 
+          -- parâmetros do botão Back / Statistics (usar os mesmos valores em Eventos.hs)
+          backW = 160 :: Float
+          backH = 48  :: Float
+          backY = -380 :: Float
+          statsY = backY + 70
+
+          -- escala aplicada à imagem de vitória (ajusta se necessário)
+          victoryScale :: Float
+          victoryScale = 0.95
+
+          -- função de desenho que envolve 'desenha' e sobrepõe a imagem de vitória + botões
+          drawAll :: Maybe Picture -> Maybe Picture -> W.Worms -> Picture
+          drawAll mVpt mVbr world =
+            let base = desenha (Just mMenuBg) (Just mBracketBg) (Just mGameBg) (Just mTitle') (map Just mFlagsMenu') (map Just mFlagsBracket') (map Just mWorms) (Just mBarril) (Just mBarrilExplode) (Just mMina) (Just mJetpack) (Just mDinamite) (Just mBazuca) (Just mEscavadora) world
+
+                -- imagem de vitória (apenas a imagem, sem texto)
+                victoryPicFor :: Maybe Picture -> Picture
+                victoryPicFor (Just p) = Translate 0 0 $ Scale victoryScale victoryScale p
+                victoryPicFor Nothing  = Blank
+
+                victoryPic =
+                  case W.lastWinner world of
+                    Just "Portugal" -> victoryPicFor mVpt
+                    Just "Brasil"   -> victoryPicFor mVbr
+                    _ -> Blank
+
+                -- fundo sólido para a tela de vitória (preto) — só desenhado se a imagem existir
+                victoryBg =
+                  case W.lastWinner world of
+                    Just "Portugal" -> case mVpt of Just _ -> Translate 0 0 $ color black $ rectangleSolid 1920 1080; Nothing -> Blank
+                    Just "Brasil"   -> case mVbr of Just _ -> Translate 0 0 $ color black $ rectangleSolid 1920 1080; Nothing -> Blank
+                    _ -> Blank
+
+                -- botão Statistics (em cima)
+                statsPic =
+                  case W.lastWinner world of
+                    Just _ ->
+                      Pictures
+                        [ Translate 0 statsY $ color (greyN 0.85) $ rectangleSolid backW backH
+                        , Translate 0 statsY $ color black $ rectangleWire backW backH
+                        , Translate (-48) (statsY - 10) $ Scale 0.20 0.20 $ color black $ Text "Statistics"
+                        ]
+                    Nothing -> Blank
+
+                -- botão Back (embaixo)
+                backPic =
+                  case W.lastWinner world of
+                    Just _ ->
+                      Pictures
+                        [ Translate 0 backY $ color (greyN 0.85) $ rectangleSolid backW backH
+                        , Translate 0 backY $ color black $ rectangleWire backW backH
+                        , Translate (-28) (backY - 10) $ Scale 0.22 0.22 $ color black $ Text "Back"
+                        ]
+                    Nothing -> Blank
+
+            in case W.lastWinner world of
+                 -- se houver vencedor e a imagem correspondente estiver carregada, desenha fundo + imagem + botões
+                 Just "Portugal" ->
+                   case mVpt of
+                     Just _ -> Pictures [ victoryBg, victoryPic, statsPic, backPic ]
+                     Nothing -> Pictures [ base ]  -- fallback: se imagem ausente, mostra base
+                 Just "Brasil" ->
+                   case mVbr of
+                     Just _ -> Pictures [ victoryBg, victoryPic, statsPic, backPic ]
+                     Nothing -> Pictures [ base ]
+                 -- caso contrário, desenha o base normal (menu/bracket/jogo)
+                 _ -> Pictures [ base ]
+
       play janela fundo fr it
-        (\w -> desenha (Just mMenuBg) (Just mBracketBg) (Just mGameBg) (Just mTitle') (map Just mFlagsMenu') (map Just mFlagsBracket') (map Just mWorms) (Just mBarril) (Just mBarrilExplode) (Just mMina) (Just mJetpack) (Just mDinamite) (Just mBazuca) (Just mEscavadora) w)
+        (drawAll mVictoryPT' mVictoryBR')
         reageEventos
         reageTempo
 
@@ -111,6 +185,9 @@ ensure fname Nothing = do
   putStrLn $ "Erro: não foi possível carregar: " ++ fname
   exitFailure
 ensure _ (Just x) = return x
+
+
+
 
 
 

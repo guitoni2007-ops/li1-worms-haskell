@@ -1,8 +1,6 @@
 module Worms
   ( Worms(..)
   , Menu(..)
-  , Inventario (..)
-  , initialState
   , Match(..)
   , Bracket(..)
   , pairUp
@@ -11,10 +9,10 @@ module Worms
   , advanceWinnerInBracket
   , Input(..)
   , applyInputsToEstado
+  , initialState
   , criaEstadoInicial
-  , criaEstadoForMatch   -- exporta a função usada em Eventos.hs
+  , criaEstadoForMatch
   ) where
-
 
 import qualified Labs2025
 import Data.List (nub)
@@ -22,9 +20,11 @@ import Tarefa0_geral (movePosicao, ePosicaoMatrizValida)
 import Tarefa0_2025 (ePosicaoEstadoLivre)
 import Labs2025
 
+-- Menu do jogo
 data Menu = MainMenu | CountrySelect | Game
   deriving (Show, Eq)
 
+-- Match / Bracket
 data Match a = Match a a
   deriving (Show, Eq)
 
@@ -33,64 +33,6 @@ type Round a = [Match a]
 data Bracket a = Bracket
   { rounds :: [Round a]
   } deriving (Show, Eq)
-
--- novo tipo para inventário partilhado
-data Inventario = Inventario
-  { invJetpack   :: Int
-  , invEscavadora:: Int
-  , invBazuca    :: Int
-  , invMina      :: Int
-  , invDinamite  :: Int
-  } deriving (Show, Eq)
-
--- no tipo Worms, adiciona o campo sharedInventory
-data Worms = Worms
-  { menu           :: Menu
-  , countryIndex   :: Int
-  , hoverArrow     :: Int
-  , hoverMain      :: Int
-  , hoverFlag      :: Bool
-  , hoverPlay      :: Bool
-  , tournament     :: Bool
-  , showWhite      :: Bool
-  , bracket        :: Maybe (Bracket String)
-  , position       :: (Float, Float)
-  , estadoJogo     :: Maybe Labs2025.Estado
-  , pendingInputs  :: [Input]
-  , tickAcc        :: Float
-  , currentTurn    :: Int
-  , turnTicksLeft  :: Int
-  , turnDuration   :: Int
-  , sharedInventory:: Inventario   -- <--- novo campo
-  } deriving (Show, Eq)
-
--- inicializa initialState com inventário partilhado
-initialState :: Worms
-initialState = Worms
-  { menu = MainMenu
-  , countryIndex = 0
-  , hoverArrow = -1
-  , hoverMain = -1
-  , hoverFlag = False
-  , hoverPlay = False
-  , tournament = False
-  , showWhite = False
-  , bracket = Nothing
-  , position = (0,0)
-  , estadoJogo = Nothing
-  , pendingInputs = []
-  , tickAcc = 0.0
-  , currentTurn = 0
-  , turnTicksLeft = 30
-  , turnDuration = 30
-  , sharedInventory = Inventario
-      { invJetpack = 1
-      , invEscavadora = 1
-      , invBazuca = 1
-      , invMina = 1
-      , invDinamite = 1
-      }
-  }
 
 pairUp :: [a] -> [Match a]
 pairUp [] = []
@@ -123,6 +65,7 @@ advanceWinnerInBracket b rIdx mIdx winner =
       newRounds = zipWith updateRound [0..] rs
   in b { rounds = newRounds }
 
+-- Inputs do jogador
 data Input = IUp | IDown | ILeft | IRight | IFire
   deriving (Eq, Show, Read)
 
@@ -177,10 +120,57 @@ applySingleInputIdx idx inp est =
                                    minhocas' = before ++ (m' : after)
                                in est { Labs2025.minhocasEstado = minhocas' }
 
-criaEstadoInicial ::Estado
-criaEstadoInicial = Estado
-    { mapaEstado =
-        [[Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar]
+-- Tipo principal do estado da aplicação (Worms)
+-- contém campos de UI e controlo do jogo
+data Worms = Worms
+  { menu           :: Menu
+  , countryIndex   :: Int
+  , hoverArrow     :: Int
+  , hoverMain      :: Int
+  , hoverFlag      :: Bool
+  , hoverPlay      :: Bool
+  , tournament     :: Bool
+  , showWhite      :: Bool
+  , bracket        :: Maybe (Bracket String)
+  , position       :: (Float, Float)
+  , estadoJogo     :: Maybe Labs2025.Estado
+  , pendingInputs  :: [Input]
+  , tickAcc        :: Float
+  , currentTurn    :: Int
+  , turnTicksLeft  :: Int
+  , turnDuration   :: Int
+  , currentMatch   :: Maybe (Match String)  -- novo: match actualmente a jogar
+  , lastWinner     :: Maybe String          -- novo: último vencedor (nome do país)
+  } deriving (Show, Eq)
+
+-- Estado inicial do wrapper Worms (UI + jogo)
+initialState :: Worms
+initialState = Worms
+  { menu = MainMenu
+  , countryIndex = 0
+  , hoverArrow = -1
+  , hoverMain = -1
+  , hoverFlag = False
+  , hoverPlay = False
+  , tournament = False
+  , showWhite = False
+  , bracket = Nothing
+  , position = (0,0)
+  , estadoJogo = Nothing
+  , pendingInputs = []
+  , tickAcc = 0.0
+  , currentTurn = 0
+  , turnTicksLeft = 30
+  , turnDuration = 30
+  , currentMatch = Nothing
+  , lastWinner = Nothing
+  }
+
+-- criaEstadoInicial: devolve um Estado de jogo com mapa, objetos e minhocas.
+-- Aqui definimos as minhocas com inventário por-minhoca: 3 bazucas, 2 minas, 1 jetpack, 1 escavadora, 1 dinamite
+criaEstadoInicial :: Labs2025.Estado
+criaEstadoInicial = Labs2025.Estado
+    { Labs2025.mapaEstado =[[Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar]
         ,[Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar]
         ,[Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar]
         ,[Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar]
@@ -220,25 +210,38 @@ criaEstadoInicial = Estado
         ,[Terra,Terra,Terra,Pedra,Terra,Pedra,Pedra,Pedra,Agua,Agua,Agua,Terra,Terra,Pedra,Terra,Pedra,Pedra,Pedra,Pedra,Pedra,Pedra,Pedra,Pedra,Ar,Terra,Terra,Terra,Terra,Terra,Pedra,Agua,Agua,Agua,Agua,Pedra,Terra,Terra,Terra,Terra,Terra]
         ,[Terra,Terra,Terra,Pedra,Pedra,Pedra,Pedra,Agua,Agua,Agua,Agua,Terra,Pedra,Pedra,Terra,Pedra,Pedra,Pedra,Pedra,Pedra,Pedra,Pedra,Pedra,Pedra,Terra,Terra,Terra,Terra,Terra,Pedra,Agua,Agua,Agua,Agua,Agua,Terra,Terra,Terra,Terra,Terra]
         ,[Terra,Terra,Terra,Terra,Pedra,Ar,Pedra,Agua,Agua,Agua,Agua,Terra,Terra,Pedra,Pedra,Pedra,Pedra,Pedra,Pedra,Pedra,Pedra,Pedra,Terra,Terra,Terra,Terra,Terra,Terra,Terra,Pedra,Agua,Agua,Agua,Agua,Agua,Terra,Terra,Terra,Terra,Terra]
-        ]
-    , objetosEstado =
-        [Barril {posicaoBarril = (25,5), explodeBarril = False}
-        ,Barril {posicaoBarril = (10,36), explodeBarril = False}
-        ,Barril {posicaoBarril = (26,33), explodeBarril = False}
-        ]
-    , minhocasEstado =
-        [Minhoca {posicaoMinhoca = Just (7,13), vidaMinhoca = Viva 100, jetpackMinhoca = 1, escavadoraMinhoca = 1, bazucaMinhoca = 1, minaMinhoca = 1, dinamiteMinhoca = 1}
-        ,Minhoca {posicaoMinhoca = Just (22,36), vidaMinhoca = Viva 100, jetpackMinhoca = 1, escavadoraMinhoca = 1, bazucaMinhoca = 1, minaMinhoca = 1, dinamiteMinhoca = 1}
+        ],
+        
+      Labs2025.objetosEstado =
+        [ Labs2025.Barril { Labs2025.posicaoBarril = (25,5), Labs2025.explodeBarril = False }
+        , Labs2025.Barril { Labs2025.posicaoBarril = (10,36), Labs2025.explodeBarril = False }
+        , Labs2025.Barril { Labs2025.posicaoBarril = (26,33), Labs2025.explodeBarril = False }
+        ],
+      Labs2025.minhocasEstado =
+        [ Labs2025.Minhoca { Labs2025.posicaoMinhoca = Just (7,13)
+                           , Labs2025.vidaMinhoca = Labs2025.Viva 100
+                           , Labs2025.jetpackMinhoca = 1
+                           , Labs2025.escavadoraMinhoca = 1
+                           , Labs2025.bazucaMinhoca = 3
+                           , Labs2025.minaMinhoca = 2
+                           , Labs2025.dinamiteMinhoca = 1
+                           }
+        , Labs2025.Minhoca { Labs2025.posicaoMinhoca = Just (22,36)
+                           , Labs2025.vidaMinhoca = Labs2025.Viva 100
+                           , Labs2025.jetpackMinhoca = 1
+                           , Labs2025.escavadoraMinhoca = 1
+                           , Labs2025.bazucaMinhoca = 3
+                           , Labs2025.minaMinhoca = 2
+                           , Labs2025.dinamiteMinhoca = 1
+                           }
         ]
     }
 
 -- criaEstadoForMatch: versão temporária que devolve o estado inicial completo.
--- Substitui por uma versão que posicione as duas minhocas do match quando quiseres.
+-- Mantive a implementação simples (como antes). Se quiseres que posicione as duas minhocas
+-- do match em posições específicas, diz-me que eu altero aqui.
 criaEstadoForMatch :: Match String -> Labs2025.Estado
 criaEstadoForMatch _ = criaEstadoInicial
-
-
-
 
 
 

@@ -41,19 +41,24 @@ desenha mMenuBg mBracketBg mGameBg mTitlePic flagsMenu flagsBracket mWormPics mB
       let bgPic = case mGameBg of
                     Just p  -> Scale 1 1 p
                     Nothing -> Translate 0 0 $ color menuBg $ rectangleSolid 1920 1080
-      in Pictures [ bgPic, desenhaEstado mWormPics mBarrilPic mBarrilExplodirPic mMinaPic mJetpackPic mDinamitePic mBazucaPic mEscavadoraPic st ]
+          gamePic = desenhaEstado mWormPics mBarrilPic mBarrilExplodirPic mMinaPic mJetpackPic mDinamitePic mBazucaPic mEscavadoraPic st
+          timerPic = drawTurnTimer w
+          sidePanel = drawSidePanel mWormPics mBazucaPic mMinaPic mJetpackPic mEscavadoraPic mDinamitePic w
+      in Pictures [ bgPic, gamePic, timerPic, sidePanel ]
 
     -- não há estado de jogo: estamos no menu/bracket
     Nothing ->
-      if W.menu w == W.Game && W.showWhite w
+      -- se estamos em modo torneio e devemos mostrar a bracket (tournament + showWhite usado como trigger)
+      if W.menu w == W.Game && W.showWhite w && W.tournament w && W.lastWinner w == Nothing
         then
-          -- ecrã da bracket: usa mBracketBg como fundo
+          -- ecrã da bracket: usa mBracketBg como fundo e desenha os quartos com flags
           let bgPic = case mBracketBg of
                         Just p  -> Scale 1 1 p
                         Nothing -> Translate 0 0 $ color menuBg $ rectangleSolid 1920 1080
           in Pictures
                [ bgPic
                , drawQuarterFinals flagsBracket (W.bracket w) w
+               , drawBracketButtons w
                ]
         else
           -- resto do menu principal: usa o fundo normal e as flags do menu/seleção
@@ -72,12 +77,40 @@ desenha mMenuBg mBracketBg mGameBg mTitlePic flagsMenu flagsBracket mWormPics mB
                    W.Game          -> desenhaGameScreen flagsMenu w
                ]
 
+-- Botões da bracket: Replay (centro) e Back (embaixo)
+drawBracketButtons :: Worms -> Picture
+drawBracketButtons w =
+  let replayY = -120
+      replayW = 220
+      replayH = 64
+      replayFill = if W.hoverPlay w then makeColor 0.90 0.30 0.05 1 else white
+      replayText = if W.hoverPlay w then boldText white 0.28 "Replay" else Scale 0.28 0.28 (color black $ Text "Replay")
+      replayPic = Translate 0 replayY $
+        Pictures [ color replayFill $ rectangleSolid replayW replayH
+                 , color black $ rectangleWire replayW replayH
+                 , Translate (-40) (-12) replayText
+                 ]
+
+      backY = -260
+      backW = 160
+      backH = 48
+      backFill = white
+      backText = Scale 0.22 0.22 (color black $ Text "Back")
+      backPic = Translate 0 backY $
+        Pictures [ color backFill $ rectangleSolid backW backH
+                 , color black $ rectangleWire backW backH
+                 , Translate (-28) (backY - 10) backText
+                 ]
+  in Pictures [ replayPic, backPic ]
+
+-- Função desenhaEstado (mantive a tua versão anterior, centrada)
 desenhaEstado :: [Maybe Picture] -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> L25.Estado -> Picture
 desenhaEstado mWormPics mBarrilPic mBarrilExplodirPic mMinaPic mJetpackPic mDinamitePic mBazucaPic mEscavadoraPic st =
   let mapa = L25.mapaEstado st
       (rows, cols) = (length mapa, if null mapa then 0 else length (head mapa))
-      winW = 1280
-      winH = 720
+      -- AUMENTEI AQUI: área de jogo maior (como tinhas antes)
+      winW = 1800
+      winH = 1010
       -- margem reduzida para aumentar o tamanho do grid (opção recomendada)
       margin = 10
       availW = fromIntegral winW - 2 * margin
@@ -189,24 +222,29 @@ drawMinhoca tileSize originX originY mWormPics minhoca idx =
            Nothing ->
              Translate x y $ Color (if alive then green else greyN 0.4) $ circleSolid radius
 
--- Menu principal: Tournament primeiro, depois Definições, depois Exit
+-- Menu principal: Quick Play, Tournament, Exit (3 botões)
 desenhaMain :: Int -> Picture
 desenhaMain hover =
   Pictures
-    [ desenhaBotao "Tournament" 170 (hover == 0)
-    , desenhaBotao "Definições"  90  (hover == 1)
+    [ desenhaBotao "Quick Play" 170 (hover == 0)
+    , desenhaBotao "Tournament" 90  (hover == 1)
     , desenhaBotao "Exit"      10  (hover == 2)
     ]
 
+-- desenhaBotao: botão com destaque laranja ao passar o rato
 desenhaBotao :: String -> Float -> Bool -> Picture
 desenhaBotao txt y hovered =
-  Pictures
-    [ color (if hovered then makeColor 0.90 0.30 0.05 1 else white)
-        $ Translate 0 y $ rectangleSolid 360 50
-    , color black $ Translate 0 y $ rectangleWire 360 50
-    , Translate (-70) (y - 12) $ boldText (if hovered then white else black) 0.22 txt
-    ]
-
+  let hoverFill = makeColor 0.95 0.45 0.10 1   -- laranja mais vivo para hover
+      normalFill = white
+      borderCol = black
+      textCol = if hovered then white else black
+      boxW = 360
+      boxH = 50
+  in Pictures
+       [ color (if hovered then hoverFill else normalFill) $ Translate 0 y $ rectangleSolid boxW boxH
+       , color borderCol $ Translate 0 y $ rectangleWire boxW boxH
+       , Translate (-70) (y - 12) $ boldText textCol 0.22 txt
+       ]
 
 -- helper para texto "bold" desenhado com múltiplas cópias ligeiramente deslocadas
 boldText :: Color -> Float -> String -> Picture
@@ -327,6 +365,112 @@ drawQuarterFinals flags (Just b) w =
           ]
 
   in Pictures [ drawSide leftMatches leftX, drawSide rightMatches rightX, playButton ]
+
+-- Desenha apenas a barra de progresso do turno (sem caixa preta), com texto do jogador
+drawTurnTimer :: Worms -> Picture
+drawTurnTimer w =
+  let -- posição e dimensões (ajusta conforme necessário)
+      x = 760    -- posição horizontal da barra (mais à esquerda)
+      y = 200    -- posição vertical da barra
+      boxW = 220 -- largura de referência (não desenhamos o box)
+      pad = 8
+      innerW = boxW - 2 * pad
+      innerH = 24
+
+      -- valores do turno
+      ticksLeft = W.turnTicksLeft w
+      ticksTotal = W.turnDuration w
+      pct = if ticksTotal <= 0 then 0 else max 0 (min 1 (fromIntegral ticksLeft / fromIntegral ticksTotal))
+
+      -- cores
+      fg = makeColor 0.90 0.30 0.05 1
+      barBg = greyN 0.2
+      textCol = white
+
+      -- posição da barra (centro em x,y)
+      barX = x
+      barY = y
+
+      -- fundo da barra
+      barBgPic = Translate barX barY $ color barBg $ rectangleSolid innerW innerH
+
+      -- preenchimento laranja (alinhado à esquerda do fundo)
+      barFillW = innerW * pct
+
+      -- deslocamento extra para a direita do preenchimento (ajusta se necessário)
+      fillOffset :: Float
+      fillOffset = 8.0
+
+      barFillPic = Translate (barX - innerW/2 + barFillW/2 + fillOffset) barY $ color fg $ rectangleSolid barFillW innerH
+
+      -- texto do jogador (1-based), maior e em negrito, ligeiramente acima
+      playerIdx = Translate (barX - innerW/2) (barY + 40) $
+                  boldText textCol 0.28 ("Jogador " ++ show (W.currentTurn w + 1))
+
+  in Pictures [barBgPic, barFillPic, playerIdx]
+
+-- Novo: desenha painel lateral com duas minhocas e os seus inventários (ícone + número)
+drawSidePanel :: [Maybe Picture] -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Worms -> Picture
+drawSidePanel mWormPics mBazucaPic mMinaPic _mJetpackPic _mEscavadoraPic mDinamitePic w =
+  let x = -800
+      yTop = 220
+      yGap = 400
+      portraitSize = 140
+      iconSize = 28
+      textScale = 0.14
+      mEst = W.estadoJogo w
+      minhList = case mEst of
+                   Just est -> L25.minhocasEstado est
+                   Nothing  -> []
+      getMinh i field =
+        if i >= 0 && i < length minhList
+          then field (minhList !! i)
+          else 0
+      drawIconLocal :: Maybe Picture -> Float -> Picture
+      drawIconLocal mPic size =
+        case mPic of
+          Just p  -> Scale (size/550) (size/550) p
+          Nothing -> Color (greyN 0.8) $ rectangleSolid size size
+      drawEntry i posY =
+        let portraitPic = if i >= 0 && i < length mWormPics
+                            then case mWormPics !! i of
+                                   Just p -> Scale (portraitSize/550) (portraitSize/550) p
+                                   Nothing -> Translate 0 0 $ color white $ circleSolid (portraitSize/2)
+                            else Translate 0 0 $ color white $ circleSolid (portraitSize/2)
+            baz = getMinh i L25.bazucaMinhoca
+            minas = getMinh i L25.minaMinhoca
+            din = getMinh i L25.dinamiteMinhoca
+            portrait = Translate x posY portraitPic
+            invX = x + portraitSize/2 + 80
+            invYStart = posY + portraitSize/2
+            itemGap = 70
+            bgLeft = x - portraitSize / 2 - 30
+            bgRight = invX + 60
+            bgW = bgRight - bgLeft
+            bgCX = (bgLeft + bgRight) / 2
+            bgCY = posY + portraitSize / 2 - 70
+            bgH = portraitSize + 130
+            bgRect = Translate bgCX bgCY $ color (greyN 0.50) $ rectangleSolid bgW bgH
+            invLineIcon :: Float -> Maybe Picture -> Int -> Picture
+            invLineIcon dy mPic count =
+              Translate invX (invYStart - dy) $
+                Pictures
+                  [ Translate (-20) 0 $ drawIconLocal mPic iconSize
+                  , Translate 10 0 $ boldText white 0.18 (show count)
+                  ]
+            invPics = Pictures
+              [ invLineIcon (0 * itemGap)   mBazucaPic baz
+              , invLineIcon (1 * itemGap)   mMinaPic minas
+              , invLineIcon (2 * itemGap)   mDinamitePic din
+              ]
+        in Pictures [ bgRect, portrait, invPics ]
+  in Pictures [ drawEntry 0 yTop, drawEntry 1 (yTop - yGap) ]
+
+
+
+
+
+
 
 
 
