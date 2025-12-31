@@ -1,3 +1,4 @@
+
 module Main where
 
 import Graphics.Gloss (Display(InWindow), Color, greyN)
@@ -7,6 +8,8 @@ import Desenhar (desenha)
 import Eventos (reageEventos)
 import qualified Worms as W
 import Tempo (reageTempo)
+import Data.Maybe (fromJust)
+import System.Exit (exitFailure)
 
 -- Janela e parâmetros
 janela :: Display
@@ -18,14 +21,12 @@ fundo = greyN 0.5
 fr :: Int
 fr = 60  -- render a 60 FPS
 
--- ficheiros das bandeiras para o menu/seleção (quando clicas em Tournament -> escolha)
 flagFilesMenu :: [FilePath]
 flagFilesMenu =
   [ "flagsportugal.png", "flagsbrasil.png", "flagsargentina.png", "flagsfranca.png"
   , "flagsalemanha.png", "flagsespanha.png", "flagsinglaterra.png", "flagsjapao.png"
   ]
 
--- ficheiros das bandeiras para a bracket (versões específicas para o ecrã da bracket)
 flagFilesBracket :: [FilePath]
 flagFilesBracket =
   [ "flagsportugalbracket.png", "flagsbrasilbracket.png", "flagsargentinabracket.png", "flagsfrancabracket.png"
@@ -41,42 +42,79 @@ countryNames =
 main :: IO ()
 main = do
   -- imagens do jogo
-  mTitle         <- loadJuicyPNG "Worms world cup.png"
+  mTitle         <- loadJuicyPNG "simbolo.png"
 
-  -- duas listas de flags: uma para o menu/seleção e outra para a bracket
+  -- flags
   mFlagsMenu     <- mapM loadJuicyPNG flagFilesMenu
   mFlagsBracket  <- mapM loadJuicyPNG flagFilesBracket
 
-  mWorm          <- loadJuicyPNG "wormsPortugal.png"
-  mBarril        <- loadJuicyPNG "barrilnormal.png"
-  mBarrilExplode <- loadJuicyPNG "barrilexplodir.png"
-  mMina          <- loadJuicyPNG "minanormal.png"
-  mJetpack       <- loadJuicyPNG "jetpacknormal.png"
-  mDinamite      <- loadJuicyPNG "dinamitenormal.png"
-  mBazuca        <- loadJuicyPNG "bazucanormal.png"
-  mEscavadora    <- loadJuicyPNG "escavadoranormal.png"
+  -- imagens das minhocas: nomes em minúsculas conforme pedido
+  let wormFiles =
+        [ "wormsportugal.png"
+        , "wormsbrasil.png"
+        , "wormsargentina.png"
+        , "wormsfranca.png"
+        , "wormsalemanha.png"
+        , "wormsespanha.png"
+        , "wormsinglaterra.png"
+        , "wormsjapao.png"
+        ]
+  mWormsMaybe <- mapM loadJuicyPNG wormFiles
 
-  -- fundo do menu pedido pelo utilizador
-  mMenuBg        <- loadJuicyPNG "fundomenu.png"
+  -- verifica se alguma imagem falhou a carregar
+  let missingWorms = [f | (f, Nothing) <- zip wormFiles mWormsMaybe]
+      missingFlagsMenu = [f | (f, Nothing) <- zip flagFilesMenu mFlagsMenu]
+      missingFlagsBracket = [f | (f, Nothing) <- zip flagFilesBracket mFlagsBracket]
+      missingTitle = if mTitle == Nothing then ["simbolo.png"] else []
+      missingAll = missingTitle ++ missingWorms ++ missingFlagsMenu ++ missingFlagsBracket
 
-  -- fundo específico para o ecrã das brackets
-  mBracketBg     <- loadJuicyPNG "fundobracket.png"
+  if not (null missingAll)
+    then do
+      putStrLn "Erro: as seguintes imagens não foram encontradas ou não puderam ser carregadas:"
+      mapM_ putStrLn missingAll
+      putStrLn "Verifica nomes (case sensitive), caminhos e se os ficheiros são PNG válidos."
+      exitFailure
+    else do
+      -- extrai as imagens (são todas Just)
+      let mTitle' = fromJust mTitle
+          mFlagsMenu' = map fromJust mFlagsMenu
+          mFlagsBracket' = map fromJust mFlagsBracket
+          mWorms = map fromJust mWormsMaybe
 
-  let b = W.seedBracketFromList countryNames
-      -- estado inicial da aplicação (UI). estadoJogo fica Nothing até o utilizador clicar Play.
-      it :: W.Worms
-      it = W.initialState
-             { W.bracket    = Just b
-             , W.tournament = True
-             , W.estadoJogo = Nothing
-             }
+      mBarril        <- loadJuicyPNG "barrilnormal.png" >>= ensure "barrilnormal.png"
+      mBarrilExplode <- loadJuicyPNG "barrilexplodir.png" >>= ensure "barrilexplodir.png"
+      mMina          <- loadJuicyPNG "minanormal.png" >>= ensure "minanormal.png"
+      mJetpack       <- loadJuicyPNG "jetpacknormal.png" >>= ensure "jetpacknormal.png"
+      mDinamite      <- loadJuicyPNG "dinamitenormal.png" >>= ensure "dinamitenormal.png"
+      mBazuca        <- loadJuicyPNG "bazucanormal.png" >>= ensure "bazucanormal.png"
+      mEscavadora    <- loadJuicyPNG "escavadoranormal.png" >>= ensure "escavadoranormal.png"
+      mMenuBg        <- loadJuicyPNG "fundomenu.png" >>= ensure "fundomenu.png"
+      mBracketBg     <- loadJuicyPNG "fundobracket.png" >>= ensure "fundobracket.png"
+      mGameBg        <- loadJuicyPNG "fundojogo.png" >>= ensure "fundojogo.png"
 
-  -- ordem correcta de argumentos para 'play':
-  -- play display background fps initialWorld render handleEvent step
-  play janela fundo fr it
-    (\w -> desenha mMenuBg mBracketBg mTitle mFlagsMenu mFlagsBracket mWorm mBarril mBarrilExplode mMina mJetpack mDinamite mBazuca mEscavadora w)
-    reageEventos
-    reageTempo
+      let b = W.seedBracketFromList countryNames
+          it :: W.Worms
+          it = W.initialState
+                 { W.bracket    = Just b
+                 , W.tournament = True
+                 , W.estadoJogo = Nothing
+                 }
+
+      play janela fundo fr it
+        (\w -> desenha (Just mMenuBg) (Just mBracketBg) (Just mGameBg) (Just mTitle') (map Just mFlagsMenu') (map Just mFlagsBracket') (map Just mWorms) (Just mBarril) (Just mBarrilExplode) (Just mMina) (Just mJetpack) (Just mDinamite) (Just mBazuca) (Just mEscavadora) w)
+        reageEventos
+        reageTempo
+
+-- helper: falha com mensagem se Nothing
+ensure :: FilePath -> Maybe a -> IO a
+ensure fname Nothing = do
+  putStrLn $ "Erro: não foi possível carregar: " ++ fname
+  exitFailure
+ensure _ (Just x) = return x
+
+
+
+
 
 
 
