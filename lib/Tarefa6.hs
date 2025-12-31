@@ -14,7 +14,7 @@ data Relatorio = Relatorio {
     terraDestruida :: Int
 } deriving (Show)
 
--- | Função principal que o teu colega deve chamar no fim do jogo
+-- | Função principal 
 gerarRelatorio :: Estado -> Estado -> Relatorio
 gerarRelatorio inicial final =
     let
@@ -46,7 +46,7 @@ gerarRelatorio inicial final =
         contarTerra m = length [t | linha <- mapaEstado m, t <- linha, t == Terra]
         terraPerdida = contarTerra inicial - contarTerra final
 
-        -- 6. Vencedor e Cálculo de Pontos (A tua fórmula)
+        -- 6. Vencedor e Cálculo de Pontos 
         (venc, pts) | hp1 > 0 && hp2 <= 0 = ("Jogador 1", (100 - hp2) * 10 + hp1)
                     | hp2 > 0 && hp1 <= 0 = ("Jogador 2", (100 - hp1) * 10 + hp2)
                     | otherwise           = ("Empate", 1000)
