@@ -83,7 +83,7 @@ applyInputsToEstado idx inputs est =
        Just inp -> applySingleInputIdx idx inp est
 
 -- Aplica um único Input à minhoca no índice idx.
--- Movimentos (IUp/IDown/ILeft/IRight) tentam mover a minhoca; IFire é ignorado aqui.
+-- Movimentos (IUp/IDown/ILeft/IRight) tentam mover a minhoca; 
 applySingleInputIdx :: Int -> Input -> Labs2025.Estado -> Labs2025.Estado
 applySingleInputIdx idx inp est =
   let minhocas = Labs2025.minhocasEstado est
@@ -108,8 +108,6 @@ applySingleInputIdx idx inp est =
                                     _      -> Labs2025.Norte
                             newPos = movePosicao dir pos
                             mapa = Labs2025.mapaEstado est
-                            -- para verificar se a nova posição está livre, marcamos temporariamente
-                            -- a minhoca alvo como ausente (Nothing) para não colidir consigo própria
                             tempMinhocas = before ++ (m { Labs2025.posicaoMinhoca = Nothing } : after)
                             estTemp = est { Labs2025.minhocasEstado = tempMinhocas }
                             canMove = ePosicaoMatrizValida newPos mapa && ePosicaoEstadoLivre newPos estTemp
@@ -174,7 +172,6 @@ initialState = Worms
   }
 
 -- criaEstadoInicial: devolve um Estado de jogo com mapa, objetos e minhocas.
--- Aqui definimos as minhocas com inventário por-minhoca: 3 bazucas, 2 minas, 1 jetpack, 1 escavadora, 1 dinamite
 criaEstadoInicial :: Labs2025.Estado
 criaEstadoInicial = Labs2025.Estado
     { Labs2025.mapaEstado =[[Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar,Ar]
@@ -244,8 +241,6 @@ criaEstadoInicial = Labs2025.Estado
     }
 
 -- criaEstadoForMatch: versão temporária que devolve o estado inicial completo.
--- Mantive a implementação simples (como antes). Se quiseres que posicione as duas minhocas
--- do match em posições específicas, diz-me que eu altero aqui.
 criaEstadoForMatch :: Match String -> Labs2025.Estado
 criaEstadoForMatch _ = criaEstadoInicial
 

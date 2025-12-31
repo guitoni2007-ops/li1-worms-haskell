@@ -9,18 +9,21 @@ import Worms (Worms)
 import Data.List (elemIndex)
 import qualified Tarefa6 as T6
 
+-- | Lista de países disponíveis para seleção.
 paises :: [String]
 paises =
   [ "Portugal", "Brasil", "Argentina", "Franca"
   , "Alemanha", "Espanha", "Inglaterra", "Japao"
   ]
 
+-- | Cor de fundo padrão para os menus.
 menuBg :: Color
 menuBg = greyN 0.80
 
 -- ---------------------------------------------------------------------
 -- Barra de progresso do turno
 -- ---------------------------------------------------------------------
+-- | Desenha o temporizador visual do turno atual e identifica o jogador.
 drawTurnTimer :: Worms -> Picture
 drawTurnTimer w =
   let x = 760
@@ -54,6 +57,7 @@ drawTurnTimer w =
 -- ---------------------------------------------------------------------
 -- Painel lateral com inventários
 -- ---------------------------------------------------------------------
+-- | Desenha o painel lateral com a face da minhoca e a quantidade de armas disponíveis.
 drawSidePanel :: [Maybe Picture] -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Worms -> Picture
 drawSidePanel mWormPics mBazucaPic mMinaPic _mJetpackPic _mEscavadoraPic mDinamitePic w =
   let x = -800
@@ -112,6 +116,7 @@ drawSidePanel mWormPics mBazucaPic mMinaPic _mJetpackPic _mEscavadoraPic mDinami
 -- ---------------------------------------------------------------------
 -- Quarter finals / Bracket (apenas um botão Play em baixo)
 -- ---------------------------------------------------------------------
+-- | Desenha a árvore do torneio com as bandeiras dos países participantes.
 drawQuarterFinals :: [Maybe Picture] -> Maybe (W.Bracket String) -> Worms -> Picture
 drawQuarterFinals _ Nothing _ = Blank
 drawQuarterFinals flags (Just b) w =
@@ -174,6 +179,7 @@ drawQuarterFinals flags (Just b) w =
 -- ---------------------------------------------------------------------
 -- desenhaEstado (mapa, objetos, minhocas)
 -- ---------------------------------------------------------------------
+-- | Renderiza o grid do mapa, os objetos (barris/disparos) e as minhocas vivas.
 desenhaEstado :: [Maybe Picture] -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> L25.Estado -> Picture
 desenhaEstado mWormPics mBarrilPic mBarrilExplodirPic mMinaPic mJetpackPic mDinamitePic mBazucaPic mEscavadoraPic st =
   let mapa = L25.mapaEstado st
@@ -207,6 +213,7 @@ desenhaEstado mWormPics mBarrilPic mBarrilExplodirPic mMinaPic mJetpackPic mDina
       minhocasPics = Pictures $ zipWith (\m i -> drawMinhoca tileSize originX originY mWormPics m i) (L25.minhocasEstado st) [0..]
   in Pictures [tiles, gridLines, objetosPics, minhocasPics]
 
+-- | Define as cores para cada tipo de material do terreno.
 terrenoColor :: L25.Terreno -> Color
 terrenoColor t =
   case t of
@@ -216,6 +223,7 @@ terrenoColor t =
     L25.Pedra -> greyN 0.45
     L25.Lava  -> makeColor 0.9 0.35 0.1 1.0
 
+-- | Desenha um objeto individual (Barril ou Projétil) na sua posição.
 drawObjeto :: Float -> Float -> Float -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> L25.Objeto -> Picture
 drawObjeto tileSize originX originY mBarrilPic mBarrilExplodirPic mMinaPic mJetpackPic mDinamitePic mBazucaPic mEscavadoraPic obj =
   case obj of
@@ -270,6 +278,7 @@ drawObjeto tileSize originX originY mBarrilPic mBarrilExplodirPic mMinaPic mJetp
                  in Translate x y $ Scale imgScale imgScale p
                Nothing -> Blank
 
+-- | Desenha uma minhoca, usando a imagem do país ou um círculo colorido.
 drawMinhoca :: Float -> Float -> Float -> [Maybe Picture] -> L25.Minhoca -> Int -> Picture
 drawMinhoca tileSize originX originY mWormPics minhoca idx =
   case L25.posicaoMinhoca minhoca of
@@ -292,6 +301,7 @@ drawMinhoca tileSize originX originY mWormPics minhoca idx =
 -- ---------------------------------------------------------------------
 -- Botões e textos do menu principal
 -- ---------------------------------------------------------------------
+-- | Renderiza os botões do menu principal.
 desenhaMain :: Int -> Picture
 desenhaMain hover =
   Pictures
@@ -300,6 +310,7 @@ desenhaMain hover =
     , desenhaBotao "Exit"      10  (hover == 2)
     ]
 
+-- | Desenha um botão retangular com efeito de destaque (hover).
 desenhaBotao :: String -> Float -> Bool -> Picture
 desenhaBotao txt y hovered =
   let hoverFill = makeColor 0.95 0.45 0.10 1
@@ -314,6 +325,7 @@ desenhaBotao txt y hovered =
        , Translate (-70) (y - 12) $ boldText textCol 0.22 txt
        ]
 
+-- | Desenha texto com um efeito de negrito através de sobreposição.
 boldText :: Color -> Float -> String -> Picture
 boldText col s txt =
   let offsets = [ (0,0)
@@ -330,6 +342,7 @@ boldText col s txt =
       copies = [ Translate dx dy $ color col $ Text txt | (dx,dy) <- offsets ]
   in scaled $ Pictures copies
 
+-- | Interface de seleção de país com setas laterais e bandeira central.
 desenhaCountrySelect :: [Maybe Picture] -> Worms -> Picture
 desenhaCountrySelect flags w =
   let nFlags = length flags
@@ -366,6 +379,7 @@ desenhaCountrySelect flags w =
        , Translate rightX cy $ Scale arrowScale arrowScale $ color black $ line [(20,0),(-20,30),(-20,-30),(20,0)]
        ]
 
+-- | Mostra o nome do país selecionado durante o ecrã de jogo.
 desenhaGameScreen :: [Maybe Picture] -> Worms -> Picture
 desenhaGameScreen _ w =
   let idx = W.countryIndex w
@@ -375,6 +389,7 @@ desenhaGameScreen _ w =
 -- ---------------------------------------------------------------------
 -- Função principal de desenho (exportada)
 -- ---------------------------------------------------------------------
+-- | Função central que decide que ecrã desenhar com base no estado global (Worms).
 desenha :: Maybe Picture      -- mMenuBg
        -> Maybe Picture      -- mBracketBg
        -> Maybe Picture      -- mGameBg
@@ -428,16 +443,13 @@ desenha mMenuBg mBracketBg mGameBg mTitlePic flagsMenu flagsBracket mWormPics mB
                  ]
 
 -- ---------------------------------------------------------------------
--- drawStatisticsScreen: fundo cinzento, estatísticas a preto, botão branco "Menu"
+-- drawStatisticsScreen: ecrã final com dados da Tarefa 6
 -- ---------------------------------------------------------------------
--- drawStatisticsScreen: fundo preto, painel branco com estatísticas a preto, botão branco "Menu" em baixo
+-- | Desenha o relatório de estatísticas da partida usando as funções da Tarefa 6.
 drawStatisticsScreen :: Worms -> Picture
 drawStatisticsScreen w =
   let
-      -- fundo preto (tela inteira)
       bg = color black $ rectangleSolid 1920 1080
-
-      -- painel central branco com borda preta
       rectW = 800
       rectH = 420
       rectX = 0
@@ -445,7 +457,6 @@ drawStatisticsScreen w =
       bgRect = Translate rectX rectY $ color white $ rectangleSolid rectW rectH
       borderRect = Translate rectX rectY $ color black $ rectangleWire rectW rectH
 
-      -- texto das estatísticas (preto)
       textLeft = rectX - rectW/2 + 30
       textTop  = rectY + rectH/2 - 40
       lineGap  = 40
@@ -465,7 +476,6 @@ drawStatisticsScreen w =
             let msg = Translate (-120) 0 $ Scale 0.25 0.25 $ color black $ Text "Relatorio indisponivel"
             in msg
 
-      -- botão "Menu" branco em baixo (coordenadas e tamanho devem coincidir com Eventos.hs)
       menuW = 160
       menuH = 48
       menuY = -380
@@ -476,9 +486,6 @@ drawStatisticsScreen w =
                          ]
 
   in Pictures [ bg, bgRect, borderRect, statsPic, menuPic ]
-
-
-
 
 
 

@@ -11,28 +11,34 @@ import Data.Maybe (isJust, fromMaybe)
 
 type Segundos = Float
 
+-- | Define quantos passos de simulação ocorrem por segundo.
 tickRate :: Int
 tickRate = 2
 
+-- | Tempo real correspondente a cada tick.
 tickDuration :: Float
 tickDuration = 1 / fromIntegral tickRate
 
+-- | Função principal chamada pelo Gloss a cada instante de tempo.
 reageTempo :: Segundos -> W.Worms -> W.Worms
 reageTempo dt s =
   let acc0 = W.tickAcc s + dt
       (nTicks, accRem) = properDiv acc0 tickDuration
   in processNTicks nTicks accRem s
 
+-- | Auxiliar para dividir o tempo acumulado em ticks inteiros.
 properDiv :: Float -> Float -> (Int, Float)
 properDiv acc dur =
   let n = floor (acc / dur)
       remt = acc - fromIntegral n * dur
   in (n, remt)
 
+-- | Converte inputs específicos em jogadas da Tarefa 2.
 inputToJogada :: W.Input -> Maybe L25.Jogada
 inputToJogada W.IFire = Just (L25.Dispara L25.Bazuca L25.Norte)
 inputToJogada _       = Nothing
 
+-- | Processa os inputs acumulados e aplica-os ao estado do jogo.
 aplicaPendingInputs :: Int -> [W.Input] -> L25.Estado -> L25.Estado
 aplicaPendingInputs _ [] est = est
 aplicaPendingInputs idx inputs est =
@@ -44,21 +50,21 @@ aplicaPendingInputs idx inputs est =
        Just jog -> T2.efetuaJogada idx jog est
        Nothing  -> W.applyInputsToEstado idx inputs est
 
--- Remove qualquer Disparo Jetpack cujo dono seja 'idx', sem alterar minhocas
+-- | Remove qualquer Disparo Jetpack cujo dono seja 'idx', sem alterar minhocas.
 removeJetpackObjectsForIdx :: Int -> L25.Estado -> L25.Estado
 removeJetpackObjectsForIdx idx est =
   let objs = L25.objetosEstado est
       objs' = filter (not . isJetpackOf idx) objs
   in est { L25.objetosEstado = objs' }
 
--- helper para identificar Disparo Jetpack de um dono específico
+-- | Helper para identificar Disparo Jetpack de um dono específico.
 isJetpackOf :: Int -> L25.Objeto -> Bool
 isJetpackOf idx o =
   case o of
     L25.Disparo { L25.tipoDisparo = L25.Jetpack, L25.donoDisparo = d } -> d == idx
     _ -> False
 
--- Decrementa o campo tempoDisparo de todos os Disparo Jetpack (Just n -> Just (n-1))
+-- | Decrementa o campo tempoDisparo de todos os Disparo Jetpack (Just n -> Just (n-1)).
 decrementJetpackTimers :: L25.Estado -> L25.Estado
 decrementJetpackTimers est =
   let objs = L25.objetosEstado est
@@ -67,7 +73,7 @@ decrementJetpackTimers est =
       dec o = o
   in est { L25.objetosEstado = map dec objs }
 
--- tenta restaurar minhocas para jetpacks cujo tempo chegou a 0 ou menos
+-- | Tenta restaurar minhocas para jetpacks cujo tempo chegou a 0 ou menos.
 restoreExpiredJetpacks :: W.Worms -> L25.Estado -> L25.Estado
 restoreExpiredJetpacks _w est =
   let objs = L25.objetosEstado est
@@ -140,7 +146,7 @@ restoreExpiredJetpacks _w est =
       estAfter = foldl processExpired est expired
   in estAfter { L25.objetosEstado = others }
 
--- processNTicks: agora decrementa timers de jetpack e restaura expirados
+-- | Processa N ticks de simulação, atualizando física, timers e turnos.
 processNTicks :: Int -> Float -> W.Worms -> W.Worms
 processNTicks 0 acc s = s { W.tickAcc = acc }
 processNTicks n acc s =
@@ -216,7 +222,6 @@ processNTicks n acc s =
                   else
                     let sNext = s' { W.turnTicksLeft = ticksLeft }
                     in processNTicks (n - 1) acc sNext
-
 
 
 

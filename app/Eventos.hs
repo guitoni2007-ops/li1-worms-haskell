@@ -19,15 +19,20 @@ import Tarefa0_geral (movePosicao, ePosicaoMatrizValida)
 import Tarefa0_2025 (ePosicaoEstadoLivre)
 import Data.List (partition, find)
 
--- | Entrada principal de eventos
+-- | Entrada principal de eventos do Gloss. Gere cliques, movimento do rato e teclas.
 reageEventos :: Event -> W.Worms -> W.Worms
 
--- Helpers para aceder/actualizar minhoca por índice
+-- ---------------------------------------------------------------------
+-- Helpers de manipulação de Minhocas
+-- ---------------------------------------------------------------------
+
+-- | Obtém uma minhoca específica pelo seu índice na lista do estado.
 getMinhocaIdx :: Int -> L25.Estado -> Maybe L25.Minhoca
 getMinhocaIdx idx est =
   let ms = L25.minhocasEstado est
   in if idx < 0 || idx >= length ms then Nothing else Just (ms !! idx)
 
+-- | Atualiza os dados de uma minhoca num determinado índice do estado.
 updateMinhocaIdx :: Int -> L25.Minhoca -> L25.Estado -> L25.Estado
 updateMinhocaIdx idx newM est =
   let ms = L25.minhocasEstado est
@@ -36,20 +41,26 @@ updateMinhocaIdx idx newM est =
        []     -> est
        (_:xs) -> est { L25.minhocasEstado = before ++ (newM : xs) }
 
--- Decrement helpers: devolvem a minhoca actualizada com o contador reduzido
+-- | Reduz em 1 a munição de bazuca da minhoca.
 decrBazuca :: L25.Minhoca -> L25.Minhoca
 decrBazuca m = m { L25.bazucaMinhoca = max 0 (L25.bazucaMinhoca m - 1) }
 
+-- | Reduz em 1 a munição de minas da minhoca.
 decrMina :: L25.Minhoca -> L25.Minhoca
 decrMina m = m { L25.minaMinhoca = max 0 (L25.minaMinhoca m - 1) }
 
+-- | Reduz em 1 a munição de dinamite da minhoca.
 decrDinamite :: L25.Minhoca -> L25.Minhoca
 decrDinamite m = m { L25.dinamiteMinhoca = max 0 (L25.dinamiteMinhoca m - 1) }
 
+-- | Reduz em 1 o uso disponível da escavadora.
 decrEscavadoraInv :: L25.Minhoca -> L25.Minhoca
 decrEscavadoraInv m = m { L25.escavadoraMinhoca = max 0 (L25.escavadoraMinhoca m - 1) }
 
--- === Helpers e constantes de UI (duplicados aqui para compilar) ===
+-- ---------------------------------------------------------------------
+-- Constantes de UI para Interação
+-- ---------------------------------------------------------------------
+
 refW, refH, outerMargin :: Float
 refW = 276
 refH = 183
@@ -79,7 +90,6 @@ playW = 220
 playH = 64
 playY = -260
 
--- Parâmetros do botão Back / Statistics (devem coincidir com Desenhar.hs)
 backW, backH, backY :: Float
 backW = 160
 backH = 48
@@ -88,7 +98,6 @@ backY = -380
 statsY :: Float
 statsY = backY + 70
 
--- Parâmetros do botão Replay na bracket
 replayW, replayH, replayY :: Float
 replayW = 220
 replayH = 64
@@ -98,17 +107,17 @@ mainButtonW, mainButtonH :: Float
 mainButtonW = 360
 mainButtonH = 50
 
--- Posições dos botões no menu principal (3 botões)
 mainButtonYs :: [Float]
 mainButtonYs = [170, 90, 10]
 
+-- | Verifica se um ponto (rato) está dentro de um retângulo.
 isOverRect :: (Float,Float) -> (Float,Float) -> (Float,Float) -> Bool
 isOverRect (mx,my) (cx,cy) (w,h) =
   let halfW = w / 2
       halfH = h / 2
   in mx >= cx - halfW && mx <= cx + halfW && my >= cy - halfH && my <= cy + halfH
 
--- detecção genérica de hover para botões principais
+-- | Deteta se o rato está sobre um dos botões do menu principal.
 isOverMainButton :: (Float,Float) -> Int -> Bool
 isOverMainButton (mx,my) idx =
   let n = length mainButtonYs
@@ -118,18 +127,21 @@ isOverMainButton (mx,my) idx =
          let cy = mainButtonYs !! idx
          in isOverRect (mx,my) (0, cy) (mainButtonW, mainButtonH)
 
+-- | Identifica qual o índice do botão do menu principal sob o rato.
 whichMainButton :: (Float,Float) -> Int
 whichMainButton (mx,my) =
   case filter (\(i,y) -> isOverRect (mx,my) (0,y) (mainButtonW, mainButtonH)) (zip [0..] mainButtonYs) of
     ((i,_):_) -> i
     []        -> -1
 
--- Identificadores de objetos e utilitários (necessários aqui)
+-- ---------------------------------------------------------------------
+-- Predicados de Objetos
+-- ---------------------------------------------------------------------
+
 isJetpack :: L25.Objeto -> Bool
 isJetpack L25.Disparo { L25.tipoDisparo = L25.Jetpack } = True
 isJetpack _ = False
 
--- identifica um Disparo Jetpack cujo dono é o índice dado
 isJetpackOf :: Int -> L25.Objeto -> Bool
 isJetpackOf idx o =
   case o of
@@ -148,7 +160,7 @@ isSameObj a b =
     (L25.Barril { L25.posicaoBarril = pa }, L25.Barril { L25.posicaoBarril = pb }) -> pa == pb
     _ -> False
 
--- objetoAt: verifica se existe um objeto numa posição do estado
+-- | Verifica se existe algum objeto (barril/disparo) numa posição.
 objetoAt :: (Int,Int) -> L25.Estado -> Bool
 objetoAt pos est =
   any (matchPos pos) (L25.objetosEstado est)
@@ -158,16 +170,17 @@ objetoAt pos est =
         L25.Barril { L25.posicaoBarril = pb } -> pb == p
         L25.Disparo { L25.posicaoDisparo = pd } -> pd == p
 
--- Clique do rato (Down)
+-- ---------------------------------------------------------------------
+-- Lógica de Cliques do Rato (Down)
+-- ---------------------------------------------------------------------
+
 reageEventos (EventKey (MouseButton LeftButton) Down _ (mx,my)) s =
-  -- usamos as coordenadas da janela diretamente
   let coordsForMain = (mx, my)
   in
-  -- Quick Play: inicia imediatamente um jogo (botão novo, índice 0)
+  -- Botão Quick Play (Índice 0)
   if W.menu s == W.MainMenu && isOverMainButton coordsForMain 0
     then
       let est = W.criaEstadoInicial
-          -- encontra primeiro índice de minhoca com posição (Just)
           firstAliveIdx = case [ i | (i, mm) <- zip [0..] (L25.minhocasEstado est), L25.posicaoMinhoca mm /= Nothing ] of
                            (i:_) -> i
                            []    -> 0
@@ -192,7 +205,7 @@ reageEventos (EventKey (MouseButton LeftButton) Down _ (mx,my)) s =
                   }
            else s
   else
-  -- Ao clicar Tournament no MainMenu: mostra a bracket (mantemos bracket e tournament)
+  -- Botão Tournament (Índice 1)
   if W.menu s == W.MainMenu && isOverMainButton coordsForMain 1
     then
       let countryNames =
@@ -215,11 +228,11 @@ reageEventos (EventKey (MouseButton LeftButton) Down _ (mx,my)) s =
            , W.showStatistics = False
            }
   else
-  -- MainMenu: Exit (bottom) -> índice 2
+  -- Botão Exit (Índice 2)
   if W.menu s == W.MainMenu && isOverMainButton coordsForMain 2
     then error "Exit"
   else
-  -- Se estivermos na tela de vitória e o utilizador clicar no botão Statistics, mostra o ecrã de estatísticas
+  -- Botão de Estatísticas no ecrã final
   if W.lastWinner s /= Nothing && isOverRect (mx,my) (0, statsY) (backW, backH)
     then s { W.showStatistics = True
            , W.hoverPlay = False
@@ -227,7 +240,7 @@ reageEventos (EventKey (MouseButton LeftButton) Down _ (mx,my)) s =
            , W.hoverMain = -1
            }
   else
-  -- Se estivermos na tela de vitória e o utilizador clicar no botão Back, volta para o menu principal
+  -- Botão Back para o Menu Principal
   if W.lastWinner s /= Nothing && isOverRect (mx,my) (0, backY) (backW, backH)
     then s { W.menu = W.MainMenu
            , W.tournament = False
@@ -243,7 +256,7 @@ reageEventos (EventKey (MouseButton LeftButton) Down _ (mx,my)) s =
            , W.hoverMain = -1
            }
     else
-      -- Se estivermos na tela da bracket (tournament) e o utilizador clicar em Replay, inicia um jogo
+      -- Botão Replay na Bracket do Torneio
       if W.menu s == W.Game && W.tournament s && W.estadoJogo s == Nothing && W.lastWinner s == Nothing && isOverRect (mx,my) (0, replayY) (replayW, replayH)
         then
           let est = W.criaEstadoInicial
@@ -263,17 +276,16 @@ reageEventos (EventKey (MouseButton LeftButton) Down _ (mx,my)) s =
                       , W.lastMatchInitial = Just est
                       , W.lastMatchFinal = Nothing
                       , W.showStatistics = False
-                      -- mantemos tournament e bracket tal como estão
                       }
                else s
       else
-        -- CountrySelect: setas (click)
+        -- Seleção de Países (Setas)
         if W.menu s == W.CountrySelect && isOverRect (mx,my) (leftArrowX, arrowY) (arrowW, arrowH)
           then s { W.countryIndex = (W.countryIndex s - 1) `mod` 8 }
         else if W.menu s == W.CountrySelect && isOverRect (mx,my) (rightArrowX, arrowY) (arrowW, arrowH)
           then s { W.countryIndex = (W.countryIndex s + 1) `mod` 8 }
         else
-          -- Se estivermos a mostrar estatísticas e o utilizador clicar no Back, volta ao menu principal
+          -- Sair do ecrã de estatísticas para o menu
           if W.showStatistics s && isOverRect (mx,my) (0, backY) (backW, backH)
             then s { W.showStatistics = False
                    , W.menu = W.MainMenu
@@ -286,7 +298,10 @@ reageEventos (EventKey (MouseButton LeftButton) Down _ (mx,my)) s =
                    }
             else s { W.hoverPlay = False }
 
--- Movimento do rato (hover)
+-- ---------------------------------------------------------------------
+-- Lógica de Movimento do Rato (Hover)
+-- ---------------------------------------------------------------------
+
 reageEventos (EventMotion (mx,my)) s =
   let coordsForMain = (mx, my)
       sScale = if W.tournament s then sTournament else sNormal
@@ -313,7 +328,6 @@ reageEventos (EventMotion (mx,my)) s =
          | otherwise      -> s { W.hoverArrow = -1, W.hoverMain = -1, W.hoverFlag = False, W.hoverPlay = False }
 
        W.Game
-         -- bracket screen hover: highlight Replay or Back
          | W.tournament s && W.estadoJogo s == Nothing && W.lastWinner s == Nothing && overReplay ->
              s { W.hoverPlay = True, W.hoverArrow = -1, W.hoverMain = -1, W.hoverFlag = False }
          | W.tournament s && W.estadoJogo s == Nothing && W.lastWinner s == Nothing && overBack ->
@@ -328,9 +342,13 @@ reageEventos (EventMotion (mx,my)) s =
          | W.showWhite s             -> s { W.hoverPlay = False, W.hoverArrow = -1, W.hoverMain = -1, W.hoverFlag = False }
          | otherwise                 -> s { W.hoverPlay = False, W.hoverArrow = -1, W.hoverMain = -1, W.hoverFlag = False }
 
--- Teclas: bufferiza inputs e trata teclas de colocar/activar objetos
+-- ---------------------------------------------------------------------
+-- Lógica de Teclado (Inputs do Jogo)
+-- ---------------------------------------------------------------------
+
 reageEventos (EventKey key Down _ _) s =
   case key of
+    -- Disparar Bazuca (Espaço)
     Char ' ' ->
       case W.estadoJogo s of
         Nothing -> s
@@ -339,6 +357,7 @@ reageEventos (EventKey key Down _ _) s =
               est' = T2.efetuaJogada idx (L25.Dispara L25.Bazuca L25.Norte) est
           in if est' /= est then s { W.estadoJogo = Just est' } else s
 
+    -- Colocar Dinamite (N)
     Char 'n' ->
       case W.estadoJogo s of
         Nothing -> s
@@ -365,11 +384,14 @@ reageEventos (EventKey key Down _ _) s =
                             in s { W.estadoJogo = Just est' }
                           else s
 
+    -- Controlar Jetpack (W / Up)
     Char 'w' -> jetpackMoveUp s
     SpecialKey KeyUp -> jetpackMoveUp s
 
+    -- Ativar/Desativar Escavadora (E)
     Char 'e' -> escavadoraToggle s
 
+    -- Colocar Bazuca estática (B)
     Char 'b' ->
       case W.estadoJogo s of
         Nothing -> s
@@ -396,7 +418,7 @@ reageEventos (EventKey key Down _ _) s =
                             in s { W.estadoJogo = Just est' }
                           else s
 
-    -- Colocar mina a partir do inventário (agora por-minhoca)
+    -- Colocar Mina (M)
     Char 'm' ->
       case W.estadoJogo s of
         Nothing -> s
@@ -423,6 +445,7 @@ reageEventos (EventKey key Down _ _) s =
                             in s { W.estadoJogo = Just est' }
                           else s
 
+    -- Colocar Barril de teste (V)
     Char 'v' ->
       case W.estadoJogo s of
         Nothing -> s
@@ -442,6 +465,7 @@ reageEventos (EventKey key Down _ _) s =
                             in s { W.estadoJogo = Just est' }
                           else s
 
+    -- Outras teclas de movimento e ação (buffer de inputs)
     _ ->
       case keyToInput key of
         Just i -> s { W.pendingInputs = W.pendingInputs s ++ [i] }
@@ -449,21 +473,22 @@ reageEventos (EventKey key Down _ _) s =
 
 reageEventos _ s = s
 
--- duração do jetpack em ticks (ajusta aqui)
+-- ---------------------------------------------------------------------
+-- Funções de Lógica Especial de Movimento
+-- ---------------------------------------------------------------------
+
 jetpackDuration :: Int
 jetpackDuration = 4
 
--- número mínimo de ticks restantes para permitir activar o jetpack
 minJetpackTicks :: Int
 minJetpackTicks = 2
 
--- Jetpack: move up + cria/actualiza Jetpack com tempo = jetpackDuration
+-- | Move a minhoca para cima usando o Jetpack e consome tempo de voo.
 jetpackMoveUp :: W.Worms -> W.Worms
 jetpackMoveUp s =
   case W.estadoJogo s of
     Nothing -> s
     Just est ->
-      -- bloqueia se faltar pouco tempo para o fim do turno
       if W.turnTicksLeft s <= minJetpackTicks
         then s
         else
@@ -480,7 +505,6 @@ jetpackMoveUp s =
                      in if not canMove
                           then s
                           else
-                            -- remove qualquer jetpack existente do mesmo dono antes de criar novo
                             let objsNoJet = filter (not . isJetpackOf idx) (L25.objetosEstado est)
                                 disparo = L25.Disparo { L25.posicaoDisparo = newPos
                                                       , L25.direcaoDisparo = L25.Norte
@@ -492,8 +516,7 @@ jetpackMoveUp s =
                                 est' = updateMinhocaIdx idx m' (est { L25.objetosEstado = disparo : objsNoJet })
                             in s { W.estadoJogo = Just est' }
 
-
--- Escavadora toggle usando inventário por-minhoca
+-- | Alterna entre o estado de escavação e o estado normal da minhoca.
 escavadoraToggle :: W.Worms -> W.Worms
 escavadoraToggle s =
   case W.estadoJogo s of
@@ -536,7 +559,7 @@ escavadoraToggle s =
                                    est' = est { L25.objetosEstado = objs', L25.minhocasEstado = minh' }
                                in s { W.estadoJogo = Just est' }
 
--- Toggle Jetpack (desativar): procura Disparo Jetpack e restaura minhoca
+-- | Desativa o Jetpack e coloca a minhoca de volta no mapa.
 toggleJetpack :: W.Worms -> W.Worms
 toggleJetpack s =
   case W.estadoJogo s of
@@ -550,7 +573,6 @@ toggleJetpack s =
                  ownerIdx = L25.donoDisparo jet
                  objs' = filter (not . isSameObj jet) (L25.objetosEstado est)
                  minhList = L25.minhocasEstado est
-                 -- tenta restaurar a minhoca pelo índice do dono do jetpack
                  minhocasRestored =
                    if ownerIdx >= 0 && ownerIdx < length minhList
                      then
@@ -561,7 +583,6 @@ toggleJetpack s =
                               let mm' = mm { L25.posicaoMinhoca = Just pos }
                               in before ++ (mm' : mrest)
                      else
-                       -- fallback: comportamento antigo (restaura primeiro slot livre)
                        let (before, after) = break (\x -> L25.posicaoMinhoca x == Nothing) minhList
                        in case after of
                             [] -> minhList
@@ -571,7 +592,7 @@ toggleJetpack s =
                  est' = est { L25.objetosEstado = objs', L25.minhocasEstado = minhocasRestored }
              in s { W.estadoJogo = Just est' }
 
--- keyToInput: mapeamento de teclas para inputs do jogo
+-- | Mapeia teclas Gloss para o tipo de Input interno.
 keyToInput :: Key -> Maybe W.Input
 keyToInput (SpecialKey KeyUp)    = Just W.IUp
 keyToInput (SpecialKey KeyDown)  = Just W.IDown
@@ -583,7 +604,6 @@ keyToInput (Char 'a')            = Just W.ILeft
 keyToInput (Char 'd')            = Just W.IRight
 keyToInput (Char ' ')            = Just W.IFire
 keyToInput _                     = Nothing
-
 
 
 
