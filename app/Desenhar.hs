@@ -114,7 +114,7 @@ drawSidePanel mWormPics mBazucaPic mMinaPic _mJetpackPic _mEscavadoraPic mDinami
   in Pictures [ drawEntry 0 yTop, drawEntry 1 (yTop - yGap) ]
 
 -- ---------------------------------------------------------------------
--- Quarter finals / Bracket (apenas um botão Play em baixo)
+-- Quarter finals / Bracket 
 -- ---------------------------------------------------------------------
 -- | Desenha a árvore do torneio com as bandeiras dos países participantes.
 drawQuarterFinals :: [Maybe Picture] -> Maybe (W.Bracket String) -> Worms -> Picture
@@ -167,7 +167,7 @@ drawQuarterFinals flags (Just b) w =
       playY = -260
       isHoverPlay = W.hoverPlay w
       playFill = if isHoverPlay then makeColor 0.90 0.30 0.05 1 else white
-      playTextPic = if isHoverPlay then boldText white 0.35 "Play" else Scale 0.35 0.35 (color black $ Text "Play")
+      playTextPic = if isHoverPlay then boldText white 0.35 "Jogar" else Scale 0.35 0.35 (color black $ Text "Jogar")
       playButton = Translate 0 playY $
         Pictures
           [ color playFill $ rectangleSolid playW playH
@@ -305,9 +305,9 @@ drawMinhoca tileSize originX originY mWormPics minhoca idx =
 desenhaMain :: Int -> Picture
 desenhaMain hover =
   Pictures
-    [ desenhaBotao "Quick Play" 170 (hover == 0)
-    , desenhaBotao "Tournament" 90  (hover == 1)
-    , desenhaBotao "Exit"      10  (hover == 2)
+    [ desenhaBotao "Jogar rapido" 170 (hover == 0)
+    , desenhaBotao "Torneio" 90  (hover == 1)
+    , desenhaBotao "Sair"      10  (hover == 2)
     ]
 
 -- | Desenha um botão retangular com efeito de destaque (hover).
@@ -371,7 +371,7 @@ desenhaCountrySelect flags w =
            then Translate 0 (cy + 20) $ Scale s s $ color orange $ rectangleWire (refW + outerMargin) (refH + outerMargin)
            else Blank
        , if W.hoverFlag w
-           then Translate (-40) (-170) $ boldText white 0.40 "Play"
+           then Translate (-40) (-170) $ boldText white 0.40 "Jogar"
            else Blank
        , Translate leftX cy $ Scale arrowScale arrowScale $ color black $ polygon [(-20,0),(20,30),(20,-30)]
        , Translate rightX cy $ Scale arrowScale arrowScale $ color black $ polygon [(20,0),(-20,30),(-20,-30)]
@@ -390,6 +390,8 @@ desenhaGameScreen _ w =
 -- Função principal de desenho (exportada)
 -- ---------------------------------------------------------------------
 -- | Função central que decide que ecrã desenhar com base no estado global (Worms).
+-- Agora recebe também a imagem de fundo do jogo (mGameBg) para poder usá-la
+-- no ecrã de estatísticas quando necessário.
 desenha :: Maybe Picture      -- mMenuBg
        -> Maybe Picture      -- mBracketBg
        -> Maybe Picture      -- mGameBg
@@ -418,7 +420,7 @@ desenha mMenuBg mBracketBg mGameBg mTitlePic flagsMenu flagsBracket mWormPics mB
       in Pictures [ bgPic, gamePic, timerPic, sidePanel ]
     Nothing ->
       if W.showStatistics w
-        then drawStatisticsScreen w
+        then drawStatisticsScreen mGameBg w
       else
         if W.menu w == W.Game && W.showWhite w && W.tournament w && W.lastWinner w == Nothing
           then
@@ -446,10 +448,16 @@ desenha mMenuBg mBracketBg mGameBg mTitlePic flagsMenu flagsBracket mWormPics mB
 -- drawStatisticsScreen: ecrã final com dados da Tarefa 6
 -- ---------------------------------------------------------------------
 -- | Desenha o relatório de estatísticas da partida usando as funções da Tarefa 6.
-drawStatisticsScreen :: Worms -> Picture
-drawStatisticsScreen w =
+-- Recebe a imagem de fundo do jogo (Maybe Picture) e usa-a como fundo
+drawStatisticsScreen :: Maybe Picture -> Worms -> Picture
+drawStatisticsScreen mGameBg w =
   let
-      bg = color black $ rectangleSolid 1920 1080
+      -- usa a imagem de fundo se disponível; caso contrário, fallback para preto
+      bg =
+        case mGameBg of
+          Just pic -> Scale 1 1 pic
+          Nothing  -> color black $ rectangleSolid 1920 1080
+
       rectW = 800
       rectH = 420
       rectX = 0
@@ -465,7 +473,7 @@ drawStatisticsScreen w =
         case (W.lastMatchInitial w, W.lastMatchFinal w) of
           (Just estI, Just estF) ->
             let rel = T6.gerarRelatorio estI estF
-                title = Translate textLeft textTop $ Scale 0.35 0.35 $ color black $ Text "Statistics"
+                title = Translate textLeft textTop $ Scale 0.35 0.35 $ color black $ Text "Estatisticas"
                 winnerLine = Translate textLeft (textTop - lineGap) $ Scale 0.22 0.22 $ color black $ Text (T6.mostraVencedor rel)
                 line2 = Translate textLeft (textTop - 2*lineGap) $ Scale 0.18 0.18 $ color black $ Text ("Titulo P1: " ++ T6.tituloP1 rel)
                 line3 = Translate textLeft (textTop - 3*lineGap) $ Scale 0.18 0.18 $ color black $ Text ("Titulo P2: " ++ T6.tituloP2 rel)

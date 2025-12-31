@@ -230,7 +230,7 @@ reageEventos (EventKey (MouseButton LeftButton) Down _ (mx,my)) s =
   else
   -- Botão Exit (Índice 2)
   if W.menu s == W.MainMenu && isOverMainButton coordsForMain 2
-    then error "Exit"
+    then error "Sair"
   else
   -- Botão de Estatísticas no ecrã final
   if W.lastWinner s /= Nothing && isOverRect (mx,my) (0, statsY) (backW, backH)
@@ -565,7 +565,7 @@ toggleJetpack s =
   case W.estadoJogo s of
     Nothing -> s
     Just est ->
-      let (jets, _) = partition isJetpack (L25.objetosEstado est)
+      let (jets, others) = partition isJetpack (L25.objetosEstado est)
       in case jets of
            [] -> s
            (jet:_) ->

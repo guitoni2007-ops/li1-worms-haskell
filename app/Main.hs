@@ -106,18 +106,17 @@ main = do
                  , W.estadoJogo = Nothing
                  }
 
-          -- parâmetros do botão Back / Statistics (usar os mesmos valores em Eventos.hs)
+          -- parâmetros do botão Voltar / Estatísticas 
           backW = 160 :: Float
           backH = 48  :: Float
           backY = -380 :: Float
           statsY = backY + 70
 
-          -- escala aplicada à imagem de vitória (ajusta se necessário)
+          -- escala aplicada à imagem de vitória 
           victoryScale :: Float
           victoryScale = 0.95
 
           -- função de desenho que envolve 'desenha' e sobrepõe a imagem de vitória + botões
-          -- CORREÇÃO: se showStatistics estiver activo, devolve apenas 'base' (que já desenha o ecrã de estatísticas)
           drawAll :: Maybe Picture -> Maybe Picture -> W.Worms -> Picture
           drawAll mVpt mVbr world =
             let base = desenha (Just mMenuBg) (Just mBracketBg) (Just mGameBg) (Just mTitle') (map Just mFlagsMenu') (map Just mFlagsBracket') (map Just mWorms) (Just mBarril) (Just mBarrilExplode) (Just mMina) (Just mJetpack) (Just mDinamite) (Just mBazuca) (Just mEscavadora) world
@@ -135,32 +134,32 @@ main = do
                            Just "Brasil"   -> victoryPicFor mVbr
                            _ -> Blank
 
-                       -- fundo sólido para a tela de vitória (preto) — só desenhado se a imagem existir
+                       -- fundo sólido para a tela de vitória 
                        victoryBg =
                          case W.lastWinner world of
                            Just "Portugal" -> case mVpt of Just _ -> Translate 0 0 $ color black $ rectangleSolid 1920 1080; Nothing -> Blank
                            Just "Brasil"   -> case mVbr of Just _ -> Translate 0 0 $ color black $ rectangleSolid 1920 1080; Nothing -> Blank
                            _ -> Blank
 
-                       -- botão Statistics (em cima)
+                       -- botão Estatisticas 
                        statsPic =
                          case W.lastWinner world of
                            Just _ ->
                              Pictures
                                [ Translate 0 statsY $ color (greyN 0.85) $ rectangleSolid backW backH
                                , Translate 0 statsY $ color black $ rectangleWire backW backH
-                               , Translate (-48) (statsY - 10) $ Scale 0.20 0.20 $ color black $ Text "Statistics"
+                               , Translate (-6) (statsY - 10) $ Scale 0.20 0.20 $ color black $ Text "Estatisticas"
                                ]
                            Nothing -> Blank
 
-                       -- botão Back (embaixo)
+                       -- botão Voltar 
                        backPic =
                          case W.lastWinner world of
                            Just _ ->
                              Pictures
                                [ Translate 0 backY $ color (greyN 0.85) $ rectangleSolid backW backH
                                , Translate 0 backY $ color black $ rectangleWire backW backH
-                               , Translate (-28) (backY - 10) $ Scale 0.22 0.22 $ color black $ Text "Back"
+                               , Translate (-28) (backY - 10) $ Scale 0.22 0.22 $ color black $ Text "Voltar"
                                ]
                            Nothing -> Blank
 
@@ -188,6 +187,7 @@ ensure fname Nothing = do
   putStrLn $ "Erro: não foi possível carregar: " ++ fname
   exitFailure
 ensure _ (Just x) = return x
+
 
 
 
