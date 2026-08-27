@@ -1,6 +1,11 @@
 dist-newstyle/
 haddocks/
-worms-0.0.0.0*
+worms-*
 *.html
 *.tix
 *.feedback
+*.hi
+*.o
+app/Main
+app/worms
+app/*.png
