@@ -148,7 +148,7 @@ main = do
                              Pictures
                                [ Translate 0 statsY $ color (greyN 0.85) $ rectangleSolid backW backH
                                , Translate 0 statsY $ color black $ rectangleWire backW backH
-                               , Translate (-6) (statsY - 10) $ Scale 0.20 0.20 $ color black $ Text "Estatisticas"
+                               , Translate (-60) (statsY - 10) $ Scale 0.20 0.20 $ color black $ Text "Estatisticas"
                                ]
                            Nothing -> Blank
 
@@ -159,7 +159,7 @@ main = do
                              Pictures
                                [ Translate 0 backY $ color (greyN 0.85) $ rectangleSolid backW backH
                                , Translate 0 backY $ color black $ rectangleWire backW backH
-                               , Translate (-28) (backY - 10) $ Scale 0.22 0.22 $ color black $ Text "Voltar"
+                               , Translate (-32) (backY - 10) $ Scale 0.22 0.22 $ color black $ Text "Voltar"
                                ]
                            Nothing -> Blank
 

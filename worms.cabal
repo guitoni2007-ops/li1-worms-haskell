@@ -107,9 +107,12 @@ executable worms-game
     main-is:          Main.hs
 
     build-depends:
-        base, gloss, worms
+        base
+      , gloss
+      , gloss-juicy
+      , JuicyPixels
+      , worms
 
     hs-source-dirs:   app
 
     default-language: GHC2021
-

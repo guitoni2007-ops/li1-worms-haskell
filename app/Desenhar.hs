@@ -69,7 +69,7 @@ drawSidePanel mWormPics mBazucaPic mMinaPic _mJetpackPic _mEscavadoraPic mDinami
       minhList = case mEst of
                    Just est -> L25.minhocasEstado est
                    Nothing  -> []
-      getMinh i field =
+      getMinh i field =   -- retirar um campo específico de uma minhoca
         if i >= 0 && i < length minhList
           then field (minhList !! i)
           else 0

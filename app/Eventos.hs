@@ -376,7 +376,7 @@ reageEventos (EventKey key Down _ _) s =
                             let disparo = L25.Disparo { L25.posicaoDisparo = pos
                                                       , L25.direcaoDisparo = L25.Norte
                                                       , L25.tipoDisparo = L25.Dinamite
-                                                      , L25.tempoDisparo = Nothing
+                                                      , L25.tempoDisparo = Just 2
                                                       , L25.donoDisparo = idx
                                                       }
                                 mm' = decrDinamite mm
@@ -594,15 +594,10 @@ toggleJetpack s =
 
 -- | Mapeia teclas Gloss para o tipo de Input interno.
 keyToInput :: Key -> Maybe W.Input
-keyToInput (SpecialKey KeyUp)    = Just W.IUp
-keyToInput (SpecialKey KeyDown)  = Just W.IDown
-keyToInput (SpecialKey KeyLeft)  = Just W.ILeft
-keyToInput (SpecialKey KeyRight) = Just W.IRight
 keyToInput (Char 'w')            = Just W.IUp
 keyToInput (Char 's')            = Just W.IDown
 keyToInput (Char 'a')            = Just W.ILeft
 keyToInput (Char 'd')            = Just W.IRight
-keyToInput (Char ' ')            = Just W.IFire
 keyToInput _                     = Nothing
 
 

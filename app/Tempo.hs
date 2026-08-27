@@ -198,7 +198,6 @@ processNTicks n acc s =
                        case i of
                          0 -> Just "Portugal"
                          1 -> Just "Brasil"
-                         _ -> Just ("Jogador " ++ show (i + 1))
                      _ -> Nothing
                  sEnded = s' { W.estadoJogo = Nothing
                              , W.tickAcc = acc

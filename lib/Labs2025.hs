@@ -23,8 +23,6 @@ data Terreno
     | Terra
     -- | Terreno opaco e indestrutivel.
     | Pedra
-    -- Teste de lava
-    | Lava
     deriving (Eq,Ord,Show,Read,Enum)
 
 -- | O mapa do jogo é uma matriz de terrenos.

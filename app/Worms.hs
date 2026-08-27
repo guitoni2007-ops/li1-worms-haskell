@@ -11,7 +11,6 @@ module Worms
   , applyInputsToEstado
   , initialState
   , criaEstadoInicial
-  , criaEstadoForMatch
   ) where
 
 import qualified Labs2025
@@ -139,7 +138,6 @@ data Worms = Worms
   , turnDuration     :: Int
   , currentMatch     :: Maybe (Match String)  -- match actualmente a jogar
   , lastWinner       :: Maybe String          -- último vencedor (nome do país)
-  -- novos campos para estatísticas
   , lastMatchInitial :: Maybe Labs2025.Estado
   , lastMatchFinal   :: Maybe Labs2025.Estado
   , showStatistics   :: Bool
@@ -240,9 +238,6 @@ criaEstadoInicial = Labs2025.Estado
         ]
     }
 
--- criaEstadoForMatch: versão temporária que devolve o estado inicial completo.
-criaEstadoForMatch :: Match String -> Labs2025.Estado
-criaEstadoForMatch _ = criaEstadoInicial
 
 
 

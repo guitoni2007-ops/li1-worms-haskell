@@ -11,7 +11,7 @@ cabal run --enable-coverage t1-feedback
 
 -- | Definir aqui os testes do grupo para a Tarefa 1
 testesTarefa1 :: [Estado]
-testesTarefa1 = [e1,e2,e3,e4,e5,e6,e7,e8,e9,e10,e11,e12,e13,e14,e15,e16,e17,e18,e19,e20,e21,e22,e23,e24,e25,e26,e27,e28,e29,e30,e31,e32,e33,e34,e35,e36,e37]
+testesTarefa1 = [e1,e2,e3,e4,e5,e6,e7,e8,e9,e10,e11,e12,e13,e14,e15,e16,e17,e18,e19,e20,e21,e22,e23,e24,e25,e26,e27,e28,e29,e30,e31,e32,e33,e34,e35,e36,e37,e38]
 
 dataTarefa1 :: IO TaskData
 dataTarefa1 = do
@@ -60,7 +60,7 @@ e34 = Estado mapaTesteValido5 [] minhocasTeste16
 e35 = Estado mapaTesteValido5 objetosTeste17 minhocasTeste14
 e36 = Estado mapaTesteValido12 objetosTeste18 []
 e37 = Estado mapaTesteValido5 objetosTeste17 minhocasTeste17
-
+e38 = Estado mapaTesteValido13 objetosTeste19 minhocasTeste18
 
 
 -- Mapas válido
@@ -145,6 +145,23 @@ mapaTesteValido12 =
   , [Ar, Ar, Ar, Ar, Ar]
   ]
 
+mapaTesteValido13 =
+  [ [Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar]
+  , [Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar]
+  , [Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar]
+  , [Terra, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar]
+  , [Terra, Terra, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar]
+  , [Terra, Terra, Terra, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar]
+  , [Terra, Terra, Terra, Terra, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar]
+  , [Terra, Terra, Terra, Terra, Terra, Terra, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar]
+  , [Terra, Terra, Terra, Terra, Terra, Terra, Pedra, Pedra, Ar, Ar, Ar, Ar, Ar, Ar, Ar]
+  , [Terra, Terra, Terra, Terra, Terra, Terra, Pedra, Pedra, Agua, Agua, Agua, Ar, Ar, Ar, Ar]
+  , [Terra, Terra, Terra, Terra, Terra, Terra, Pedra, Pedra, Agua, Agua, Agua, Ar, Ar, Ar, Ar]
+  , [Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar]
+  , [Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar, Ar]
+  ]
+
+
 
 
 
@@ -156,7 +173,7 @@ mapaTesteValido12 =
 mapaTesteInvalido1 =
   [ [Ar, Ar, Terra, Pedra]
   , [Agua, Terra, Terra, Pedra]
-  , [Ar, Ar, Lava, Ar]
+  , [Ar, Ar, Terra, Ar]
   , [Pedra, Pedra, Terra, Agua]
   ]
 
@@ -172,7 +189,7 @@ mapaTesteInvalido3 = [[]]
 mapaTesteInvalido4 =
   [ [Ar, Ar, Terra, Pedra]
   , [Agua, Terra, Terra, Pedra]
-  , [Ar, Ar, Ar, Lava]
+  , [Ar, Ar, Ar, Ar]
   , [Pedra, Pedra, Terra, Agua]
   ]
 
@@ -330,6 +347,8 @@ objetosTeste18 =
   , Disparo (2,2) Sul Bazuca Nothing 0
   ]
 
+objetosTeste19 = [ Barril { posicaoBarril = (0,5), explodeBarril = False } , Barril { posicaoBarril = (4,4), explodeBarril = True } , Disparo { posicaoDisparo = (1,2), direcaoDisparo = Sul, tipoDisparo = Bazuca, tempoDisparo = Nothing, donoDisparo = 0 } , Disparo { posicaoDisparo = (2,3), direcaoDisparo = Norte, tipoDisparo = Dinamite, tempoDisparo = Just 3, donoDisparo = 1 } , Disparo { posicaoDisparo = (3,0), direcaoDisparo = Este, tipoDisparo = Mina, tempoDisparo = Just 2, donoDisparo = 2 } ]
+
 
 
 
@@ -426,6 +445,8 @@ minhocasTeste17 =
   , Minhoca Nothing (Morta) 1 1 1 1 1
   , Minhoca (Just (4,5)) (Viva 100) (-1) 1 1 1 1
   ]
+
+minhocasTeste18 = [ Minhoca (Just (9,9)) (Viva 100) 1 1 1 1 1 ]
 
 
 
