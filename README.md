@@ -1,7 +1,7 @@
 # 🐛 Worms — Laboratórios de Informática I
 
-![Linguagem](https://img.shields.io/badge/Linguagem-Haskell-5e5086?style=for-the-badge&logo=haskell)
-![Interface](https://img.shields.io/badge/Gráficos-Gloss-lightgrey?style=for-the-badge)
+[![Linguagem](https://img.shields.io/badge/Linguagem-Haskell-5e5086?style=for-the-badge&logo=haskell)](https://www.haskell.org/)
+[![Interface](https://img.shields.io/badge/Gráficos-Gloss-lightgrey?style=for-the-badge)](https://hackage.haskell.org/package/gloss)
 
 ## 📌 Visão Geral
 Este projeto consiste no desenvolvimento de um jogo 2D inspirado no clássico **Worms**, totalmente programado no paradigma da **programação funcional**. O jogo foi o projeto final da unidade curricular de Laboratórios de Informática I (1º Ano, 1º Semestre) da Universidade do Minho.
