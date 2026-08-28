@@ -12,7 +12,7 @@ A interface gráfica, animações e sistema de eventos foram construídos de rai
 * **Motor de Jogo Funcional:** Lógica de física, colisões, gravidade e sistema de turnos implementados de forma puramente funcional.
 * **Arsenal e Utilitários:** Diversas armas e mecânicas de jogo implementadas (Bazuca, Dinamites, Minas, Jetpacks, Escavadoras, etc.).
 * **Equipas e Países:** Sistema de equipas personalizadas com bandeiras de vários países.
-* **Interface Gráfica (Gloss):** Menus interativos, renderização dinâmica de mapas e ecrãs de vitória.
+* **Interface Gráfica (Gloss):** Menus interativos e ecrãs de vitória.
 
 ---
 
