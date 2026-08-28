@@ -12,7 +12,7 @@ A interface gráfica, animações e sistema de eventos foram construídos de rai
 * **Motor de Jogo Funcional:** Lógica de física, colisões, gravidade e sistema de turnos implementados de forma puramente funcional.
 * **Arsenal e Utilitários:** Diversas armas e mecânicas de jogo implementadas (Bazuca, Dinamites, Minas, Jetpacks, Escavadoras, etc.).
 * **Equipas e Países:** Sistema de equipas personalizadas com bandeiras de vários países.
-* **Interface Gráfica (Gloss):** Menus interativos e ecrãs de vitória.
+* **Interface Gráfica (Gloss):** Menus interativos, gráficos 2D e ecrãs de vitória.
 
 ---
 
@@ -39,9 +39,9 @@ Para compilar e executar o jogo em **Linux (Ubuntu/Debian)**, é necessário ins
    cd li1-worms-haskell
    ```
 
-2. Compila e executa o jogo diretamente através do Cabal:
+2. Compila e executa o jogo:
    ```bash
-   cabal run
+   cabal run worms-game
    ```
 
 ---
