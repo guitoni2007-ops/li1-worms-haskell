@@ -18,14 +18,31 @@ A interface gráfica, animações e sistema de eventos foram construídos de rai
 
 ## 🚀 Como Executar o Jogo
 
-#### Pré-requisitos
-
+### Pré-requisitos
 Para compilar e executar o jogo em **Linux (Ubuntu/Debian)**, é necessário instalar as dependências de sistema para a biblioteca gráfica (OpenGL/GLUT) e a toolchain de Haskell (**GHC** e **Cabal**).
 
 1. Instalar as bibliotecas gráficas do sistema:
    ```bash
    sudo apt update
    sudo apt install -y freeglut3-dev libgmp-dev libgl1-mesa-dev libglu1-mesa-dev
+   ```
+
+2. Instalar o Haskell (GHC e Cabal) via **GHCup** (se ainda não o tiveres):
+   ```bash
+   curl --proto '=https' --tlsv1.2 -sSf [https://get-ghcup.haskell.org](https://get-ghcup.haskell.org) | sh
+   ```
+
+### Instalação e Execução
+1. Clona o repositório para a tua máquina:
+   ```bash
+   git clone [https://github.com/guitoni2007-ops/li1-worms-haskell.git](https://github.com/guitoni2007-ops/li1-worms-haskell.git)
+   cd li1-worms-haskell
+   ```
+
+2. Compila e executa o jogo diretamente através do Cabal:
+   ```bash
+   cabal run
+   ```
 
 ---
 
