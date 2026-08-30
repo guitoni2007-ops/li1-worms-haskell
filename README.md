@@ -3,12 +3,12 @@
 [![Linguagem](https://img.shields.io/badge/Linguagem-Haskell-5e5086?style=for-the-badge&logo=haskell)](https://www.haskell.org/)
 [![Interface](https://img.shields.io/badge/Gráficos-Gloss-lightgrey?style=for-the-badge)](https://hackage.haskell.org/package/gloss)
 
-## 📌 Visão Geral
+## 📌 Sobre o projeto
 Este projeto consiste no desenvolvimento de um jogo 2D inspirado no clássico **Worms**, totalmente programado no paradigma da **programação funcional**. O jogo foi o projeto final da unidade curricular de Laboratórios de Informática I (1º Ano, 1º Semestre) da Universidade do Minho.
 
 A interface gráfica, animações e sistema de eventos foram construídos de raiz utilizando a biblioteca gráfica `Gloss`.
 
-## 🎯 Funcionalidades
+## 🛠️ Principais Funcionalidades
 * **Motor de Jogo Funcional:** Lógica de física, colisões, gravidade e sistema de turnos implementados de forma puramente funcional.
 * **Arsenal e Utilitários:** Diversas armas e mecânicas de jogo implementadas (Bazuca, Dinamites, Minas, Jetpacks, Escavadoras, etc.).
 * **Equipas e Países:** Sistema de equipas personalizadas com bandeiras de vários países.
@@ -46,7 +46,7 @@ Para compilar e executar o jogo em **Linux (Ubuntu/Debian)**, é necessário ins
 
 ---
 
-## 🛠️ Desenvolvimento e Ferramentas Académicas
+## ⚙️ Desenvolvimento e Ferramentas Académicas
 
 Durante o desenvolvimento do projeto, foram utilizadas várias ferramentas de análise e teste exigidas para a cadeira:
 
