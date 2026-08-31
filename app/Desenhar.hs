@@ -221,7 +221,7 @@ terrenoColor t =
     L25.Agua  -> makeColor 0.2 0.5 0.9 1.0
     L25.Terra -> makeColor 0.55 0.35 0.15 1.0
     L25.Pedra -> greyN 0.45
-    L25.Lava  -> makeColor 0.9 0.35 0.1 1.0
+    
 
 -- | Desenha um objeto individual (Barril ou Projétil) na sua posição.
 drawObjeto :: Float -> Float -> Float -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> Maybe Picture -> L25.Objeto -> Picture

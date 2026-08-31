@@ -22,14 +22,14 @@ fr = 60  -- render a 60 FPS
 
 flagFilesMenu :: [FilePath]
 flagFilesMenu =
-  [ "flagsportugal.png", "flagsbrasil.png", "flagsargentina.png", "flagsfranca.png"
-  , "flagsalemanha.png", "flagsespanha.png", "flagsinglaterra.png", "flagsjapao.png"
+  [ "imagens_projeto202526/flagsportugal.png", "imagens_projeto202526/flagsbrasil.png", "imagens_projeto202526/flagsargentina.png", "imagens_projeto202526/flagsfranca.png"
+  , "imagens_projeto202526/flagsalemanha.png", "imagens_projeto202526/flagsespanha.png", "imagens_projeto202526/flagsinglaterra.png", "imagens_projeto202526/flagsjapao.png"
   ]
 
 flagFilesBracket :: [FilePath]
 flagFilesBracket =
-  [ "flagsportugalbracket.png", "flagsbrasilbracket.png", "flagsargentinabracket.png", "flagsfrancabracket.png"
-  , "flagsalemanhabracket.png", "flagsespanhabracket.png", "flagsinglaterrabracket.png", "flagsjapaobracket.png"
+  [ "imagens_projeto202526/flagsportugalbracket.png", "imagens_projeto202526/flagsbrasilbracket.png", "imagens_projeto202526/flagsargentinabracket.png", "imagens_projeto202526/flagsfrancabracket.png"
+  , "imagens_projeto202526/flagsalemanhabracket.png", "imagens_projeto202526/flagsespanhabracket.png", "imagens_projeto202526/flagsinglaterrabracket.png", "imagens_projeto202526/flagsjapaobracket.png"
   ]
 
 countryNames :: [String]
@@ -41,7 +41,7 @@ countryNames =
 main :: IO ()
 main = do
   -- imagens do jogo
-  mTitle         <- loadJuicyPNG "simbolo.png"
+  mTitle         <- loadJuicyPNG "imagens_projeto202526/simbolo.png"
 
   -- flags
   mFlagsMenu     <- mapM loadJuicyPNG flagFilesMenu
@@ -49,27 +49,27 @@ main = do
 
   -- imagens das minhocas
   let wormFiles =
-        [ "wormsportugal.png"
-        , "wormsbrasil.png"
-        , "wormsargentina.png"
-        , "wormsfranca.png"
-        , "wormsalemanha.png"
-        , "wormsespanha.png"
-        , "wormsinglaterra.png"
-        , "wormsjapao.png"
+        [ "imagens_projeto202526/wormsportugal.png"
+        , "imagens_projeto202526/wormsbrasil.png"
+        , "imagens_projeto202526/wormsargentina.png"
+        , "imagens_projeto202526/wormsfranca.png"
+        , "imagens_projeto202526/wormsalemanha.png"
+        , "imagens_projeto202526/wormsespanha.png"
+        , "imagens_projeto202526/wormsinglaterra.png"
+        , "imagens_projeto202526/wormsjapao.png"
         ]
   mWormsMaybe <- mapM loadJuicyPNG wormFiles
 
   -- imagens de vitória
-  mVictoryPT <- loadJuicyPNG "fundovitoriaportugal.png"
-  mVictoryBR <- loadJuicyPNG "fundovitoriabrasil.png"
+  mVictoryPT <- loadJuicyPNG "imagens_projeto202526/fundovitoriaportugal.png"
+  mVictoryBR <- loadJuicyPNG "imagens_projeto202526/fundovitoriabrasil.png"
 
   -- verifica se alguma imagem falhou a carregar
   let missingWorms = [f | (f, Nothing) <- zip wormFiles mWormsMaybe]
       missingFlagsMenu = [f | (f, Nothing) <- zip flagFilesMenu mFlagsMenu]
       missingFlagsBracket = [f | (f, Nothing) <- zip flagFilesBracket mFlagsBracket]
-      missingTitle = if mTitle == Nothing then ["simbolo.png"] else []
-      missingVictoryFiles = [ "fundovitoriaportugal.png" | mVictoryPT == Nothing ] ++ [ "fundovitoriabrasil.png" | mVictoryBR == Nothing ]
+      missingTitle = if mTitle == Nothing then ["imagens_projeto202526/simbolo.png"] else []
+      missingVictoryFiles = [ "imagens_projeto202526/fundovitoriaportugal.png" | mVictoryPT == Nothing ] ++ [ "imagens_projeto202526/fundovitoriabrasil.png" | mVictoryBR == Nothing ]
       missingAll = missingTitle ++ missingWorms ++ missingFlagsMenu ++ missingFlagsBracket ++ missingVictoryFiles
 
   if not (null missingAll)
@@ -87,16 +87,16 @@ main = do
           mVictoryPT' = mVictoryPT
           mVictoryBR' = mVictoryBR
 
-      mBarril        <- loadJuicyPNG "barrilnormal.png" >>= ensure "barrilnormal.png"
-      mBarrilExplode <- loadJuicyPNG "barrilexplodir.png" >>= ensure "barrilexplodir.png"
-      mMina          <- loadJuicyPNG "minanormal.png" >>= ensure "minanormal.png"
-      mJetpack       <- loadJuicyPNG "jetpacknormal.png" >>= ensure "jetpacknormal.png"
-      mDinamite      <- loadJuicyPNG "dinamitenormal.png" >>= ensure "dinamitenormal.png"
-      mBazuca        <- loadJuicyPNG "bazucanormal.png" >>= ensure "bazucanormal.png"
-      mEscavadora    <- loadJuicyPNG "escavadoranormal.png" >>= ensure "escavadoranormal.png"
-      mMenuBg        <- loadJuicyPNG "fundomenu.png" >>= ensure "fundomenu.png"
-      mBracketBg     <- loadJuicyPNG "fundobracket.png" >>= ensure "fundobracket.png"
-      mGameBg        <- loadJuicyPNG "fundojogo.png" >>= ensure "fundojogo.png"
+      mBarril        <- loadJuicyPNG "imagens_projeto202526/barrilnormal.png" >>= ensure "imagens_projeto202526/barrilnormal.png"
+      mBarrilExplode <- loadJuicyPNG "imagens_projeto202526/barrilexplodir.png" >>= ensure "imagens_projeto202526/barrilexplodir.png"
+      mMina          <- loadJuicyPNG "imagens_projeto202526/minanormal.png" >>= ensure "imagens_projeto202526/minanormal.png"
+      mJetpack       <- loadJuicyPNG "imagens_projeto202526/jetpacknormal.png" >>= ensure "imagens_projeto202526/jetpacknormal.png"
+      mDinamite      <- loadJuicyPNG "imagens_projeto202526/dinamitenormal.png" >>= ensure "imagens_projeto202526/dinamitenormal.png"
+      mBazuca        <- loadJuicyPNG "imagens_projeto202526/bazucanormal.png" >>= ensure "imagens_projeto202526/bazucanormal.png"
+      mEscavadora    <- loadJuicyPNG "imagens_projeto202526/escavadoranormal.png" >>= ensure "imagens_projeto202526/escavadoranormal.png"
+      mMenuBg        <- loadJuicyPNG "imagens_projeto202526/fundomenu.png" >>= ensure "imagens_projeto202526/fundomenu.png"
+      mBracketBg     <- loadJuicyPNG "imagens_projeto202526/fundobracket.png" >>= ensure "imagens_projeto202526/fundobracket.png"
+      mGameBg        <- loadJuicyPNG "imagens_projeto202526/fundojogo.png" >>= ensure "imagens_projeto202526/fundojogo.png"
 
       let b = W.seedBracketFromList countryNames
           it :: W.Worms
@@ -187,7 +187,6 @@ ensure fname Nothing = do
   putStrLn $ "Erro: não foi possível carregar: " ++ fname
   exitFailure
 ensure _ (Just x) = return x
-
 
 
 
